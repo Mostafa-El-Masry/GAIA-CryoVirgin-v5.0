@@ -4,6 +4,7 @@
     BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
   --gaia-font-mono: "JetBrains Mono", "SFMono-Regular", "Menlo", "Monaco",
     "Consolas", "Liberation Mono", "Courier New", monospace;
+  --gaia-brightness: 1;
 
   --gaia-surface: #ffffff;
   --gaia-surface-soft: #f8fafc;

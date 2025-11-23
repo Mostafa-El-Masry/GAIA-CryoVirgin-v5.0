@@ -19,14 +19,17 @@ export type { Theme } from "../theme";
 
 export type ButtonStyle = "solid" | "outline" | "ghost";
 export type SearchStyle = "rounded" | "pill" | "underline";
+export type BrightnessLevel = number; // 0.5 .. 1.1
 
 type DesignState = {
   theme: Theme;
   button: ButtonStyle;
   search: SearchStyle;
+  brightness: BrightnessLevel;
   setTheme: (t: Theme) => void;
   setButton: (b: ButtonStyle) => void;
   setSearch: (s: SearchStyle) => void;
+  setBrightness: (b: BrightnessLevel) => void;
 };
 
 export const Ctx = createContext<DesignState | null>(null);
@@ -34,6 +37,7 @@ export const Ctx = createContext<DesignState | null>(null);
 const THEME_KEY = "gaia.theme";
 const BTN_KEY = "gaia.ui.button";
 const SRCH_KEY = "gaia.ui.search";
+const BRIGHT_KEY = "gaia.ui.brightness";
 
 const VALID_THEMES: Theme[] = [...THEMES];
 const VALID_BUTTONS: ButtonStyle[] = ["solid", "outline", "ghost"];
@@ -145,10 +149,27 @@ function coerceThemeCandidate(value: unknown): Theme | null {
   return null;
 }
 
+function clampBrightness(value: number): BrightnessLevel {
+  if (Number.isNaN(value)) return 1;
+  return Math.min(1.1, Math.max(0.5, value));
+}
+
+function persistBrightness(value: BrightnessLevel) {
+  const clamped = clampBrightness(value);
+  setItem(BRIGHT_KEY, clamped.toString());
+  if (typeof document !== "undefined") {
+    document.documentElement.style.setProperty(
+      "--gaia-brightness",
+      clamped.toString()
+    );
+  }
+}
+
 export function DesignProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
   const [button, setButton] = useState<ButtonStyle>("solid");
   const [search, setSearch] = useState<SearchStyle>("rounded");
+  const [brightness, setBrightnessState] = useState<BrightnessLevel>(1);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -162,6 +183,10 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
       setThemeState(initialTheme);
       setButton(read(BTN_KEY, "solid", VALID_BUTTONS));
       setSearch(read(SRCH_KEY, "rounded", VALID_SEARCHES));
+      const cachedBrightness = clampBrightness(
+        Number(getItem(BRIGHT_KEY) ?? "1")
+      );
+      setBrightnessState(cachedBrightness);
       setHydrated(true);
     })();
 
@@ -176,6 +201,11 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
   }, [theme, hydrated]);
 
   useEffect(() => {
+    if (!hydrated) return;
+    persistBrightness(brightness);
+  }, [brightness, hydrated]);
+
+  useEffect(() => {
     write(BTN_KEY, button);
   }, [button]);
 
@@ -188,16 +218,22 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     setThemeState(value);
   }, []);
 
+  const setBrightness = useCallback((value: BrightnessLevel) => {
+    setBrightnessState(clampBrightness(value));
+  }, []);
+
   const value = useMemo<DesignState>(
     () => ({
       theme,
       button,
       search,
+      brightness,
       setTheme,
       setButton,
       setSearch,
+      setBrightness,
     }),
-    [theme, button, search, setTheme]
+    [theme, button, search, brightness, setTheme, setSearch, setBrightness]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

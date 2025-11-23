@@ -4,6 +4,7 @@ import React, { useEffect, useMemo } from 'react';
 import type { MediaItem } from '../mediaTypes';
 import { formatMediaTitle } from '../formatMediaTitle';
 import { getR2Url } from '../r2';
+import { recordViewDuration } from '../viewTracker';
 
 interface MediaLightboxProps {
   items: MediaItem[];
@@ -37,6 +38,16 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
     const nextIndex = (currentIndex + 1) % ordered.length;
     onChange(ordered[nextIndex].id);
   };
+
+  useEffect(() => {
+    const start = Date.now();
+    return () => {
+      const elapsedSec = (Date.now() - start) / 1000;
+      if (current?.id) {
+        recordViewDuration(current.id, elapsedSec);
+      }
+    };
+  }, [current?.id]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

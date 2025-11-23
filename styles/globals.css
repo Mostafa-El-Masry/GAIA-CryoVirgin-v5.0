@@ -38,6 +38,7 @@ body {
   );
   min-height: 100vh;
   background-attachment: fixed;
+  filter: brightness(var(--gaia-brightness, 1));
 }
 
 .dark body,

@@ -5,6 +5,7 @@ import type { MediaItem } from '../mediaTypes';
 import { getR2Url } from '../r2';
 import { formatMediaTitle } from '../formatMediaTitle';
 import { useEffectOnce } from '../useEffectOnce';
+import { recordViewDuration } from '../viewTracker';
 
 interface MediaCardProps {
   item: MediaItem;
@@ -20,6 +21,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onPreview }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [imageBroken, setImageBroken] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [playStart, setPlayStart] = useState<number | null>(null);
   const displayTitle = formatMediaTitle(item.title);
 
   // Ensure videos start muted by default.
@@ -28,6 +30,36 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onPreview }) => {
       videoRef.current.volume = 0;
     }
   });
+
+  // Track video watch time in seconds (rounded down to the floor as required).
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video || item.type !== 'video') return;
+
+    const handlePlay = () => setPlayStart(Date.now());
+    const handlePauseOrEnd = () => {
+      if (playStart) {
+        const elapsed = (Date.now() - playStart) / 1000;
+        recordViewDuration(item.id, elapsed);
+        setPlayStart(null);
+      }
+    };
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePauseOrEnd);
+    video.addEventListener('ended', handlePauseOrEnd);
+
+    return () => {
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePauseOrEnd);
+      video.removeEventListener('ended', handlePauseOrEnd);
+      // flush any active session on unmount
+      if (playStart) {
+        const elapsed = (Date.now() - playStart) / 1000;
+        recordViewDuration(item.id, elapsed);
+      }
+    };
+  }, [item.id, item.type, playStart]);
 
   const videoSrc = item.localPath
     ? normalizeLocalPath(item.localPath)

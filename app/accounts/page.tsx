@@ -93,7 +93,9 @@ function setCellValue(
   value: string | number | null
 ) {
   const ref = XLSX.utils.encode_cell({ r, c });
-  const cell: any = (ws as any)[ref] || {};
+  const existing: any = (ws as any)[ref] || {};
+  const cell: any = existing;
+
   if (value === null || value === undefined) {
     cell.v = null;
     cell.t = "z";
@@ -164,19 +166,6 @@ function fillSummaryTemplateWorkbook(
     const answeredRateRaw = row["Answered Rate"] ?? "";
     const abandonRateRaw = row["Abandon Rate"] ?? "";
 
-    let answeredRate: number | string | null = null;
-    let abandonRate: number | string | null = null;
-
-    if (typeof answeredRateRaw === "string") {
-      const m = answeredRateRaw.match(/([\d.]+)%/);
-      if (m) answeredRate = parseFloat(m[1]) / 100;
-    }
-
-    if (typeof abandonRateRaw === "string") {
-      const m = abandonRateRaw.match(/([\d.]+)%/);
-      if (m) abandonRate = parseFloat(m[1]) / 100;
-    }
-
     setCellValue(ws, rowIndex, 0, sl);
     setCellValue(ws, rowIndex, 1, row["Queue"] ?? "");
     setCellValue(ws, rowIndex, 2, totalCallsNum);
@@ -192,8 +181,9 @@ function fillSummaryTemplateWorkbook(
     setCellValue(ws, rowIndex, 7, row["AVG Waiting Time (All Calls)"] ?? "");
     setCellValue(ws, rowIndex, 8, row["Max Waiting Time (All Calls)"] ?? "");
     setCellValue(ws, rowIndex, 9, row["Average Talking Time"] ?? "");
-    setCellValue(ws, rowIndex, 10, answeredRate);
-    setCellValue(ws, rowIndex, 11, abandonRate);
+    // Keep percentage text exactly as in source (e.g. "67.14%")
+    setCellValue(ws, rowIndex, 10, answeredRateRaw || null);
+    setCellValue(ws, rowIndex, 11, abandonRateRaw || null);
     // Sales Rate left for manual input
     setCellValue(ws, rowIndex, 12, null);
 
@@ -455,7 +445,7 @@ export default function AccountsPage() {
                 onChange={(e) =>
                   setDetailsFile(e.target.files?.[0] ?? null)
                 }
-                className="mt-2 block w-full cursor-pointer text-sm text-neutral-200 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-emerald-500"
+                className="mt-2 block w-full cursor-pointer text-sm text-neutral-200 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-3 file:py-1.5 file:text-sm font-medium file:text-white hover:file:bg-emerald-500"
               />
               {detailsFile && (
                 <p className="mt-1 text-xs text-emerald-400">
@@ -513,12 +503,13 @@ export default function AccountsPage() {
               <code className="rounded bg-neutral-900 px-1.5 py-0.5 text-[11px]">
                 public/templates/CallCenterReportTemplate.xlsx
               </code>
-              , so all backgrounds, merged cells, wrapped headers, borders, and
-              charts are preserved.
+              , so merged cells, borders, and layout come from that file.
             </li>
             <li>
               Only the values in the data area (branches, Call Center Sara/Sansa
               rows, and Total row) and the title text are updated from the CSVs.
+              Answered Rate and Abandon Rate are kept as percentage text (e.g.
+              67.14%).
             </li>
             <li>
               The details workbook is still generated programmatically with a
