@@ -5,7 +5,12 @@ import type { MediaItem } from '../mediaTypes';
 import { getR2Url } from '../r2';
 import { formatMediaTitle } from '../formatMediaTitle';
 import { useEffectOnce } from '../useEffectOnce';
-import { recordViewDuration } from '../viewTracker';
+import {
+  formatViewDuration,
+  onViewStoreChange,
+  recordViewDuration,
+} from '../viewTracker';
+import type { ViewEntry } from '../viewTracker';
 
 interface MediaCardProps {
   item: MediaItem;
@@ -22,6 +27,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onPreview }) => {
   const [imageBroken, setImageBroken] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [playStart, setPlayStart] = useState<number | null>(null);
+  const [viewEntry, setViewEntry] = useState<ViewEntry | null>(null);
   const displayTitle = formatMediaTitle(item.title);
 
   // Ensure videos start muted by default.
@@ -60,6 +66,13 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onPreview }) => {
       }
     };
   }, [item.id, item.type, playStart]);
+
+  React.useEffect(() => {
+    const unsubscribe = onViewStoreChange((store) => {
+      setViewEntry(store[item.id] ?? null);
+    });
+    return unsubscribe;
+  }, [item.id]);
 
   const videoSrc = item.localPath
     ? normalizeLocalPath(item.localPath)
@@ -166,30 +179,51 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onPreview }) => {
   };
 
   const renderDetailsOverlay = () => {
+    const hasWatchHistory = Boolean(viewEntry && viewEntry.value > 0);
+    const watchLabel = hasWatchHistory
+      ? `Watched ${formatViewDuration(viewEntry)}`
+      : 'Not watched yet';
+
     return (
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-        <div className="flex justify-end">
-          <div className="pointer-events-auto rounded-full bg-base-100/90 px-2 py-1 text-base font-semibold text-base-content shadow">
-            …
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-base-200/80 via-base-200/20 to-transparent opacity-0 transition-all duration-500 ease-out group-hover:opacity-100" />
+
+        <div className="absolute left-3 bottom-3 translate-y-3 opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+          <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-base-100/90 px-3 py-1 text-[11px] font-semibold text-base-content shadow-lg backdrop-blur">
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                hasWatchHistory ? 'bg-emerald-500' : 'bg-base-300'
+              }`}
+            />
+            <span>{watchLabel}</span>
           </div>
         </div>
-        <div className="pointer-events-auto mt-2 max-w-full space-y-1 rounded-xl bg-base-100/95 p-3 text-[11px] text-base-content shadow-lg">
-          <p className="font-semibold">{displayTitle}</p>
-          {item.description &&
-            item.description !== 'Gallery image' &&
-            item.description !== 'Local video asset' &&
-            item.description !== 'Cloudflare R2 video asset' && (
-            <p className="text-base-content/70">{item.description}</p>
-          )}
-          {item.tags?.length ? (
-            <p className="text-[10px] text-base-content/60">
-              Tags: {item.tags.join(', ')}
-            </p>
-          ) : null}
+
+        <div className="pointer-events-none absolute inset-0 flex flex-col justify-end translate-y-2 p-3 opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+          <div className="flex justify-end">
+            <div className="pointer-events-auto rounded-full bg-base-100/90 px-2 py-1 text-base font-semibold text-base-content shadow">
+              i
+            </div>
+          </div>
+          <div className="pointer-events-auto mt-2 max-w-full space-y-1 rounded-xl bg-base-100/95 p-3 text-[11px] text-base-content shadow-lg backdrop-blur">
+            <p className="font-semibold">{displayTitle}</p>
+            {item.description &&
+              item.description !== 'Gallery image' &&
+              item.description !== 'Local video asset' &&
+              item.description !== 'Cloudflare R2 video asset' && (
+              <p className="text-base-content/70">{item.description}</p>
+            )}
+            {item.tags?.length ? (
+              <p className="text-[10px] text-base-content/60">
+                Tags: {item.tags.join(', ')}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     );
   };
+
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-transparent p-1 transition duration-200" aria-label={displayTitle}>

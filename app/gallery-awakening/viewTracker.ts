@@ -1,6 +1,10 @@
 "use client";
 
-import { readJSON, writeJSON } from "@/lib/user-storage";
+import {
+  readJSON,
+  subscribe as subscribeToUserStorage,
+  writeJSON,
+} from "@/lib/user-storage";
 
 type ViewUnit = "seconds" | "minutes" | "hours";
 
@@ -42,3 +46,42 @@ export function recordViewDuration(itemId: string, deltaSeconds: number) {
 
   writeJSON(STORAGE_KEY, store);
 }
+
+export function readViewStore(): ViewStore {
+  return readJSON<ViewStore>(STORAGE_KEY, {});
+}
+
+export function getViewEntry(itemId: string): ViewEntry | null {
+  if (!itemId) return null;
+  const store = readViewStore();
+  return store[itemId] ?? null;
+}
+
+export function formatViewDuration(entry: ViewEntry | null): string {
+  if (!entry || !Number.isFinite(entry.value) || entry.value <= 0) {
+    return "Not watched yet";
+  }
+  const value = Math.max(0, Math.floor(entry.value));
+  const unitLabel =
+    entry.unit === "hours"
+      ? "hr"
+      : entry.unit === "minutes"
+        ? "min"
+        : "sec";
+  const plural = value === 1 ? "" : "s";
+  return `${value} ${unitLabel}${plural}`;
+}
+
+export function onViewStoreChange(
+  listener: (store: ViewStore) => void
+): () => void {
+  const update = () => listener(readViewStore());
+  // Run once so consumers have initial data.
+  update();
+  return subscribeToUserStorage(({ key }) => {
+    if (key !== STORAGE_KEY) return;
+    update();
+  });
+}
+
+export type { ViewEntry, ViewStore };
