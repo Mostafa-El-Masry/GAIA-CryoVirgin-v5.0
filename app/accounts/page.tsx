@@ -6,12 +6,10 @@ import * as XLSX from "xlsx";
 type CsvRow = Record<string, string>;
 
 /**
- * Small CSV parser for the call center exports.
+ * Very small CSV parser for the call center exports.
  * Assumes:
  * - Comma as separator
  * - No quoted commas inside fields
- * - First row is the header row
- * Also strips a UTF-8 BOM if it exists on the first header cell.
  */
 function parseCsv(text: string): CsvRow[] {
   const lines = text
@@ -21,7 +19,10 @@ function parseCsv(text: string): CsvRow[] {
 
   if (lines.length === 0) return [];
 
-  const headerLine = lines[0].replace(/^\uFEFF/, "");
+  let headerLine = lines[0];
+  // Strip UTF-8 BOM if present
+  headerLine = headerLine.replace(/^\uFEFF/, "");
+
   const headers = headerLine.split(",").map((h) => h.trim());
 
   const rows: CsvRow[] = [];
@@ -47,26 +48,19 @@ function extractFirstDateFromDetails(detailRows: CsvRow[]): string | null {
   return null;
 }
 
-function parsePercentToFraction(raw: unknown): number | string {
-  if (typeof raw !== "string") return "";
-  const match = raw.match(/([\d.]+)%/);
-  if (!match) return "";
-  const num = parseFloat(match[1]);
-  if (Number.isNaN(num)) return "";
-  return num / 100;
-}
+/**
+ * From the detailed CSV, count how many calls were answered by
+ * Call Center<887> and Call Center<888>.
+ *
+ * In the CSV layout:
+ * - "Abandoned" column actually holds the Agent for detailed rows
+ * - "AVG Handle Time" holds the Status ("Answered", "Abandoned(UnHandled//)", etc.)
+ */
 function computeCallCenterCounts(detailRows: CsvRow[]) {
   let sarah = 0;
   let steffi = 0;
 
   for (const row of detailRows) {
-    // Summary lines have a Queue value; detail lines have empty Queue
-    const queue = (row["Queue"] ?? "").trim();
-    if (queue !== "") continue;
-
-    // In the detailed section, because of the second header,
-    // "Abandoned" actually holds the Agent, and
-    // "AVG Handle Time" holds the Status ("Answered", "Abandoned(UnHandled//)", etc.)
     const agent = (row["Abandoned"] ?? "").trim();
     const status = (row["AVG Handle Time"] ?? "").trim();
 
@@ -82,15 +76,65 @@ function computeCallCenterCounts(detailRows: CsvRow[]) {
   return { sarah, steffi };
 }
 
-function buildSummarySheet(summaryRows: CsvRow[], detailRows: CsvRow[]) {
-  // Try to get a date label from details, if available
+async function loadTemplateWorkbook(path: string): Promise<XLSX.WorkBook> {
+  const res = await fetch(path);
+  if (!res.ok) {
+    throw new Error(`Failed to load template: ${path}`);
+  }
+  const buf = await res.arrayBuffer();
+  const wb = XLSX.read(buf, { type: "array" });
+  return wb;
+}
+
+function setCellValue(
+  ws: XLSX.WorkSheet,
+  r: number,
+  c: number,
+  value: string | number | null
+) {
+  const ref = XLSX.utils.encode_cell({ r, c });
+  const cell: any = (ws as any)[ref] || {};
+  if (value === null || value === undefined) {
+    cell.v = null;
+    cell.t = "z";
+  } else if (typeof value === "number") {
+    cell.v = value;
+    cell.t = "n";
+  } else {
+    cell.v = value;
+    cell.t = "s";
+  }
+  (ws as any)[ref] = cell;
+}
+
+/**
+ * Fills an existing formatted summary template workbook.
+ * The template should already contain:
+ * - Title row (merged, styled)
+ * - Header row (background, borders, wrap)
+ * - Some preformatted data rows + Total row + chart
+ *
+ * We only overwrite the cell values, never styles/merges/chart.
+ */
+function fillSummaryTemplateWorkbook(
+  wb: XLSX.WorkBook,
+  summaryRows: CsvRow[],
+  detailRows: CsvRow[],
+  monthLabel: string
+) {
+  const wsName = wb.SheetNames[0];
+  const ws = wb.Sheets[wsName] as XLSX.WorkSheet;
+
+  // Title
   const dateLabel = extractFirstDateFromDetails(detailRows);
   const title =
     dateLabel != null
       ? `Call Center-Report-${dateLabel}`
-      : "Call Center-Report";
+      : `Call Center-Report-${monthLabel}`;
 
-  // Filter out empty & "Total" rows: these are your branches/queues
+  setCellValue(ws, 0, 0, title);
+
+  // Rows from summary
   const branches = summaryRows.filter((row) => {
     const q = row["Queue"];
     if (!q) return false;
@@ -98,55 +142,18 @@ function buildSummarySheet(summaryRows: CsvRow[], detailRows: CsvRow[]) {
     return trimmed.length > 0 && trimmed !== "total";
   });
 
-  // Find the total row if present
   const totalRow = summaryRows.find((row) => {
     const q = row["Queue"];
     if (!q) return false;
     return q.trim().toLowerCase() === "total";
   });
 
-  // Count Call Center answered calls from the detail CSV
   const { sarah, steffi } = computeCallCenterCounts(detailRows);
 
-  // Header row (Excel row 1)
-  const aoa: (string | number | null)[][] = [];
-  aoa.push([
-    title,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-  ]);
-
-  // Column headers (Excel row 2) – match your template exactly
-  aoa.push([
-    "Sl No",
-    "Branch",
-    "Total Calls",
-    "Answered",
-    "Missed & Abandoned",
-    "AVG Handle Time",
-    "AVG Waiting Time (Answered Calls)",
-    "AVG Waiting Time (All Calls)",
-    "Max Waiting Time (All Calls)",
-    "Average Talking Time",
-    "Answered Rate",
-    "Abandon Rate",
-    "Sales Rate",
-  ]);
-
-  let index = 1;
+  let rowIndex = 2; // 0-based -> Excel row 3
+  let sl = 1;
   let totalCallsFromBranches = 0;
 
-  // Branch rows (Sabah Al Salam, Qurtuba 1, etc.)
   for (const row of branches) {
     const totalCallsNum = Number(row["Total Calls"] ?? 0) || 0;
     const answeredNum = Number(row["Answered"] ?? 0) || 0;
@@ -157,8 +164,8 @@ function buildSummarySheet(summaryRows: CsvRow[], detailRows: CsvRow[]) {
     const answeredRateRaw = row["Answered Rate"] ?? "";
     const abandonRateRaw = row["Abandon Rate"] ?? "";
 
-    let answeredRate: number | string = "";
-    let abandonRate: number | string = "";
+    let answeredRate: number | string | null = null;
+    let abandonRate: number | string | null = null;
 
     if (typeof answeredRateRaw === "string") {
       const m = answeredRateRaw.match(/([\d.]+)%/);
@@ -170,164 +177,82 @@ function buildSummarySheet(summaryRows: CsvRow[], detailRows: CsvRow[]) {
       if (m) abandonRate = parseFloat(m[1]) / 100;
     }
 
-    aoa.push([
-      index,
-      row["Queue"] ?? "",
-      totalCallsNum,
-      answeredNum,
-      missedAndAbandoned,
-      row["AVG Handle Time"] ?? "",
-      row["AVG Waiting Time (Answered Calls)"] ?? "",
-      row["AVG Waiting Time (All Calls)"] ?? "",
-      row["Max Waiting Time (All Calls)"] ?? "",
-      row["Average Talking Time"] ?? "",
-      answeredRate,
-      abandonRate,
-      "", // Sales Rate left for manual input
-    ]);
+    setCellValue(ws, rowIndex, 0, sl);
+    setCellValue(ws, rowIndex, 1, row["Queue"] ?? "");
+    setCellValue(ws, rowIndex, 2, totalCallsNum);
+    setCellValue(ws, rowIndex, 3, answeredNum);
+    setCellValue(ws, rowIndex, 4, missedAndAbandoned);
+    setCellValue(ws, rowIndex, 5, row["AVG Handle Time"] ?? "");
+    setCellValue(
+      ws,
+      rowIndex,
+      6,
+      row["AVG Waiting Time (Answered Calls)"] ?? ""
+    );
+    setCellValue(ws, rowIndex, 7, row["AVG Waiting Time (All Calls)"] ?? "");
+    setCellValue(ws, rowIndex, 8, row["Max Waiting Time (All Calls)"] ?? "");
+    setCellValue(ws, rowIndex, 9, row["Average Talking Time"] ?? "");
+    setCellValue(ws, rowIndex, 10, answeredRate);
+    setCellValue(ws, rowIndex, 11, abandonRate);
+    // Sales Rate left for manual input
+    setCellValue(ws, rowIndex, 12, null);
 
     totalCallsFromBranches += totalCallsNum;
-    index++;
+    rowIndex++;
+    sl++;
   }
 
-  // Extra rows: Call Center <887-Sarah> and Call Center <888-Steffi>
-  // These appear as rows 9 and 10 in your sheet for that day
-  aoa.push([
-    index,
-    "Call Center <887-Sarah>",
-    sarah,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-  ]);
-  index++;
+  // Call Center <887-Sara>
+  setCellValue(ws, rowIndex, 0, sl);
+  setCellValue(ws, rowIndex, 1, "Call Center <887-Sara>");
+  setCellValue(ws, rowIndex, 2, sarah);
+  for (let c = 3; c <= 12; c++) setCellValue(ws, rowIndex, c, null);
+  rowIndex++;
+  sl++;
 
-  aoa.push([
-    index,
-    "Call Center <888-Steffi>",
-    steffi,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-  ]);
+  // Call Center <888-Sansa>
+  setCellValue(ws, rowIndex, 0, sl);
+  setCellValue(ws, rowIndex, 1, "Call Center <888-Sansa>");
+  setCellValue(ws, rowIndex, 2, steffi);
+  for (let c = 3; c <= 12; c++) setCellValue(ws, rowIndex, c, null);
+  rowIndex++;
 
-  // Total row – exactly as in your file, only branches included
+  // Total row (assume it's the next formatted row in the template)
   const totalCalls =
     totalRow?.["Total Calls"] != null
       ? Number(totalRow["Total Calls"]) || 0
       : totalCallsFromBranches;
   const totalAnswered =
-    totalRow?.["Answered"] != null ? Number(totalRow["Answered"]) || 0 : null;
+    totalRow?.["Answered"] != null
+      ? Number(totalRow["Answered"]) || 0
+      : null;
   const totalMissed =
     totalRow?.["Missed"] != null ? Number(totalRow["Missed"]) || 0 : null;
   const totalAbandoned =
-    totalRow?.["Abandoned"] != null ? Number(totalRow["Abandoned"]) || 0 : null;
+    totalRow?.["Abandoned"] != null
+      ? Number(totalRow["Abandoned"]) || 0
+      : null;
 
   const totalMissedAndAbandoned =
     totalMissed != null && totalAbandoned != null
       ? totalMissed + totalAbandoned
       : null;
 
-  aoa.push([
-    null,
-    "Total",
-    totalCalls,
-    totalAnswered,
-    totalMissedAndAbandoned,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-  ]);
+  // Column A left empty, B = "Total"
+  setCellValue(ws, rowIndex, 0, null);
+  setCellValue(ws, rowIndex, 1, "Total");
+  setCellValue(ws, rowIndex, 2, totalCalls);
+  setCellValue(ws, rowIndex, 3, totalAnswered);
+  setCellValue(ws, rowIndex, 4, totalMissedAndAbandoned);
+  for (let c = 5; c <= 12; c++) setCellValue(ws, rowIndex, c, null);
 
-  // Build sheet
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-
-  // --- Row heights to match your report ---
-  // Row indices here are 0-based for '!rows'
-  const rowsMeta: any[] = [];
-  for (let r = 0; r < aoa.length; r++) {
-    if (r === 0) {
-      // title row (row 1 in Excel)
-      rowsMeta[r] = { hpt: 20.4 };
-    } else if (r === 1) {
-      // header row (row 2 in Excel)
-      rowsMeta[r] = { hpt: 72.0 };
-    } else if (r === aoa.length - 1) {
-      // total row
-      rowsMeta[r] = { hpt: 21.0 };
-    } else {
-      // normal data rows
-      rowsMeta[r] = { hpt: 16.5 };
-    }
-  }
-  (ws as any)["!rows"] = rowsMeta;
-
-  // --- Basic header styling (background color + bold, center, wrap) ---
-  const headerRowIndex = 1; // row 2 in Excel, 0-based index 1
-  for (let c = 0; c < 13; c++) {
-    const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
-    const cell = ws[cellRef];
-    if (!cell) continue;
-    if (!cell.s) (cell as any).s = {};
-    (cell as any).s.fill = {
-      patternType: "solid",
-      fgColor: { rgb: "FFD9D9D9" }, // neutral light grey
-      bgColor: { rgb: "FFD9D9D9" },
-    };
-    (cell as any).s.font = {
-      bold: true,
-    };
-    (cell as any).s.alignment = {
-      vertical: "center",
-      horizontal: "center",
-      wrapText: true,
-    };
-  }
-
-  // --- Total row background + bold ---
-  const totalRowIndex = aoa.length - 1;
-  for (let c = 0; c < 13; c++) {
-    const cellRef = XLSX.utils.encode_cell({ r: totalRowIndex, c });
-    const cell = ws[cellRef];
-    if (!cell) continue;
-    if (!cell.s) (cell as any).s = {};
-    (cell as any).s.fill = {
-      patternType: "solid",
-      fgColor: { rgb: "FFEFEFEF" },
-      bgColor: { rgb: "FFEFEFEF" },
-    };
-    (cell as any).s.font = {
-      bold: true,
-    };
-  }
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Call Center Report");
   return wb;
 }
 
 function buildDetailsSheet(detailRows: CsvRow[]) {
   const aoa: (string | number | null)[][] = [];
 
+  // Headers
   aoa.push([
     "Queue",
     "Answered",
@@ -350,27 +275,41 @@ function buildDetailsSheet(detailRows: CsvRow[]) {
     const waitAnswered = row["AVG Waiting Time (Answered Calls)"];
     const waitAll = row["AVG Waiting Time (All Calls)"];
 
-    // Summary line (one per queue at the top) - sets current branch and is skipped
+    // Summary lines (per branch)
     if (queueCell && queueCell.trim().length > 0) {
       currentQueueName = queueCell.trim();
       continue;
     }
 
-    // Header-like line inside each queue block ("ID / Time / Call From / ...") - skip
+    // Skip the internal header row inside each queue block
     if (totalCalls === "ID" || answered === "Time" || missed === "Call From") {
       continue;
     }
 
-    const queueName = currentQueueName ?? "";
+    // We only care about rows that look like actual calls
+    if (!answered) {
+      continue;
+    }
+
+    // Derive branch name from "Abandoned" when it looks like "Dasman<333>"
+    let queueFromAbandoned: string | null = null;
+    if (typeof abandoned === "string" && abandoned) {
+      const match = abandoned.match(/^(.+?)</);
+      if (match) {
+        queueFromAbandoned = match[1].trim();
+      }
+    }
+
+    const queueName = queueFromAbandoned ?? currentQueueName ?? "";
 
     aoa.push([
       queueName,
-      answered || null,
-      missed || null,
-      abandoned || null,
-      handle || null,
-      waitAnswered || null,
-      waitAll || null,
+      answered,
+      missed ?? null,
+      abandoned ?? null,
+      handle ?? null,
+      waitAnswered ?? null,
+      waitAll ?? null,
     ]);
   }
 
@@ -435,7 +374,18 @@ export default function AccountsPage() {
         return;
       }
 
-      const summaryWb = buildSummarySheet(summaryRows, detailRows);
+      // Load formatted template from /public/templates
+      const summaryTemplateWb = await loadTemplateWorkbook(
+        "/templates/CallCenterReportTemplate.xlsx"
+      );
+
+      const summaryWb = fillSummaryTemplateWorkbook(
+        summaryTemplateWb,
+        summaryRows,
+        detailRows,
+        monthLabel.trim() || "MonthYear"
+      );
+
       const detailsWb = buildDetailsSheet(detailRows);
 
       const label = monthLabel.trim() || "MonthYear";
@@ -451,67 +401,64 @@ export default function AccountsPage() {
   }
 
   return (
-    <main className="min-h-screen w-full gaia-surface-soft px-4 py-8 sm:px-8 lg:px-12">
+    <div className="min-h-screen w-full px-4 py-6 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-4xl space-y-6">
         <header className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight gaia-strong">
-            Accounts - Call Center Mirror Bot
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Accounts · Call Center Mirror Bot
           </h1>
-          <p className="text-sm gaia-muted">
+          <p className="text-sm text-neutral-500">
             Upload the two raw call center CSV exports and generate the
-            formatted
-            <span className="font-medium text-[inherit]">
-              {" "}
-              Call Center Report
-            </span>{" "}
-            and
-            <span className="font-medium text-[inherit]">
-              {" "}
-              Call Center Report Details
-            </span>{" "}
+            formatted{" "}
+            <span className="font-medium">Call Center Report</span> and{" "}
+            <span className="font-medium">Call Center Report Details</span>{" "}
             workbooks automatically.
           </p>
         </header>
 
-        <section className="rounded-2xl border gaia-border gaia-panel-soft p-4 sm:p-6 shadow-sm">
+        <section className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4 sm:p-6 shadow-lg shadow-black/40">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <label className="text-sm font-semibold gaia-strong">
+              <label className="text-sm font-medium text-neutral-200">
                 Summary CSV (per-branch totals)
               </label>
-              <p className="text-xs gaia-muted">
+              <p className="text-xs text-neutral-500">
                 This is the file that only has one row per Queue (branch),
                 usually the first download you get in the morning.
               </p>
               <input
                 type="file"
                 accept=".csv"
-                onChange={(e) => setSummaryFile(e.target.files?.[0] ?? null)}
-                className="mt-2 block w-full cursor-pointer rounded-xl border gaia-border gaia-input text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--gaia-contrast-bg)] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[var(--gaia-contrast-text)] hover:file:opacity-90"
+                onChange={(e) =>
+                  setSummaryFile(e.target.files?.[0] ?? null)
+                }
+                className="mt-2 block w-full cursor-pointer text-sm text-neutral-200 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-emerald-500"
               />
               {summaryFile && (
-                <p className="mt-1 text-xs gaia-strong">
+                <p className="mt-1 text-xs text-emerald-400">
                   Selected: {summaryFile.name}
                 </p>
               )}
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-semibold gaia-strong">
+              <label className="text-sm font-medium text-neutral-200">
                 Detailed CSV (branch details + calls)
               </label>
-              <p className="text-xs gaia-muted">
+              <p className="text-xs text-neutral-500">
                 This is the file that contains the same queues on top, followed
                 by many rows with individual calls (ID, time, call from, etc.).
               </p>
               <input
                 type="file"
                 accept=".csv"
-                onChange={(e) => setDetailsFile(e.target.files?.[0] ?? null)}
-                className="mt-2 block w-full cursor-pointer rounded-xl border gaia-border gaia-input text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--gaia-contrast-bg)] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[var(--gaia-contrast-text)] hover:file:opacity-90"
+                onChange={(e) =>
+                  setDetailsFile(e.target.files?.[0] ?? null)
+                }
+                className="mt-2 block w-full cursor-pointer text-sm text-neutral-200 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-emerald-500"
               />
               {detailsFile && (
-                <p className="mt-1 text-xs gaia-strong">
+                <p className="mt-1 text-xs text-emerald-400">
                   Selected: {detailsFile.name}
                 </p>
               )}
@@ -520,12 +467,12 @@ export default function AccountsPage() {
 
           <div className="mt-6 grid gap-4 sm:grid-cols-[1fr,auto] sm:items-end">
             <div className="space-y-1">
-              <label className="text-sm font-semibold gaia-strong">
+              <label className="text-sm font-medium text-neutral-200">
                 Month label for file names
               </label>
-              <p className="text-xs gaia-muted">
-                Used only for the downloaded file names, e.g.
-                <code className="ml-1 rounded bg-[color-mix(in_srgb,var(--gaia-surface)_92%,transparent)] px-1.5 py-0.5 text-[11px] gaia-strong">
+              <p className="text-xs text-neutral-500">
+                Used only for the downloaded file names, e.g.{" "}
+                <code className="rounded bg-neutral-900 px-1.5 py-0.5 text-[11px]">
                   Call Center Report-Nov&apos;2025.xlsx
                 </code>
                 .
@@ -534,7 +481,7 @@ export default function AccountsPage() {
                 type="text"
                 value={monthLabel}
                 onChange={(e) => setMonthLabel(e.target.value)}
-                className="mt-1 w-full rounded-xl border gaia-border gaia-input px-3 py-1.5 text-sm gaia-strong focus:outline-none gaia-focus"
+                className="mt-1 w-full rounded-xl border border-neutral-800 bg-neutral-900/80 px-3 py-1.5 text-sm text-neutral-100 outline-none ring-emerald-500/60 focus:border-emerald-500 focus:ring-2"
                 placeholder="Nov'2025"
               />
             </div>
@@ -543,45 +490,43 @@ export default function AccountsPage() {
               type="button"
               onClick={handleGenerate}
               disabled={isProcessing || !summaryFile || !detailsFile}
-              className="inline-flex items-center justify-center rounded-xl gaia-contrast px-4 py-2 text-sm font-semibold shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-xl border border-emerald-500/60 bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-md shadow-emerald-500/30 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:border-neutral-700 disabled:bg-neutral-800 disabled:text-neutral-500"
             >
-              {isProcessing ? "Generating..." : "Generate reports"}
+              {isProcessing ? "Generating…" : "Generate Reports"}
             </button>
           </div>
 
-          {error && <p className="mt-4 text-sm gaia-negative">{error}</p>}
+          {error && (
+            <p className="mt-4 text-sm text-red-400">
+              {error}
+            </p>
+          )}
         </section>
 
-        <section className="rounded-2xl border gaia-border gaia-panel-soft p-4 sm:p-5 shadow-sm">
-          <h2 className="text-sm font-semibold gaia-strong">
-            How this works (current version)
+        <section className="rounded-2xl border border-neutral-900 bg-neutral-950/60 p-4 sm:p-5">
+          <h2 className="text-sm font-semibold text-neutral-200">
+            How this works (template mode)
           </h2>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs gaia-muted">
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-neutral-500">
             <li>
-              The summary CSV is used to build the
-              <span className="font-medium text-[inherit]">
-                {" "}
-                Call Center Report
-              </span>{" "}
-              sheet with the same title row, column order and additional
-              Answered / Abandon rates as your sample.
+              The summary workbook is based on your own Excel template in{" "}
+              <code className="rounded bg-neutral-900 px-1.5 py-0.5 text-[11px]">
+                public/templates/CallCenterReportTemplate.xlsx
+              </code>
+              , so all backgrounds, merged cells, wrapped headers, borders, and
+              charts are preserved.
             </li>
             <li>
-              The detailed CSV is cleaned into the
-              <span className="font-medium text-[inherit]">
-                {" "}
-                Call Center Report Details
-              </span>{" "}
-              sheet, with one row per call and the same column order as your
-              sample workbook.
+              Only the values in the data area (branches, Call Center Sara/Sansa
+              rows, and Total row) and the title text are updated from the CSVs.
             </li>
             <li>
-              Sales Rate is left empty for now so you can continue filling it
-              from your sales data the same way you do today.
+              The details workbook is still generated programmatically with a
+              clean table layout matching your current columns.
             </li>
           </ul>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

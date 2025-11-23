@@ -6,7 +6,6 @@ export const PERMISSION_KEYS = [
   "dashboard",
   "eleuthia",
   "gallery",
-  "guardian",
   "health",
   "labs",
   "locked",
