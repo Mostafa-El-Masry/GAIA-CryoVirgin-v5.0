@@ -50,6 +50,18 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onPreview }) => {
     return '';
   };
 
+  const primaryImageSrc = React.useMemo(() => {
+    if (item.type === 'video') {
+      const thumb = item.thumbnails?.[0];
+      const thumbSrc = previewSrcForThumb(thumb);
+      if (thumbSrc) return thumbSrc;
+      return '/placeholder-gallery-image.png';
+    }
+    if (item.r2Path) return getR2Url(item.r2Path);
+    if (item.localPath) return normalizeLocalPath(item.localPath);
+    return '/placeholder-gallery-image.png';
+  }, [item.localPath, item.r2Path, item.thumbnails, item.type]);
+
   const primaryPreviewSrc = React.useMemo(
     () => previewSrcForThumb(item.thumbnails?.[0]),
     [item.thumbnails]
@@ -115,18 +127,14 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onPreview }) => {
   };
 
   const renderImage = () => {
-    const src = item.r2Path && !imageBroken
-      ? getR2Url(item.r2Path)
-      : item.localPath && !imageBroken
-        ? normalizeLocalPath(item.localPath)
-        : '/placeholder-gallery-image.png';
+    const src = imageBroken ? '/placeholder-gallery-image.png' : primaryImageSrc;
 
     return (
-      <div className="relative w-full overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-sm">
+      <div className="relative w-full overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-sm aspect-[4/3]">
         <img
           src={src}
           alt={displayTitle}
-          className="h-auto w-full cursor-pointer object-cover transition hover:opacity-90"
+          className="h-full w-full cursor-pointer object-cover transition hover:scale-[1.01] hover:opacity-90"
           loading="lazy"
           onClick={() => onPreview?.(item)}
           onError={() => setImageBroken(true)}
@@ -263,22 +271,23 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onPreview }) => {
 
   const renderDetailsOverlay = () => {
     const hasWatchHistory = Boolean(viewEntry && viewEntry.value > 0);
-    const watchLabel = hasWatchHistory
-      ? `Watched ${formatViewDuration(viewEntry)}`
-      : 'Not watched yet';
+    const viewTimeLabel = formatViewDuration(viewEntry);
 
     return (
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-base-200/80 via-base-200/20 to-transparent opacity-0 transition-all duration-500 ease-out group-hover:opacity-100" />
 
-        <div className="absolute left-3 bottom-3 translate-y-3 opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
-          <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-base-100/90 px-3 py-1 text-[11px] font-semibold text-base-content shadow-lg backdrop-blur">
+        <div className="absolute right-3 top-3 -translate-y-2 opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+          <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-base-100/95 px-3 py-1 text-[10px] font-semibold text-base-content shadow-lg backdrop-blur">
             <span
               className={`h-2.5 w-2.5 rounded-full ${
                 hasWatchHistory ? 'bg-emerald-500' : 'bg-base-300'
               }`}
             />
-            <span>{watchLabel}</span>
+            <span className="uppercase tracking-wide text-[9px] text-base-content/70">
+              View time
+            </span>
+            <span>{viewTimeLabel}</span>
           </div>
         </div>
 

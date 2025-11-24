@@ -117,9 +117,20 @@ export async function POST(req: NextRequest) {
       fs.readFile(outDetailsPath),
     ]);
 
+    // JSZip typings don't accept Node Buffer directly; convert to ArrayBuffer.
+    const toUint8 = (buf: Buffer) => new Uint8Array(buf);
+
     const zip = new JSZip();
-    zip.file(`Call Center Report-${safeLabel}.xlsx`, summaryBuf);
-    zip.file(`Call Center Report-Details-${safeLabel}.xlsx`, detailsBuf);
+    zip.file(
+      `Call Center Report-${safeLabel}.xlsx`,
+      toUint8(summaryBuf),
+      { binary: true }
+    );
+    zip.file(
+      `Call Center Report-Details-${safeLabel}.xlsx`,
+      toUint8(detailsBuf),
+      { binary: true }
+    );
 
     const zipContent = await zip.generateAsync({ type: "nodebuffer" });
 

@@ -371,7 +371,7 @@ const GalleryAwakeningPage: React.FC = () => {
 
       {/* Main content shifted to the right of the rail */}
       <section className="pl-0 lg:pl-24">
-        <div className="mx-auto max-w-7xl px-4 pb-12 pt-10">
+        <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-10 xl:max-w-[85vw]">
           {/* Toolbar: filters + view + feature of the day */}
           <div className="mb-4 space-y-3 rounded-3xl border border-base-300 bg-base-100 p-3 shadow-md shadow-base-200/70 backdrop-blur">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
