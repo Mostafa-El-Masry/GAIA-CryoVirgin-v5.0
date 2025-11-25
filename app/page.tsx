@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useDailyRitualGate } from "@/app/dashboard/hooks/useDailyRitualGate";
+import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import NoScroll from "@/components/NoScroll";
 import UserDropdown from "@/components/UserDropdown";
 import { useAuthSnapshot } from "@/lib/auth-client";
@@ -41,9 +43,32 @@ export default function HomePage() {
     { href: "/settings", label: "Settings", permission: "settings" },
   ];
 
-  const visibleLinks = isAdmin
+  const { completedToday } = useDailyRitualGate();
+  const { wealthUnlocked } = useGaiaFeatureUnlocks();
+
+  const permissionFilteredLinks = isAdmin
     ? links
     : links.filter((link) => Boolean(permissions[link.permission]));
+
+  const allowedHrefs = new Set<string>();
+
+  if (!completedToday) {
+    // Before daily ritual: only Dashboard is visible
+    allowedHrefs.add("/dashboard");
+  } else {
+    // After daily ritual: only Dashboard + Apollo are visible by default
+    allowedHrefs.add("/dashboard");
+    allowedHrefs.add("/apollo");
+
+    // Wealth awakens only after Academy progress
+    if (wealthUnlocked) {
+      allowedHrefs.add("/wealth-awakening");
+    }
+  }
+
+  const visibleLinks = permissionFilteredLinks.filter((link) =>
+    allowedHrefs.has(link.href)
+  );
 
   return (
     <main className="fixed inset-0 flex items-center justify-center no-nav">

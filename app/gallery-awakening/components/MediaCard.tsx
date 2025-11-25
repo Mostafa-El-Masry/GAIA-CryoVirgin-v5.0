@@ -71,7 +71,9 @@ export const MediaCard: React.FC<MediaCardProps> = ({
     () =>
       (item.thumbnails || [])
         .map(previewSrcForThumb)
-        .filter((src) => Boolean(src)),
+        .filter(
+          (src) => src && !src.includes("placeholder-gallery-image.png")
+        ) as string[],
     [item.thumbnails]
   );
 
@@ -93,7 +95,10 @@ export const MediaCard: React.FC<MediaCardProps> = ({
   );
   const previewPoster =
     previewSources[previewIndex] ||
-    primaryPreviewSrc ||
+    (primaryPreviewSrc &&
+    !primaryPreviewSrc.includes("placeholder-gallery-image.png")
+      ? primaryPreviewSrc
+      : undefined) ||
     (primaryImageSrc || undefined);
 
   React.useEffect(() => {

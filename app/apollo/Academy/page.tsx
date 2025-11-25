@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { lessonsByTrack, type TrackId } from "./lessonsMap";
 import { useAcademyProgress } from "./useAcademyProgress";
 
@@ -10,6 +10,15 @@ type TrackSummaryView = {
   title: string;
   href: string;
 };
+
+const LAST_VISIT_KEY = "gaia_academy_last_visit_v1";
+const ROTATION_ANCHOR_ISO = "2025-01-01";
+const ROTATION_MINUTES = [30, 45, 60] as const;
+const ROTATION_PATTERNS: TrackId[][] = [
+  ["programming", "accounting", "programming"],
+  ["accounting", "programming", "accounting"],
+];
+const FRIDAY_MINUTES = 30;
 
 const TRACKS: TrackSummaryView[] = [
   {
@@ -48,38 +57,6 @@ function formatNiceDate(d: Date): string {
   }
 }
 
-function getTodayTrackId(date: Date): TrackId {
-  // JS getDay: 0 = Sunday, 6 = Saturday
-  const dow = date.getDay();
-  // For now we assume:
-  //   Sun, Mon, Tue  → Programming
-  //   Wed, Thu, Sat  → Accounting
-  //   Fri            → Self-Repair
-  if (dow === 5) return "self-repair";
-  if (dow === 0 || dow === 1 || dow === 2) return "programming";
-  return "accounting";
-}
-
-function getMinutesForDay(trackId: TrackId, date: Date): number {
-  const dow = date.getDay();
-  // Study ladder: 30 → 45 → 60 minutes across the three track days.
-  if (trackId === "programming") {
-    if (dow === 0) return 60;
-    if (dow === 1) return 45;
-    if (dow === 2) return 30;
-  }
-  if (trackId === "accounting") {
-    if (dow === 3) return 30;
-    if (dow === 4) return 45;
-    if (dow === 6) return 60;
-  }
-  if (trackId === "self-repair") {
-    // Fridays: one solid hour for reflection/soul work.
-    return 60;
-  }
-  return 30;
-}
-
 function daysBetween(dateA: string, dateB: string): number {
   const a = new Date(dateA + "T00:00:00");
   const b = new Date(dateB + "T00:00:00");
@@ -87,13 +64,69 @@ function daysBetween(dateA: string, dateB: string): number {
   return Math.round(diffMs / (1000 * 60 * 60 * 24));
 }
 
+function startOfDay(date: Date): Date {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
+function getScheduleForDate(date: Date): { trackId: TrackId; minutes: number } {
+  const normalized = startOfDay(date);
+  if (normalized.getDay() === 5) {
+    return { trackId: "self-repair", minutes: FRIDAY_MINUTES };
+  }
+
+  const iso = normalized.toISOString().slice(0, 10);
+  const daysSinceAnchor = Math.max(0, daysBetween(ROTATION_ANCHOR_ISO, iso));
+  const blockIndex = Math.floor(daysSinceAnchor / 3);
+  const dayWithinBlock = daysSinceAnchor % 3;
+  const minutes = ROTATION_MINUTES[dayWithinBlock];
+  const pattern =
+    ROTATION_PATTERNS[blockIndex % ROTATION_PATTERNS.length] ??
+    ROTATION_PATTERNS[0];
+  const trackId = pattern[dayWithinBlock] ?? "programming";
+
+  return { trackId, minutes };
+}
+
+function computePendingSince(
+  lastVisitIso: string | null,
+  todayIso: string
+): { days: number; minutes: number } {
+  if (!lastVisitIso || lastVisitIso === todayIso) {
+    return { days: 0, minutes: 0 };
+  }
+
+  const sessions: { minutes: number }[] = [];
+  const cursor = new Date(lastVisitIso + "T00:00:00");
+  const end = new Date(todayIso + "T00:00:00");
+  cursor.setDate(cursor.getDate() + 1);
+
+  while (cursor <= end) {
+    sessions.push(getScheduleForDate(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  const minutes = sessions.reduce((sum, session) => sum + session.minutes, 0);
+  return { days: sessions.length, minutes };
+}
+
+function formatApproxHours(minutes: number): string {
+  if (minutes < 60) return `${minutes} minutes`;
+  const hours = minutes / 60;
+  const rounded = Math.round(hours * 10) / 10;
+  return `${rounded} hour${rounded === 1 ? "" : "s"}`;
+}
+
 export default function AcademyPage() {
   const { state, isLessonCompleted } = useAcademyProgress();
   const today = useMemo(() => new Date(), []);
   const todayIso = today.toISOString().slice(0, 10);
   const niceDate = formatNiceDate(today);
-  const todayTrackId = getTodayTrackId(today);
-  const todayMinutes = getMinutesForDay(todayTrackId, today);
+  const [lastVisitDate, setLastVisitDate] = useState<string | null>(null);
+  const todaySchedule = getScheduleForDate(today);
+  const todayTrackId = todaySchedule.trackId;
+  const todayMinutes = todaySchedule.minutes;
   const todayLessons = lessonsByTrack[todayTrackId] ?? [];
   const incompleteToday = todayLessons.filter(
     (lesson) => !isLessonCompleted(todayTrackId, lesson.id)
@@ -108,6 +141,30 @@ export default function AcademyPage() {
     lastStudyDate && lastStudyDate !== todayIso
       ? daysBetween(lastStudyDate, todayIso)
       : 0;
+  const pending = useMemo(
+    () => computePendingSince(lastVisitDate, todayIso),
+    [lastVisitDate, todayIso]
+  );
+  const lastVisitNiceDate = useMemo(
+    () =>
+      lastVisitDate
+        ? formatNiceDate(new Date(lastVisitDate + "T00:00:00"))
+        : null,
+    [lastVisitDate]
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = window.localStorage.getItem(LAST_VISIT_KEY);
+      if (stored) {
+        setLastVisitDate(stored);
+      }
+      window.localStorage.setItem(LAST_VISIT_KEY, todayIso);
+    } catch {
+      // ignore storage errors
+    }
+  }, [todayIso]);
 
   const trackCards = TRACKS.map((track) => {
     const lessons = lessonsByTrack[track.id] ?? [];
@@ -199,6 +256,27 @@ export default function AcademyPage() {
               </span>
               . Don&apos;t worry — just do what you can today and
               we&apos;ll catch up slowly.
+            </p>
+          )}
+
+          {pending.days > 0 && (
+            <div className="mt-2 rounded-lg border border-white/10 bg-black/10 p-2.5">
+              <p className="text-[11px] font-semibold gaia-strong">
+                Catch-up since your last visit
+                {lastVisitNiceDate ? ` on ${lastVisitNiceDate}` : ""}:
+              </p>
+              <p className="text-[11px] gaia-muted">
+                You have {pending.days} pending day
+                {pending.days === 1 ? "" : "s"} (~
+                {formatApproxHours(pending.minutes)} of study time).
+              </p>
+            </div>
+          )}
+
+          {pending.days === 0 && lastVisitDate && (
+            <p className="text-[11px] gaia-muted mt-1">
+              You&apos;re all caught up since your last visit
+              {lastVisitNiceDate ? ` on ${lastVisitNiceDate}` : ""}.
             </p>
           )}
         </div>

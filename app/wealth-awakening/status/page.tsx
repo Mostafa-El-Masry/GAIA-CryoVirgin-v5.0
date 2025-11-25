@@ -109,7 +109,7 @@ export default function WealthStatusPage() {
               <dd className="font-semibold">{localCounts.accounts}</dd>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <dt>Instruments</dt>
+              <dt>Investments</dt>
               <dd className="font-semibold">{localCounts.instruments}</dd>
             </div>
             <div className="flex items-center justify-between gap-2">
@@ -162,7 +162,7 @@ export default function WealthStatusPage() {
                   <dd className="font-semibold">{remoteCounts.accounts}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <dt>Instruments</dt>
+                  <dt>Investments</dt>
                   <dd className="font-semibold">{remoteCounts.instruments}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-2">

@@ -8,8 +8,11 @@ import {
   snapshotStorage,
   waitForUserStorage,
   subscribe,
+  writeJSON,
 } from "@/lib/user-storage";
 import type { Category } from "../hooks/useTodoDaily";
+
+const DAILY_RITUAL_KEY = "gaia.gate.dailyRitual";
 import TodoSlot from "./TodoSlot";
 
 export default function TodoDaily() {
@@ -63,6 +66,25 @@ export default function TodoDaily() {
       ),
     [slotInfo]
   );
+
+  // Keep the daily ritual gate in sync with the three slots for today.
+  // If they are all done, mark the ritual as completed for today.
+  // If any is not done, clear the completion flag so the gate locks again.
+  useEffect(() => {
+    if (!today) return;
+    try {
+      if (allDone) {
+        writeJSON(DAILY_RITUAL_KEY, {
+          date: today,
+          completedAt: new Date().toISOString(),
+        });
+      } else {
+        writeJSON(DAILY_RITUAL_KEY, null);
+      }
+    } catch {
+      // ignore storage errors; gate will just stay in its previous state
+    }
+  }, [allDone, today]);
 
   return (
     <section className="rounded-2xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-6 shadow-lg">

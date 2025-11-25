@@ -118,19 +118,17 @@ export default function TODOPage() {
 
   const resolveStatus = useCallback((task: Task): StatusResolution => {
     const entries = Object.entries(task.status_by_date ?? {});
-    if (entries.length === 0) {
-      return {
-        label: "Pending",
-        tone: "pending",
-        dateLabel: task.due_date ?? "Unscheduled",
-      };
+    let tone: StatusTone = "pending";
+    if (entries.length > 0) {
+      entries.sort((a, b) => b[0].localeCompare(a[0]));
+      const [, status] = entries[0];
+      tone = status === "done" ? "done" : status === "skipped" ? "skipped" : "pending";
     }
-    entries.sort((a, b) => b[0].localeCompare(a[0]));
-    const [date, status] = entries[0];
     return {
-      label: status === "done" ? "Done" : "Skipped",
-      tone: status === "done" ? "done" : "skipped",
-      dateLabel: date,
+      label: tone === "done" ? "Done" : tone === "skipped" ? "Skipped" : "Pending",
+      tone,
+      // Show a single timing: the task's due date or Unscheduled.
+      dateLabel: task.due_date ?? "Unscheduled",
     };
   }, []);
 
@@ -164,11 +162,11 @@ export default function TODOPage() {
   );
 
   const handleStatusChange = useCallback(
-    (task: Task, date: string | null, next: StatusTone) => {
-      if (!date || date === "Unscheduled") return;
-      setTaskStatus(task.id, date, next);
+    (task: Task, next: StatusTone) => {
+      const targetDate = task.due_date && task.due_date !== "Unscheduled" ? task.due_date : today;
+      setTaskStatus(task.id, targetDate, next);
     },
-    [setTaskStatus]
+    [setTaskStatus, today]
   );
 
   const resequenceCategory = useCallback(
@@ -282,11 +280,6 @@ export default function TODOPage() {
                 >
                   {orderedByCat[cat].map((t) => {
                     const statusMeta = resolveStatus(t);
-                    const statusDate =
-                      (statusMeta.dateLabel !== "Unscheduled" && statusMeta.dateLabel) ||
-                      t.due_date ||
-                      null;
-                    const friendlyDue = formatShortDate(t.due_date);
 
                     return (
                       <li
@@ -337,35 +330,29 @@ export default function TODOPage() {
                               </p>
                             )}
 
-                            <StatusRow task={t} toneStyles={toneStyles} status={statusMeta} />
-                            <p className="mt-1 text-xs text-base-content/60">
-                              Due: {friendlyDue}
-                            </p>
-
                             <div className="mt-3 flex flex-wrap gap-3 text-xs text-base-content/70">
-                              <label className="flex items-center gap-2 rounded-lg border border-base-300 bg-base-50 px-3 py-2 text-xs font-medium">
-                                <span>Due date</span>
-                                <input
-                                  type="date"
-                                  className="rounded border border-base-200 bg-base-100 px-2 py-1 text-base-content"
-                                  value={t.due_date ?? ""}
-                                  onChange={(e) => handleDateChange(t.id, e.target.value)}
-                                />
-                              </label>
-                              <label className="flex items-center gap-2 rounded-lg border border-base-300 bg-base-50 px-3 py-2 text-xs font-medium">
+                              <label className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold ${toneStyles[statusMeta.tone]}`}>
                                 <span>Status</span>
                                 <select
-                                  className="rounded border border-base-200 bg-base-100 px-2 py-1 text-base-content"
+                                  className="rounded border border-base-200 bg-base-100 px-2 py-1 text-base-content font-semibold"
                                   value={statusMeta.tone}
-                                  disabled={!statusDate}
-                                  onChange={(e) =>
-                                    handleStatusChange(t, statusDate, e.target.value as StatusTone)
-                                  }
+                                  onChange={(e) => handleStatusChange(t, e.target.value as StatusTone)}
                                 >
                                   <option value="pending">Pending</option>
                                   <option value="done">Done</option>
                                   <option value="skipped">Skipped</option>
                                 </select>
+                              </label>
+                              <label className="flex items-center gap-2 rounded-lg border border-base-300 bg-base-50 px-3 py-2 text-xs font-semibold">
+                                <span>Due</span>
+                                <input
+                                  type="date"
+                                  className="rounded border border-base-200 bg-base-100 px-2 py-1 text-base-content font-semibold"
+                                  value={t.due_date ?? ""}
+                                  min="2025-01-01"
+                                  max="2030-12-31"
+                                  onChange={(e) => handleDateChange(t.id, e.target.value)}
+                                />
                               </label>
                             </div>
                           </div>
@@ -435,13 +422,8 @@ function StatusRow({ task, toneStyles, status }: StatusRowProps) {
         Status: {status.label}
       </span>
       <span className="inline-flex items-center gap-1 rounded-full border border-base-300/60 px-2 py-0.5 text-base-content/70">
-        Date: {formatShortDate(status.dateLabel)}
+        Due: {formatShortDate(task.due_date ?? status.dateLabel)}
       </span>
-      {task.due_date && task.due_date !== status.dateLabel && (
-        <span className="inline-flex items-center gap-1 rounded-full border border-base-300/60 px-2 py-0.5 text-base-content/70">
-          Due: {formatShortDate(task.due_date)}
-        </span>
-      )}
     </div>
   );
 }

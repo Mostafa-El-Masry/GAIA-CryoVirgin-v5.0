@@ -7,5 +7,9 @@ export default function WealthAwakeningLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <div className="mx-auto w-[80vw]">
+      {children}
+    </div>
+  );
 }

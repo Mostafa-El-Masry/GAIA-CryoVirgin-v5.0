@@ -31,21 +31,7 @@ const DEFAULT_ACCOUNTS: WealthAccount[] = [
   },
 ];
 
-const DEFAULT_INSTRUMENTS: WealthInstrument[] = [
-  {
-    id: "cert-main-3y",
-    accountId: "cd-egp-long-term",
-    name: "Main 3-year EGP certificate",
-    currency: "EGP",
-    principal: 250000,
-    startDate: "2026-01-01",
-    termMonths: 36,
-    annualRatePercent: 18.5,
-    payoutFrequency: "monthly-interest",
-    autoRenew: false,
-    note: "Simple example certificate with monthly interest payouts.",
-  },
-];
+const DEFAULT_INSTRUMENTS: WealthInstrument[] = [];
 
 const DEFAULT_FLOWS: WealthFlow[] = [
   {
@@ -54,29 +40,9 @@ const DEFAULT_FLOWS: WealthFlow[] = [
     accountId: "cash-main",
     instrumentId: null,
     kind: "income",
-    amount: 800,
+    amount: 400,
     currency: "KWD",
-    description: "Example salary income into main KWD buffer.",
-  },
-  {
-    id: "flow-deposit-cert",
-    date: "2026-01-06",
-    accountId: "cd-egp-long-term",
-    instrumentId: "cert-main-3y",
-    kind: "deposit",
-    amount: 250000,
-    currency: "EGP",
-    description: "Deposit into EGP certificate.",
-  },
-  {
-    id: "flow-interest-1",
-    date: "2026-01-30",
-    accountId: "cash-main",
-    instrumentId: "cert-main-3y",
-    kind: "interest",
-    amount: 3800,
-    currency: "EGP",
-    description: "Example monthly interest from certificate (EGP).",
+    description: "Base salary into main KWD buffer (editable).",
   },
   {
     id: "flow-expense-1",
