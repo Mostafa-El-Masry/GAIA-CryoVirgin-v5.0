@@ -7,6 +7,42 @@ import {
 
 export function getCssStudy(lessonCode: string): StudyDescription | null {
   switch (lessonCode) {
+    case "3.7":
+      return {
+        title: "Intro to CSS",
+        paragraphs: [
+          "CSS controls the presentation of your HTML: colors, spacing, typography, and layout.",
+          "Rules target elements with selectors (tags, classes, ids) and set properties (color, margin, padding).",
+          "This lesson is a quick orientation before you dive deeper into the cascade and layout systems.",
+        ],
+      };
+    case "3.8":
+      return {
+        title: "The Cascade",
+        paragraphs: [
+          "The cascade decides which CSS rule wins when multiple rules target the same element.",
+          "Specificity (inline > id > class > tag), order (later wins if specificity ties), and importance (!important) influence the winner.",
+          "Understanding the cascade prevents surprises and helps you structure styles so they are predictable.",
+        ],
+      };
+    case "3.9":
+      return {
+        title: "Inspecting HTML and CSS",
+        paragraphs: [
+          "Browser devtools let you inspect elements, view applied styles, and test changes live.",
+          "The Elements/Inspector tab shows the DOM tree and CSS pane with computed values and the cascade order.",
+          "You will use the inspector to debug spacing, fonts, and layout issues quickly.",
+        ],
+      };
+    case "3.10":
+      return {
+        title: "The Box Model (Deep Dive)",
+        paragraphs: [
+          "Every element is a box with content, padding, border, and margin. box-sizing controls how width/height are calculated.",
+          "Understanding overflow, display types, and how inline vs block elements participate in the box model avoids layout bugs.",
+          "You will explore how padding and borders affect total size and how to visualize boxes in devtools.",
+        ],
+      };
     case "3.1":
       return {
         title: "CSS Foundations: Selectors and Properties",

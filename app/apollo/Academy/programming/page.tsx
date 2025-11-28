@@ -47,6 +47,33 @@ const makeLesson = (code: string, estimate: string, arcId: string): Lesson => {
 
 const sections: Section[] = [
   {
+    id: "prerequisites",
+    label: "Prerequisites",
+    title: "Setup and web orientation",
+    focus:
+      "Light prep: basic computer comfort, what the web is, and how to install the tools you will use in every lesson.",
+    lessons: [
+      makeLesson("0.1", "20 min", "prerequisites"),
+      makeLesson("0.2", "25 min", "prerequisites"),
+      makeLesson("0.3", "20 min", "prerequisites"),
+      makeLesson("0.4", "25 min", "prerequisites"),
+      makeLesson("0.5", "20 min", "prerequisites"),
+      makeLesson("0.6", "25 min", "prerequisites"),
+    ],
+  },
+  {
+    id: "git",
+    label: "Git basics",
+    title: "Version control and safety net",
+    focus:
+      "Set up Git, learn the core commands, and make your first commits so every future project has a safety net.",
+    lessons: [
+      makeLesson("0.7", "25 min", "git"),
+      makeLesson("0.8", "30 min", "git"),
+      makeLesson("0.9", "35 min", "git"),
+    ],
+  },
+  {
     id: "foundations",
     label: "Foundations",
     title: "First steps and mental model",
@@ -65,6 +92,14 @@ const sections: Section[] = [
     focus:
       "Learn how to structure pages with clean, semantic HTML that GAIA can understand easily later.",
     lessons: [
+      makeLesson("2.0", "50 min", "html"),
+      makeLesson("2.6", "40 min", "html"),
+      makeLesson("2.7", "40 min", "html"),
+      makeLesson("2.8", "40 min", "html"),
+      makeLesson("2.9", "40 min", "html"),
+      makeLesson("2.10", "45 min", "html"),
+      makeLesson("2.11", "30 min", "html"),
+      makeLesson("2.12", "90 min", "html"),
       makeLesson("2.1", "55 min", "html"),
       makeLesson("2.2", "60 min", "html"),
       makeLesson("2.3", "55 min", "html"),
@@ -79,6 +114,10 @@ const sections: Section[] = [
     focus:
       "Control layout, spacing, and typography, then move into faster styling with Tailwind.",
     lessons: [
+      makeLesson("3.7", "45 min", "css"),
+      makeLesson("3.8", "45 min", "css"),
+      makeLesson("3.9", "40 min", "css"),
+      makeLesson("3.10", "45 min", "css"),
       makeLesson("3.1", "70 min", "css"),
       makeLesson("3.2", "70 min", "css"),
       makeLesson("3.3", "75 min", "css"),
@@ -147,6 +186,8 @@ const sections: Section[] = [
 
 const arcFilters: { id: "all" | Section["id"]; label: string }[] = [
   { id: "all", label: "All" },
+  { id: "prerequisites", label: "Prerequisites" },
+  { id: "git", label: "Git basics" },
   { id: "foundations", label: "Foundations" },
   { id: "html", label: "HTML" },
   { id: "css", label: "CSS / Tailwind" },

@@ -7,6 +7,78 @@ import {
 
 export function getHtmlStudy(lessonCode: string): StudyDescription | null {
   switch (lessonCode) {
+    case "2.0":
+      return {
+        title: "Introduction to HTML and CSS",
+        paragraphs: [
+          "HTML gives your page structure and meaning; CSS controls how it looks. Together they turn ideas into visible interfaces.",
+          "In GAIA, every page you see is ultimately built from HTML elements styled with CSS or Tailwind. Understanding the basics makes every later framework (React, Next.js) feel less magical.",
+          "You do not need to memorize every tag or property today. You just need to see the main ingredients: elements, attributes, and how CSS can target them to change layout, color, and spacing.",
+        ],
+      };
+    case "2.6":
+      return {
+        title: "Elements and Tags",
+        paragraphs: [
+          "HTML is built from elements expressed with tags like <p>, <h1>, <ul>, and <a>. Each tag describes the role of the content inside it.",
+          "Attributes such as class or id add extra information that styling or scripts can use.",
+          "Here you practice choosing the right element for the job instead of using <div> everywhere.",
+        ],
+      };
+    case "2.7":
+      return {
+        title: "HTML Boilerplate",
+        paragraphs: [
+          "A valid document starts with <!DOCTYPE html>, then <html>, <head>, and <body>.",
+          "Inside <head> you typically add <meta charset=\"UTF-8\">, <title>, and links to CSS.",
+          "This lesson is about writing that boilerplate by hand until it feels automatic.",
+        ],
+      };
+    case "2.8":
+      return {
+        title: "Working with Text",
+        paragraphs: [
+          "Headings, paragraphs, emphasis, and strong text make pages readable.",
+          "Use <h1>-<h6> for structure, <p> for paragraphs, <em> for emphasis, and <strong> for importance.",
+          "You will turn rough notes into semantic text blocks that screen readers and GAIA can parse.",
+        ],
+      };
+    case "2.9":
+      return {
+        title: "Lists",
+        paragraphs: [
+          "Lists organize steps or bullet points. Use <ul> for unordered lists, <ol> for ordered lists, and <li> for each item.",
+          "Nested lists help break down substeps without dumping everything into one paragraph.",
+          "You will practice turning scattered notes into clear lists.",
+        ],
+      };
+    case "2.10":
+      return {
+        title: "Links and Images (Essentials)",
+        paragraphs: [
+          "Links connect users to other pages or sections; images add context and visuals.",
+          "Always include href on <a> and alt on <img>. Alt text is required for accessibility and graceful fallback.",
+          "You will add internal/external links and meaningful images.",
+        ],
+      };
+    case "2.11":
+      return {
+        title: "Commit Messages",
+        paragraphs: [
+          "Commit messages tell the story of your project. Keep them short, clear, and in the imperative mood.",
+          "A simple pattern: \"Add <scope>\" or \"Fix <issue>\". Example: \"Add recipe index page\".",
+          "You will draft a few messages for common HTML edits to build the habit early.",
+        ],
+      };
+    case "2.12":
+      return {
+        title: "Project: Recipes",
+        paragraphs: [
+          "Build a simple multi-page recipe site using only HTML to cement your fundamentals.",
+          "Each page should include headings, paragraphs, lists for ingredients/steps, images with alt text, and links back to an index.",
+          "Focus on clean structure and navigation; styling can come later.",
+        ],
+      };
     case "2.1":
       return {
         title: "HTML Foundations: Skeleton of a Page",
@@ -64,6 +136,145 @@ export function getHtmlStudy(lessonCode: string): StudyDescription | null {
 
 export function getHtmlQuiz(lessonCode: string): QuizConfig | null {
   switch (lessonCode) {
+    case "2.6":
+      return {
+        id: "quiz-2-6",
+        title: "Elements and tags basics",
+        questions: [
+          {
+            id: "q1",
+            prompt: "Which tag is best for a top-level page title?",
+            options: [
+              { id: "q1-a", label: "<p>" },
+              { id: "q1-b", label: "<h1>" },
+              { id: "q1-c", label: "<div>" },
+              { id: "q1-d", label: "<span>" },
+            ],
+            correctOptionId: "q1-b",
+            explanation: "<h1> represents the main heading of a document.",
+          },
+          {
+            id: "q2",
+            prompt: "What is the job of an attribute like class on an element?",
+            options: [
+              { id: "q2-a", label: "It changes the tag name." },
+              { id: "q2-b", label: "It adds extra information used by CSS/JS." },
+              { id: "q2-c", label: "It makes the element disappear." },
+              { id: "q2-d", label: "It turns the element into a list item." },
+            ],
+            correctOptionId: "q2-b",
+            explanation: "Attributes provide extra data or hooks for styling and scripts.",
+          },
+        ],
+      };
+    case "2.7":
+      return {
+        id: "quiz-2-7",
+        title: "Boilerplate essentials",
+        questions: [
+          {
+            id: "q1",
+            prompt: "Which declaration tells the browser you are writing modern HTML?",
+            options: [
+              { id: "q1-a", label: "<!DOCTYPE html>" },
+              { id: "q1-b", label: "<doctype>" },
+              { id: "q1-c", label: "<html5>" },
+              { id: "q1-d", label: "<header>" },
+            ],
+            correctOptionId: "q1-a",
+            explanation: "The <!DOCTYPE html> declaration sets standards mode for HTML5.",
+          },
+          {
+            id: "q2",
+            prompt: "Where do you put the page title and meta tags?",
+            options: [
+              { id: "q2-a", label: "Inside <body>" },
+              { id: "q2-b", label: "Inside <head>" },
+              { id: "q2-c", label: "Inside <footer>" },
+              { id: "q2-d", label: "Anywhere in the document" },
+            ],
+            correctOptionId: "q2-b",
+            explanation: "<head> holds metadata like <title> and <meta> tags.",
+          },
+        ],
+      };
+    case "2.10":
+      return {
+        id: "quiz-2-10",
+        title: "Links and images essentials",
+        questions: [
+          {
+            id: "q1",
+            prompt: "Which attribute is required on an <a> tag for navigation?",
+            options: [
+              { id: "q1-a", label: "src" },
+              { id: "q1-b", label: "alt" },
+              { id: "q1-c", label: "href" },
+              { id: "q1-d", label: "lang" },
+            ],
+            correctOptionId: "q1-c",
+            explanation: "href defines the destination of the link.",
+          },
+          {
+            id: "q2",
+            prompt: "Why must images include alt text?",
+            options: [
+              { id: "q2-a", label: "For faster loading" },
+              { id: "q2-b", label: "Accessibility and graceful fallback" },
+              { id: "q2-c", label: "To change the file format" },
+              { id: "q2-d", label: "To enable JavaScript" },
+            ],
+            correctOptionId: "q2-b",
+            explanation: "Alt text helps screen readers and appears when images cannot load.",
+          },
+        ],
+      };
+    case "2.0":
+      return {
+        id: "quiz-2-0",
+        title: "Check your understanding of HTML + CSS basics",
+        questions: [
+          {
+            id: "q1",
+            prompt: "What is the primary role of HTML?",
+            options: [
+              { id: "q1-a", label: "Define structure and meaning of content" },
+              { id: "q1-b", label: "Handle database queries" },
+              { id: "q1-c", label: "Define animations only" },
+              { id: "q1-d", label: "Replace the browser entirely" },
+            ],
+            correctOptionId: "q1-a",
+            explanation:
+              "HTML structures the page: headings, paragraphs, lists, forms, etc.",
+          },
+          {
+            id: "q2",
+            prompt: "What does CSS control?",
+            options: [
+              { id: "q2-a", label: "Server routes" },
+              { id: "q2-b", label: "Visual presentation (layout, colors, spacing)" },
+              { id: "q2-c", label: "Binary compilation" },
+              { id: "q2-d", label: "Database indexing" },
+            ],
+            correctOptionId: "q2-b",
+            explanation:
+              "CSS handles the look and feel: sizing, spacing, colors, typography, layout.",
+          },
+          {
+            id: "q3",
+            prompt: "How do HTML and CSS usually work together?",
+            options: [
+              { id: "q3-a", label: "CSS files are ignored by browsers" },
+              { id: "q3-b", label: "HTML links to CSS, and the browser applies styles to matching elements" },
+              { id: "q3-c", label: "CSS replaces HTML entirely" },
+              { id: "q3-d", label: "They cannot be used in the same project" },
+            ],
+            correctOptionId: "q3-b",
+            explanation:
+              "CSS rules target HTML elements (by tag, class, id, etc.). The browser combines them to render the page.",
+          },
+        ],
+      };
     case "2.1":
       return {
         id: "quiz-2-1",
@@ -364,6 +575,87 @@ export function getHtmlQuiz(lessonCode: string): QuizConfig | null {
 
 export function getHtmlPractice(lessonCode: string): PracticePrompt | null {
   switch (lessonCode) {
+    case "2.6":
+      return {
+        title: "Tag spotting",
+        description: "Practice picking the right element for the right job.",
+        instructions: [
+          "List five HTML elements and write one sentence about when to use each.",
+          "Rewrite a short paragraph of mixed content using proper headings and paragraphs instead of only <div> tags.",
+          "Add one attribute example (like class) to show how you would style an element.",
+        ],
+      };
+    case "2.7":
+      return {
+        title: "Write the boilerplate",
+        description: "Assemble a complete HTML5 boilerplate from memory.",
+        instructions: [
+          "Write <!DOCTYPE html>, <html>, <head>, and <body> with proper nesting.",
+          "Inside <head>, include <meta charset=\"UTF-8\"> and a <title> like \"GAIA Recipes\".",
+          "Inside <body>, add a main heading and a short paragraph placeholder.",
+        ],
+      };
+    case "2.8":
+      return {
+        title: "Format text with meaning",
+        description: "Turn a rough outline into well-structured text.",
+        instructions: [
+          "Create a small section with an <h1>, two <h2>s, and at least three <p> paragraphs.",
+          "Use <em> and <strong> once each to emphasize important words.",
+          "Keep the content GAIA-themed (study notes or reflections).",
+        ],
+      };
+    case "2.9":
+      return {
+        title: "Build clean lists",
+        description: "Organize information into readable lists.",
+        instructions: [
+          "Write one unordered list (<ul>) with at least four items.",
+          "Write one ordered list (<ol>) with at least three steps.",
+          "Optional: add a nested list for a sub-step.",
+        ],
+      };
+    case "2.10":
+      return {
+        title: "Links and images refresh",
+        description: "Practice adding links and images with the right attributes.",
+        instructions: [
+          "Create two links: one internal (like /apollo/academy) and one external (like https://developer.mozilla.org).",
+          "Add two images with realistic src placeholders and descriptive alt text.",
+          "Explain in a short sentence where each link goes.",
+        ],
+      };
+    case "2.11":
+      return {
+        title: "Write three commit messages",
+        description: "Draft messages you would actually use for HTML changes.",
+        instructions: [
+          "Write three commit messages in imperative mood (for example: \"Add recipe index page\").",
+          "For each, add one sentence describing the change.",
+          "Keep them short (50 characters for the subject is a good target).",
+        ],
+      };
+    case "2.12":
+      return {
+        title: "Project: Recipes",
+        description: "Outline or build your multi-page recipe site.",
+        instructions: [
+          "Sketch the structure: index page plus at least two recipe pages with headings, lists, and images.",
+          "Write the core HTML for one recipe page, including ingredients (list) and steps (ordered list).",
+          "Add navigation links between pages and a home link, plus alt text on images.",
+        ],
+      };
+    case "2.0":
+      return {
+        title: "Name the pieces of a simple page",
+        description:
+          "Warm up by describing how HTML and CSS cooperate on a tiny page.",
+        instructions: [
+          "Write a short paragraph explaining what HTML does and what CSS does.",
+          "List three HTML elements you already know (for example h1, p, a) and one CSS property you would use on each.",
+          "Describe where you would place a link tag to connect CSS in a basic HTML document.",
+        ],
+      };
     case "2.1":
       return {
         title: "Build a clean HTML skeleton",
@@ -433,6 +725,36 @@ export function validateHtmlPractice(
   content: string
 ): PracticeCheckResult | null {
   const src = content.toLowerCase();
+
+  const lengthChecked = new Set([
+    "2.6",
+    "2.7",
+    "2.8",
+    "2.9",
+    "2.10",
+    "2.11",
+    "2.12",
+  ]);
+  if (lengthChecked.has(lessonCode)) {
+    if (content.trim().length < 200) {
+      return {
+        ok: false,
+        message: "Add a bit more detail (aim for at least 200 characters).",
+      };
+    }
+    return { ok: true };
+  }
+
+  if (lessonCode === "2.0") {
+    if (content.trim().length < 200) {
+      return {
+        ok: false,
+        message:
+          "Write at least a short paragraph plus your element/property list so future-you can follow it.",
+      };
+    }
+    return { ok: true };
+  }
 
   if (lessonCode === "2.1") {
     const required = [

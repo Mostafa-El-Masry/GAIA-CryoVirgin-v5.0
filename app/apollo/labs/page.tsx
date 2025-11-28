@@ -1,6 +1,7 @@
 "use client";
 
 import LabsClient from "./components/LabsClient";
+import ApolloStudyGate from "../components/ApolloStudyGate";
 
 export default function ApolloLabsPage() {
   return (
@@ -16,9 +17,11 @@ export default function ApolloLabsPage() {
         </p>
       </header>
 
-      <section className="gaia-panel gaia-border rounded-2xl border p-4 sm:p-6 shadow-sm">
-        <LabsClient />
-      </section>
+      <ApolloStudyGate featureLabel="Labs">
+        <section className="gaia-panel gaia-border rounded-2xl border p-4 sm:p-6 shadow-sm">
+          <LabsClient />
+        </section>
+      </ApolloStudyGate>
     </main>
   );
 }

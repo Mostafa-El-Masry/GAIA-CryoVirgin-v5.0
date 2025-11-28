@@ -131,8 +131,7 @@ export default function AcademyPage() {
   const incompleteToday = todayLessons.filter(
     (lesson) => !isLessonCompleted(todayTrackId, lesson.id)
   );
-  const suggestedCount =
-    todayMinutes <= 30 ? 1 : todayMinutes <= 45 ? 2 : 3;
+  const suggestedCount = todayMinutes <= 30 ? 1 : todayMinutes <= 45 ? 2 : 3;
   const suggestedLessons = incompleteToday.slice(0, suggestedCount);
 
   const todayTrackState = state.byTrack[todayTrackId];
@@ -169,8 +168,7 @@ export default function AcademyPage() {
   const trackCards = TRACKS.map((track) => {
     const lessons = lessonsByTrack[track.id] ?? [];
     const total = lessons.length;
-    const completed =
-      state.byTrack[track.id]?.completedLessonIds.length ?? 0;
+    const completed = state.byTrack[track.id]?.completedLessonIds.length ?? 0;
     const percent = formatPercent(completed, total);
 
     return {
@@ -186,9 +184,7 @@ export default function AcademyPage() {
       {/* Daily study dashboard */}
       <section className="rounded-2xl gaia-panel-soft p-4 sm:p-5 shadow-sm border gaia-border space-y-2">
         <p className="text-xs gaia-muted">Academy · Daily Schedule</p>
-        <h1 className="text-xl font-semibold">
-          Welcome, Sasa.
-        </h1>
+        <h1 className="text-xl font-semibold">Welcome, Sasa.</h1>
         <p className="text-sm gaia-muted">
           Today is <span className="gaia-strong">{niceDate}</span>.
         </p>
@@ -203,11 +199,7 @@ export default function AcademyPage() {
                 ? "Accounting"
                 : "Self-Repair"}
             </span>{" "}
-            ·{" "}
-            <span className="gaia-strong">
-              {todayMinutes} minutes
-            </span>
-            .
+            · <span className="gaia-strong">{todayMinutes} minutes</span>.
           </p>
 
           {suggestedLessons.length > 0 ? (
@@ -241,9 +233,9 @@ export default function AcademyPage() {
             </div>
           ) : (
             <p className="text-[11px] gaia-muted">
-              You&apos;ve completed all planned lessons in this path.
-              You can review, practice, or study ahead in another
-              path if you feel like it.
+              You&apos;ve completed all planned lessons in this path. You can
+              review, practice, or study ahead in another path if you feel like
+              it.
             </p>
           )}
 
@@ -254,8 +246,8 @@ export default function AcademyPage() {
                 {daysSinceLast} day
                 {daysSinceLast === 1 ? "" : "s"} ago
               </span>
-              . Don&apos;t worry — just do what you can today and
-              we&apos;ll catch up slowly.
+              . Don&apos;t worry — just do what you can today and we&apos;ll
+              catch up slowly.
             </p>
           )}
 
@@ -282,39 +274,115 @@ export default function AcademyPage() {
         </div>
 
         <p className="text-[11px] gaia-muted mt-2">
-          After you&apos;re done, you can come back here to see your
-          updated percentage and what&apos;s next.
+          After you&apos;re done, you can come back here to see your updated
+          percentage and what&apos;s next.
         </p>
       </section>
 
-      {/* Track cards */}
-      <section className="space-y-3">
-        {trackCards.map((track) => (
-          <Link
-            key={track.id}
-            href={track.href}
-            className="group block rounded-2xl gaia-panel-soft p-4 sm:p-5 shadow-sm border gaia-border hover:gaia-hover-soft hover:shadow-md transition"
-          >
-            <div className="space-y-2">
-              <h2 className="text-sm font-semibold gaia-strong">
-                {track.title}
-              </h2>
-
-              <div className="mt-2 flex items-baseline justify-between text-xs gaia-muted">
-                <span className="font-semibold gaia-strong">
-                  {track.percent} complete
-                </span>
-                <span>
-                  {track.completed} / {track.total} lessons
-                </span>
+      {/* Paths: featured + grid */}
+      <section className="space-y-6">
+        {/* Featured path (first track) */}
+        {trackCards[0] && (
+          <div className="rounded-2xl gaia-panel-soft p-6 shadow-sm border gaia-border flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-20 h-20 rounded-full border gaia-border flex items-center justify-center bg-surface">
+                {/* simple icon placeholder */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-10 h-10 text-info"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 2v6l4 2"
+                  />
+                </svg>
               </div>
+            </div>
 
-              <p className="mt-3 text-[11px] font-semibold gaia-accent group-hover:underline">
-                Enter path &rarr;
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold gaia-strong">
+                {trackCards[0].title}
+              </h3>
+              <p className="mt-2 text-sm gaia-muted max-w-3xl">
+                Browse topics and structured lessons to level up. This path
+                contains {trackCards[0].total} lessons and shows your progress
+                and suggested sessions.
               </p>
             </div>
-          </Link>
-        ))}
+
+            <div className="flex-shrink-0 space-x-3 mt-4 sm:mt-0">
+              <a
+                href={trackCards[0].href}
+                className="inline-flex items-center rounded-lg gaia-contrast px-4 py-2 text-sm font-semibold shadow-sm"
+              >
+                Select
+              </a>
+              <Link
+                href={trackCards[0].href}
+                className="inline-flex items-center rounded-lg border gaia-border px-4 py-2 text-sm"
+              >
+                View
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Grid of paths */}
+        <div>
+          <h2 className="text-center text-sm font-semibold gaia-strong">
+            Then choose a learning path:
+          </h2>
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {trackCards.map((track) => (
+              <Link
+                key={track.id}
+                href={track.href}
+                className="block rounded-lg gaia-panel-soft border gaia-border p-5 shadow-sm hover:shadow-md transition"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-full border gaia-border flex items-center justify-center bg-surface">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-7 h-7 text-info"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 2v6l4 2"
+                      />
+                    </svg>
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between text-xs gaia-muted">
+                      <span className="uppercase tracking-wide text-[11px]">
+                        Path
+                      </span>
+                      <span className="text-[12px]">{track.total} Courses</span>
+                    </div>
+
+                    <h4 className="mt-2 text-sm font-semibold gaia-strong">
+                      {track.title}
+                    </h4>
+                    <p className="mt-2 text-xs gaia-muted">
+                      This path guides you through a curated set of lessons. Use
+                      the Select button to make this your active study path.
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
     </main>
   );

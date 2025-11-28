@@ -7,6 +7,87 @@ import {
 
 export function getFoundationsStudy(lessonCode: string): StudyDescription | null {
   switch (lessonCode) {
+    case "0.1":
+      return {
+        title: "Computer Basics: Files, Folders, and Comfort",
+        paragraphs: [
+          "Before touching code, get comfortable with the basics: files, folders, paths, and how to navigate them. Most errors early on come from being in the wrong folder or not knowing where a file lives.",
+          "Practice seeing your machine as a tree: a root (C:\\ or /), then folders (like /Users/sasa or C:\\Users\\Sasa), then project folders (like gaia), then files inside.",
+          "Learn simple moves: create a folder, rename it, copy a file path, unzip a download, and delete safely. This confidence removes a lot of friction later.",
+        ],
+      };
+    case "0.2":
+      return {
+        title: "How Does the Web Work? (First look)",
+        paragraphs: [
+          "The web is a conversation. Your browser (client) sends a request to a server. The server responds with HTML, CSS, JS, or data. The browser renders the response.",
+          "Every GAIA surface you build will rely on this loop: request, response, render. Understanding this at a high level makes later topics less mysterious.",
+          "You do not need to memorize protocols today. You just need to see the shape of the flow: client → request → server → response → browser renders.",
+        ],
+      };
+    case "0.3":
+      return {
+        title: "Installation Overview",
+        paragraphs: [
+          "You will install a few core tools: a modern browser (Chrome/Firefox), Node.js (runtime + npm), Git (version control), and VS Code (editor).",
+          "Keep everything organized in a single workspace folder (for example C:\\gaia or ~/gaia). Your projects and repos will live inside it.",
+          "This lesson is an overview of what you will install and why, so the actual install steps feel calmer.",
+        ],
+      };
+    case "0.4":
+      return {
+        title: "Installations (do the setup)",
+        paragraphs: [
+          "Now you actually install: download Node.js LTS, install Git, install VS Code, and make sure your browser is up to date.",
+          "After each install, verify with simple commands: node -v, npm -v, git --version. In VS Code, install the official ESLint and Prettier extensions.",
+          "Once you see the versions and the editor opens cleanly, you have a working base for the rest of the path.",
+        ],
+      };
+    case "0.5":
+      return {
+        title: "Text Editors",
+        paragraphs: [
+          "Your editor is home base. VS Code gives you a file tree, tabs, search, terminal, and extensions. Learning a few shortcuts will save hours later.",
+          "Key moves: open folder (Ctrl/Cmd+O), open file (Ctrl/Cmd+P), search in files (Ctrl/Cmd+Shift+F), open terminal (Ctrl/Cmd+`).",
+          "A clean editor with the right extensions reduces friction when you start HTML, CSS, JS, and React.",
+        ],
+      };
+    case "0.6":
+      return {
+        title: "Command Line Basics",
+        paragraphs: [
+          "The terminal lets you move through folders, run npm scripts, and use Git. You mainly need a small set of commands: pwd, ls/dir, cd, mkdir, rm, and code .",
+          "Respect the current working directory. Most mistakes come from running a command in the wrong folder. Check with pwd before running important commands.",
+          "Once you are comfortable moving around, later steps like running dev servers or database migrations will feel familiar.",
+        ],
+      };
+    case "0.7":
+      return {
+        title: "Setting up Git",
+        paragraphs: [
+          "Git tracks your changes so you can experiment safely. First-time setup: configure your name and email (git config --global user.name and user.email) and set your default branch name (often main).",
+          "Create a test folder, run git init, and make a .gitignore to avoid committing node_modules or environment files.",
+          "Once Git is configured, every GAIA project can be versioned without extra friction.",
+        ],
+      };
+    case "0.8":
+      return {
+        title: "Introduction to Git",
+        paragraphs: [
+          "Learn the core Git cycle: status → add → commit. Status shows what changed, add stages files, commit saves a checkpoint with a message.",
+          "Commits are snapshots. Small, frequent commits make it easy to undo mistakes or understand history later.",
+          "You will start local only. Remote pushes can come later; for now, focus on forming the habit of committing your work.",
+        ],
+      };
+    case "0.9":
+      return {
+        title: "Git Basics: Branches and Logs",
+        paragraphs: [
+          "Branches let you experiment without breaking main. git branch shows branches, git checkout -b creates one, git merge brings changes back.",
+          "git log shows history; git diff shows what changed. These tools help you debug and explain your work to yourself or a teammate.",
+          "With these basics, you can keep GAIA code safe while you learn new modules.",
+        ],
+      };
     case "1.1":
       return {
         title: "How the Web and Browsers Work",
@@ -352,6 +433,105 @@ export function getFoundationsQuiz(lessonCode: string): QuizConfig | null {
 
 export function getFoundationsPractice(lessonCode: string): PracticePrompt | null {
   switch (lessonCode) {
+    case "0.1":
+      return {
+        title: "Map your folders and paths",
+        description:
+          "Show that you can think in folders and paths, not just icons. Write out where your GAIA workspace will live and how you will reach it.",
+        instructions: [
+          "Write the full path to the folder you will keep GAIA projects in (for example C:\\gaia or /home/sasa/gaia).",
+          "Describe in 3-5 sentences how you create a folder, rename it, and copy its path on your operating system.",
+          "List two mistakes you made before with files/folders and how you will avoid them now.",
+        ],
+      };
+    case "0.2":
+      return {
+        title: "Explain the web flow in your own words",
+        description:
+          "Capture the client → request → server → response → render flow so future-you remembers the shape.",
+        instructions: [
+          "Write a short story (6-8 lines) about what happens when you open a page like https://gaia.local.",
+          "Mention browser, request, server, response, and HTML/CSS/JS.",
+          "Add one example of a request you send daily (like /api/notes) and what the server returns.",
+        ],
+      };
+    case "0.3":
+      return {
+        title: "List your installations plan",
+        description:
+          "Decide exactly which tools and versions you will install so there is no guesswork.",
+        instructions: [
+          "List the tools (browser, Node.js LTS version, Git, VS Code) and where you will download each.",
+          "Write 2-3 sentences on why each tool matters for GAIA.",
+          "Note one fallback: what you will do if an installer fails (for example, re-download, run as admin, check docs).",
+        ],
+      };
+    case "0.4":
+      return {
+        title: "Verify your installs",
+        description:
+          "Prove that Node, npm, and Git are installed by writing down their versions and where you ran the commands.",
+        instructions: [
+          "After installing, run: node -v, npm -v, git --version. Capture the outputs here.",
+          "Write where your GAIA workspace folder lives and confirm you can open it in VS Code (code .).",
+          "Add one screenshot note or description of the VS Code extensions you installed (ESLint, Prettier).",
+        ],
+      };
+    case "0.5":
+      return {
+        title: "Configure your editor",
+        description:
+          "Document your VS Code setup so you can reproduce it on a new machine later.",
+        instructions: [
+          "List the extensions you installed (at least ESLint and Prettier).",
+          "Write the key shortcuts you will use often: open file, search in files, toggle terminal.",
+          "Describe how you will keep your editor clean (for example, light theme vs dark, hiding minimap, format on save).",
+        ],
+      };
+    case "0.6":
+      return {
+        title: "Command line reps",
+        description:
+          "Prove you can move around and run a couple of commands without fear.",
+        instructions: [
+          "Write the commands you ran to: check the current folder (pwd), list files (ls or dir), create a folder (mkdir), and move into it (cd).",
+          "Note one thing that confused you and how you solved it (for example, spaces in folder names).",
+          "Add the exact command you will use to open VS Code in the current folder (code .).",
+        ],
+      };
+    case "0.7":
+      return {
+        title: "First Git setup",
+        description:
+          "Capture the commands you ran to initialize Git and set identity so you never have to guess later.",
+        instructions: [
+          "Write the git config commands you ran for user.name, user.email, and default branch.",
+          "Describe the contents of your .gitignore (at least node_modules, .env, .next).",
+          "Explain in 3-4 sentences why you want Git even when working solo.",
+        ],
+      };
+    case "0.8":
+      return {
+        title: "Your first commits",
+        description:
+          "Show you can run the Git cycle: status → add → commit.",
+        instructions: [
+          "Describe the steps you took to make an initial commit in a test project (git status, git add ., git commit -m \"message\").",
+          "Write the commit message you used and why.",
+          "Note one thing that surprised you about Git status or staged files.",
+        ],
+      };
+    case "0.9":
+      return {
+        title: "Branching and logs practice",
+        description:
+          "Record a small branch experiment and what you saw in git log.",
+        instructions: [
+          "Write the commands you ran to create a branch (git checkout -b) and switch back.",
+          "Describe what git log showed after a couple of commits and how you read it.",
+          "Add one idea for how you will use branches in GAIA (for example, feature/ask-panel).",
+        ],
+      };
     case "1.1":
       return {
         title: "Describe the journey of a web request",
@@ -398,7 +578,22 @@ export function validateFoundationsPractice(
   lessonCode: string,
   content: string
 ): PracticeCheckResult | null {
-  if (lessonCode === "1.1" || lessonCode === "1.2" || lessonCode === "1.3") {
+  const lengthChecked = new Set([
+    "0.1",
+    "0.2",
+    "0.3",
+    "0.4",
+    "0.5",
+    "0.6",
+    "0.7",
+    "0.8",
+    "0.9",
+    "1.1",
+    "1.2",
+    "1.3",
+  ]);
+
+  if (lengthChecked.has(lessonCode)) {
     if (content.trim().length < 250) {
       return {
         ok: false,
