@@ -11,16 +11,16 @@
   --gaia-border: #e2e8f0;
   --gaia-foreground: #0f172a;
   --gaia-muted: #64748b;
-  --gaia-text-strong: color-mix(in srgb, var(--gaia-foreground) 88%, white 12%);
+  --gaia-text-strong: color-mix(in srgb, var(--gaia-foreground) 95%, white 5%);
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 72%,
-    var(--gaia-surface) 28%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 70%,
-    var(--gaia-surface) 30%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: var(--gaia-foreground);
   --gaia-contrast-text: var(--gaia-surface);
@@ -101,18 +101,18 @@ html[data-theme="light"] {
   --gaia-muted: #6f7f9b;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: color-mix(
     in srgb,
@@ -247,18 +247,18 @@ html[data-theme="retro"] {
   --gaia-muted: #8a6d55;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 86%,
-    white 14%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 70%,
-    var(--gaia-surface) 30%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #d97036;
   --gaia-contrast-text: #fdf3e3;
@@ -278,18 +278,18 @@ html[data-theme="fantasy"] {
   --gaia-muted: #cdd0d3;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #ff8600;
   --gaia-contrast-text: #180600;
@@ -335,21 +335,21 @@ html[data-theme="lofi"] {
   --gaia-surface-soft: #f5f5f5;
   --gaia-border: #ebebeb;
   --gaia-foreground: #000000;
-  --gaia-muted: #ffffff;
+  --gaia-muted: #555555;
   --gaia-text-strong: color-mix(
+    in srgb,
+    var(--gaia-foreground) 95%,
+    white 5%
+  );
+  --gaia-text-default: color-mix(
     in srgb,
     var(--gaia-foreground) 90%,
     white 10%
   );
-  --gaia-text-default: color-mix(
-    in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
-  );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #262626;
   --gaia-contrast-text: #ffffff;
@@ -365,21 +365,21 @@ html[data-theme="bumblebee"] {
   --gaia-surface-soft: #f5f5f5;
   --gaia-border: #e4e4e4;
   --gaia-foreground: #161616;
-  --gaia-muted: #e6e4e3;
+  --gaia-muted: #555555;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #000000;
   --gaia-contrast-text: #ffffff;
@@ -395,21 +395,21 @@ html[data-theme="garden"] {
   --gaia-surface-soft: #d4d2d2;
   --gaia-border: #bebdbd;
   --gaia-foreground: #100f0f;
-  --gaia-muted: #e9e7e7;
+  --gaia-muted: #555555;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #5c7f67;
   --gaia-contrast-text: #ffffff;
@@ -485,21 +485,21 @@ html[data-theme="emerald"] {
   --gaia-surface-soft: #e8e8e8;
   --gaia-border: #d1d1d1;
   --gaia-foreground: #333c4d;
-  --gaia-muted: #f9fafb;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #f68067;
   --gaia-contrast-text: #000000;
@@ -515,21 +515,21 @@ html[data-theme="cupcake"] {
   --gaia-surface-soft: #efeae6;
   --gaia-border: #e7e2df;
   --gaia-foreground: #291334;
-  --gaia-muted: #e4e4e7;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #ffd6a7;
   --gaia-contrast-text: #9f2d00;
@@ -545,21 +545,21 @@ html[data-theme="pastel"] {
   --gaia-surface-soft: #f9fafb;
   --gaia-border: #e5e6e7;
   --gaia-foreground: #161616;
-  --gaia-muted: #dfe5ed;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #a3f2ce;
   --gaia-contrast-text: #007853;
@@ -575,21 +575,21 @@ html[data-theme="nord"] {
   --gaia-surface-soft: #e5e9f0;
   --gaia-border: #d8dee9;
   --gaia-foreground: #2e3440;
-  --gaia-muted: #d8dee9;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #88c0d0;
   --gaia-contrast-text: #070d10;
@@ -605,21 +605,21 @@ html[data-theme="silk"] {
   --gaia-surface-soft: #f3ede9;
   --gaia-border: #e2ddd9;
   --gaia-foreground: #4b4743;
-  --gaia-muted: #c2bdb9;
+  --gaia-muted: #777777;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #1c1c29;
   --gaia-contrast-text: #00fff8;
@@ -665,21 +665,21 @@ html[data-theme="acid"] {
   --gaia-surface-soft: #eeeeee;
   --gaia-border: #e1e1e1;
   --gaia-foreground: #000000;
-  --gaia-muted: #c7cadc;
+  --gaia-muted: #555555;
   --gaia-text-strong: color-mix(
+    in srgb,
+    var(--gaia-foreground) 95%,
+    white 5%
+  );
+  --gaia-text-default: color-mix(
     in srgb,
     var(--gaia-foreground) 90%,
     white 10%
   );
-  --gaia-text-default: color-mix(
-    in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
-  );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #c8ff00;
   --gaia-contrast-text: #0f1600;
@@ -725,21 +725,21 @@ html[data-theme="caramellatte"] {
   --gaia-surface-soft: #feecd3;
   --gaia-border: #ffd6a7;
   --gaia-foreground: #7c2808;
-  --gaia-muted: #fff7ed;
+  --gaia-muted: #886644;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #8c3f27;
   --gaia-contrast-text: #ffd6a7;
@@ -875,21 +875,21 @@ html[data-theme="corporate"] {
   --gaia-surface-soft: #e8e8e8;
   --gaia-border: #d1d1d1;
   --gaia-foreground: #181a2a;
-  --gaia-muted: #ffffff;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #009689;
   --gaia-contrast-text: #ffffff;
@@ -905,21 +905,21 @@ html[data-theme="autumn"] {
   --gaia-surface-soft: #dbdbdb;
   --gaia-border: #c5c5c5;
   --gaia-foreground: #141414;
-  --gaia-muted: #e5e0dd;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #d59b6b;
   --gaia-contrast-text: #100904;
@@ -935,21 +935,21 @@ html[data-theme="wireframe"] {
   --gaia-surface-soft: #f5f5f5;
   --gaia-border: #ebebeb;
   --gaia-foreground: #161616;
-  --gaia-muted: #242424;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #d4d4d4;
   --gaia-contrast-text: #242424;
@@ -965,21 +965,21 @@ html[data-theme="cmyk"] {
   --gaia-surface-soft: #eeeeee;
   --gaia-border: #dedede;
   --gaia-foreground: #161616;
-  --gaia-muted: #cbcbcb;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #fff234;
   --gaia-contrast-text: #161401;
@@ -995,21 +995,21 @@ html[data-theme="valentine"] {
   --gaia-surface-soft: #f9e4f0;
   --gaia-border: #f9cbe5;
   --gaia-foreground: #c5005a;
-  --gaia-muted: #f9cbe5;
+  --gaia-muted: #aa0055;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #71d1fe;
   --gaia-contrast-text: #014a70;
@@ -1055,21 +1055,21 @@ html[data-theme="winter"] {
   --gaia-surface-soft: #f2f7fe;
   --gaia-border: #e3e9f4;
   --gaia-foreground: #394e6a;
-  --gaia-muted: #c5cbd2;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #c148ac;
   --gaia-contrast-text: #0e020b;
@@ -1085,21 +1085,21 @@ html[data-theme="lemonade"] {
   --gaia-surface-soft: #e1e6d9;
   --gaia-border: #cbcfc3;
   --gaia-foreground: #151614;
-  --gaia-muted: #d2d3c7;
+  --gaia-muted: #666666;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 90%,
-    white 10%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 68%,
-    var(--gaia-surface) 32%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 65%,
-    var(--gaia-surface) 35%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #edd000;
   --gaia-contrast-text: #141000;
@@ -1145,21 +1145,21 @@ html[data-theme="daisybolt"] {
   --gaia-surface-soft: #ffe633;
   --gaia-border: #e3c500;
   --gaia-foreground: #151005;
-  --gaia-muted: #493c13;
+  --gaia-muted: #554433;
   --gaia-text-strong: color-mix(
     in srgb,
-    var(--gaia-foreground) 92%,
-    white 8%
+    var(--gaia-foreground) 95%,
+    white 5%
   );
   --gaia-text-default: color-mix(
     in srgb,
-    var(--gaia-foreground) 72%,
-    var(--gaia-surface) 28%
+    var(--gaia-foreground) 85%,
+    white 15%
   );
   --gaia-text-muted: color-mix(
     in srgb,
-    var(--gaia-muted) 70%,
-    var(--gaia-surface) 30%
+    var(--gaia-muted) 85%,
+    white 15%
   );
   --gaia-contrast-bg: #0f2547;
   --gaia-contrast-text: #fff7c7;
@@ -1177,9 +1177,9 @@ html[data-theme="daisysoft"] {
   --gaia-border: #e8e1dc;
   --gaia-foreground: #2b103d;
   --gaia-muted: #6b5a6f;
-  --gaia-text-strong: #1f0f35;
-  --gaia-text-default: #3b264e;
-  --gaia-text-muted: #7a6b80;
+  --gaia-text-strong: #1a0a2a;
+  --gaia-text-default: #2b103d;
+  --gaia-text-muted: #5a4a6f;
   --gaia-contrast-bg: #2b103d;
   --gaia-contrast-text: #fdf8f4;
   --gaia-overlay: color-mix(in srgb, #2b103d 20%, transparent 80%);
