@@ -1,24 +1,25 @@
+// app/health-awakening/HealthGateWrapper.tsx
 "use client";
 
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
-import TimelineWrapper from "./components/TimelineWrapper";
+import HealthAwakeningClientPage from "./ClientPage";
 
-export default function TimelinePage() {
+export default function HealthGateWrapper() {
   const { isFeatureUnlocked, totalLessonsCompleted } = useGaiaFeatureUnlocks();
-  const unlocked = isFeatureUnlocked("timeline");
+  const unlocked = isFeatureUnlocked("health");
 
   if (!unlocked) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-8">
         <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">
           <h1 className="text-2xl font-semibold text-[var(--gaia-text-strong)] mb-2">
-            Timeline locked · keep learning
+            Health locked · keep learning
           </h1>
           <p className="text-sm text-[var(--gaia-text-muted)] mb-3">
-            Complete more Academy lessons in Apollo to unlock your full Timeline view.
+            Finish more Academy lessons in Apollo to unlock GAIA&apos;s Health Core.
           </p>
           <p className="text-xs text-[var(--gaia-text-muted)]">
-            Lessons completed:{" "}
+            Lessons completed so far:{" "}
             <span className="font-semibold">{totalLessonsCompleted}</span>
           </p>
         </section>
@@ -26,15 +27,5 @@ export default function TimelinePage() {
     );
   }
 
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
-      <header className="mb-4">
-        <h1 className="text-2xl font-semibold">Timeline</h1>
-        <p className="text-sm gaia-muted">
-          Top → bottom events with keyboard (j/k) and quick jumps.
-        </p>
-      </header>
-      <TimelineWrapper />
-    </main>
-  );
+  return <HealthAwakeningClientPage />;
 }

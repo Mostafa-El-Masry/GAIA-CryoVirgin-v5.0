@@ -16,6 +16,8 @@ import {
 } from "@/lib/supabase-client";
 import { useAuth } from "@/app/context/AuthContext";
 
+export const dynamic = "force-dynamic";
+
 interface Location {
   id: string;
   name: string;

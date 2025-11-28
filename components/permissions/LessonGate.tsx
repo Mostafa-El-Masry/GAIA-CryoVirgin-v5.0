@@ -17,8 +17,8 @@ export default function LessonGate({
   featureLabel,
   fallback,
 }: LessonGateProps) {
-  const { totalCompletedLessons } = useGaiaFeatureUnlocks();
-  const unlocked = totalCompletedLessons >= minLessons;
+  const { totalLessonsCompleted } = useGaiaFeatureUnlocks();
+  const unlocked = totalLessonsCompleted >= minLessons;
 
   if (unlocked) return <>{children}</>;
   if (fallback) return <>{fallback}</>;
@@ -34,7 +34,7 @@ export default function LessonGate({
         Complete {minLessons} lessons to unlock {label}.
       </h3>
       <p className="text-sm gaia-muted">
-        You have finished {totalCompletedLessons}. Finish a few Academy lessons,
+        You have finished {totalLessonsCompleted}. Finish a few Academy lessons,
         then this section will open automatically.
       </p>
       <div className="flex items-center justify-center gap-3">

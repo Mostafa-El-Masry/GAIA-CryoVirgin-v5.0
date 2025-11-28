@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useDailyRitualGate } from "@/app/dashboard/hooks/useDailyRitualGate";
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import NoScroll from "@/components/NoScroll";
 import UserDropdown from "@/components/UserDropdown";
@@ -43,32 +42,38 @@ export default function HomePage() {
     { href: "/settings", label: "Settings", permission: "settings" },
   ];
 
-  const { completedToday } = useDailyRitualGate();
-  const { wealthUnlocked } = useGaiaFeatureUnlocks();
+  const { isFeatureUnlocked } = useGaiaFeatureUnlocks();
 
-  const permissionFilteredLinks = isAdmin
+  const visibleLinks = isAdmin
     ? links
-    : links.filter((link) => Boolean(permissions[link.permission]));
+    : links.filter((link) => {
+        if (!permissions[link.permission]) return false;
 
-  const allowedHrefs = new Set<string>();
+        // Dashboard + Apollo are always available (once permissioned)
+        if (link.href === "/dashboard" || link.href === "/apollo") {
+          return true;
+        }
 
-  if (!completedToday) {
-    // Before daily ritual: only Dashboard is visible
-    allowedHrefs.add("/dashboard");
-  } else {
-    // After daily ritual: only Dashboard + Apollo are visible by default
-    allowedHrefs.add("/dashboard");
-    allowedHrefs.add("/apollo");
-
-    // Wealth awakens only after Academy progress
-    if (wealthUnlocked) {
-      allowedHrefs.add("/wealth-awakening");
-    }
-  }
-
-  const visibleLinks = permissionFilteredLinks.filter((link) =>
-    allowedHrefs.has(link.href)
-  );
+        // Feature-by-feature Academy unlocks
+        switch (link.href) {
+          case "/wealth-awakening":
+            return isFeatureUnlocked("wealth");
+          case "/health-awakening":
+            return isFeatureUnlocked("health");
+          case "/timeline":
+            return isFeatureUnlocked("timeline");
+          case "/accounts":
+            return isFeatureUnlocked("accounts");
+          case "/ELEUTHIA":
+            return isFeatureUnlocked("eleuthia");
+          case "/settings":
+            return isFeatureUnlocked("settings");
+          case "/gallery-awakening":
+            return isFeatureUnlocked("gallery");
+          default:
+            return true;
+        }
+      });
 
   return (
     <main className="fixed inset-0 flex items-center justify-center no-nav">

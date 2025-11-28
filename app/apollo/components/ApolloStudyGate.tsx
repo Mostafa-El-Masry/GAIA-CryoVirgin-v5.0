@@ -17,8 +17,8 @@ export default function ApolloStudyGate({
   featureLabel,
   fallback,
 }: ApolloStudyGateProps) {
-  const { totalCompletedLessons } = useGaiaFeatureUnlocks();
-  const unlocked = totalCompletedLessons >= MIN_LESSONS;
+  const { totalLessonsCompleted } = useGaiaFeatureUnlocks();
+  const unlocked = totalLessonsCompleted >= MIN_LESSONS;
 
   if (unlocked) {
     return <>{children}</>;
@@ -37,7 +37,7 @@ export default function ApolloStudyGate({
         Complete {MIN_LESSONS} lessons to unlock {label}.
       </h3>
       <p className="text-sm gaia-muted">
-        You have finished {totalCompletedLessons} so far. Work through Academy
+        You have finished {totalLessonsCompleted} so far. Work through Academy
         first, then Archives, Labs, and Ask ChatGPT will open automatically.
       </p>
       <Link

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useWealthUnlocks } from "../hooks/useWealthUnlocks";
 
 const QuickLinks = () => {
   const links = [

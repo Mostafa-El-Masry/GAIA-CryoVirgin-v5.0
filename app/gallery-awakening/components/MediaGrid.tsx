@@ -11,6 +11,7 @@ interface MediaGridProps {
   page?: number;
   perPage?: number;
   onPageChange?: (page: number) => void;
+  maxVisibleItems?: number;
   allowDelete?: boolean;
   onDeleteItem?: (id: string) => void;
   onRenameItem?: (id: string, nextTitle: string) => void;
@@ -23,6 +24,7 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
   page,
   perPage,
   onPageChange,
+  maxVisibleItems,
   allowDelete = false,
   onDeleteItem,
   onRenameItem,
@@ -38,12 +40,17 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
 
   const imageItems = filtered.filter((i) => i.type === 'image');
 
+  const effective =
+    typeof maxVisibleItems === "number" && maxVisibleItems >= 0
+      ? filtered.slice(0, maxVisibleItems)
+      : filtered;
+
   const totalPages =
-    perPage && perPage > 0 ? Math.max(1, Math.ceil(filtered.length / perPage)) : 1;
+    perPage && perPage > 0 ? Math.max(1, Math.ceil(effective.length / perPage)) : 1;
   const currentPage = perPage && perPage > 0 ? Math.min(page ?? 1, totalPages) : 1;
   const start = perPage && perPage > 0 ? (currentPage - 1) * perPage : 0;
-  const end = perPage && perPage > 0 ? start + perPage : filtered.length;
-  const paged = filtered.slice(start, end);
+  const end = perPage && perPage > 0 ? start + perPage : effective.length;
+  const paged = effective.slice(start, end);
 
   return (
     <section className="space-y-4 rounded-3xl bg-base-100/80 p-4">

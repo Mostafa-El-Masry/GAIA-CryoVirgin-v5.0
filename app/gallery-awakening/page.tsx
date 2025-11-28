@@ -11,6 +11,7 @@ import { useGalleryData } from './useGalleryData';
 import { FilterBar } from './components/FilterBar';
 import { MemoryPulse } from './components/MemoryPulse';
 import { VersionLog } from './components/VersionLog';
+import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import { getAutoBoxResult } from './featureLogic';
 import { hasR2PublicBase } from './r2';
 import { useCurrentPermissions, isCreatorAdmin } from '@/lib/permissions';
@@ -44,6 +45,29 @@ function sourceLabelFrom(source: DataSource): string {
 }
 
 const GalleryAwakeningPage: React.FC = () => {
+  const { totalLessonsCompleted, allowedGalleryMediaCount, featureUnlocks } = useGaiaFeatureUnlocks();
+  const galleryUnlocked = featureUnlocks.gallery;
+
+
+if (!galleryUnlocked) {
+  return (
+    <main className="mx-auto max-w-6xl px-4 py-8">
+      <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-xl">
+        <h1 className="mb-2 text-2xl font-bold text-[var(--gaia-text-strong)]">
+          Gallery locked · keep learning
+        </h1>
+        <p className="mb-4 text-sm text-[var(--gaia-text-muted)]">
+          Complete more Academy lessons in Apollo to slowly unlock your Gallery.
+          Each lesson from level 11 onward unlocks one more memory (image or video).
+        </p>
+        <p className="text-xs text-[var(--gaia-text-muted)]">
+          Lessons completed so far: <span className="font-semibold">{totalLessonsCompleted}</span>
+        </p>
+      </section>
+    </main>
+  );
+}
+
   const { items, isLoading, source } = useGalleryData(mockMediaItems);
   const { profile, status } = useAuthSnapshot();
   const permissions = useCurrentPermissions();
@@ -490,6 +514,7 @@ const GalleryAwakeningPage: React.FC = () => {
               allowDelete={allowDelete}
               onDeleteItem={handleDeleteItem}
               onRenameItem={handleRenameItem}
+              maxVisibleItems={allowedGalleryMediaCount}
             />
           </section>
         </div>

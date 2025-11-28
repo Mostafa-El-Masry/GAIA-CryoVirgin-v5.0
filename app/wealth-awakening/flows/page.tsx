@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useWealthUnlocks } from "../hooks/useWealthUnlocks";
 import type { WealthFlow, WealthState } from "../lib/types";
 import { loadWealthState } from "../lib/wealthStore";
 import {
@@ -65,6 +66,23 @@ function generateId(prefix: string): string {
 }
 
 export default function WealthFlowsPage() {
+  const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
+  if (!canAccess("flows")) {
+    return (
+      <main className="mx-auto max-w-5xl px-4 py-8">
+        <section className="rounded-3xl border border-base-300 bg-base-100/90 p-8 shadow-lg">
+          <h1 className="text-xl font-semibold text-base-content mb-2">Monthly flows locked</h1>
+          <p className="text-sm text-base-content/70 mb-3">
+            Complete more Academy lessons in Apollo to unlock this part of Wealth.
+          </p>
+          <p className="text-xs text-base-content/60">
+            Lessons completed: <span className="font-semibold">{totalLessonsCompleted}</span> · Wealth stage <span className="font-semibold">{stage}</span>/5
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   const [state, setState] = useState<WealthState | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>({

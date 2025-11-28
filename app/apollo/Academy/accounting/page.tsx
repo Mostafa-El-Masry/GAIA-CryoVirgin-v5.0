@@ -29,31 +29,31 @@ const arcs: Arc[] = [
         id: "acc-1-1",
         code: "1.1",
         title: "Accounting Equation & Double-Entry Logic",
-        estimate: "80 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-1-2",
         code: "1.2",
         title: "Debits & Credits in Practice",
-        estimate: "80 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-1-3",
         code: "1.3",
         title: "Chart of Accounts and Account Types",
-        estimate: "80 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-1-4",
         code: "1.4",
         title: "Journals, Ledgers, and Posting Flow",
-        estimate: "80 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-1-5",
         code: "1.5",
         title: "Trial Balance and Basic Self-Checks",
-        estimate: "80 min (1-2 sessions)",
+        estimate: "120 min",
       },
     ],
   },
@@ -68,31 +68,31 @@ const arcs: Arc[] = [
         id: "acc-2-1",
         code: "2.1",
         title: "Balance Sheet Structure and Logic",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-2-2",
         code: "2.2",
         title: "Income Statement Structure and Logic",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-2-3",
         code: "2.3",
         title: "Cash Flow Basics",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-2-4",
         code: "2.4",
         title: "Linking Balance Sheet and P&L",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-2-5",
         code: "2.5",
         title: "Common Statement Mistakes and How to Spot Them",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
     ],
   },
@@ -107,37 +107,37 @@ const arcs: Arc[] = [
         id: "acc-3-1",
         code: "3.1",
         title: "Excel / Sheets Basics for Accounting",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-3-2",
         code: "3.2",
         title: "Templates and Schedules for Recurring Work",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-3-3",
         code: "3.3",
         title: "Importing and Cleaning Data",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-3-4",
         code: "3.4",
         title: "Reconciliations: Bank, Vendors, and Customers",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-3-5",
         code: "3.5",
         title: "Monthly Close Checklist",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-3-6",
         code: "3.6",
         title: "Documentation and Workpapers",
-        estimate: "100 min (1-2 sessions)",
+        estimate: "120 min",
       },
     ],
   },
@@ -152,37 +152,37 @@ const arcs: Arc[] = [
         id: "acc-4-1",
         code: "4.1",
         title: "Variance Analysis Basics",
-        estimate: "110 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-4-2",
         code: "4.2",
         title: "Margins and Key Ratios",
-        estimate: "110 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-4-3",
         code: "4.3",
         title: "Year-End Adjustments and Provisions",
-        estimate: "110 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-4-4",
         code: "4.4",
         title: "Accruals and Cut-off",
-        estimate: "110 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-4-5",
         code: "4.5",
         title: "Explaining Numbers to Non-Accountants",
-        estimate: "110 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-4-6",
         code: "4.6",
         title: "Handling Questions and Pressure in Reviews",
-        estimate: "110 min (1-2 sessions)",
+        estimate: "120 min",
       },
     ],
   },
@@ -197,25 +197,25 @@ const arcs: Arc[] = [
         id: "acc-5-1",
         code: "5.1",
         title: "Mapping Your Current Pain Points",
-        estimate: "90 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-5-2",
         code: "5.2",
         title: "Defining Ideal Workflows",
-        estimate: "90 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-5-3",
         code: "5.3",
         title: "Designing GAIA Helpers and Checks",
-        estimate: "90 min (1-2 sessions)",
+        estimate: "120 min",
       },
       {
         id: "acc-5-4",
         code: "5.4",
         title: "Turning Pain Points into Features and Rules",
-        estimate: "90 min (1-2 sessions)",
+        estimate: "120 min",
       },
     ],
   },
@@ -230,7 +230,7 @@ export default function AccountingTrackPage() {
   useEffect(() => {
     markStudyVisit("accounting");
   }, [markStudyVisit]);
-  const totalMonths = "about 18-22 weeks at your current 3 days/week rhythm";
+  const totalMonths = "≈ 18 months at your current 3 days/week rhythm";
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 space-y-8">
@@ -255,7 +255,7 @@ export default function AccountingTrackPage() {
         {arcs.map((arc) => (
           <article
             key={arc.id}
-            className="rounded-2xl gaia-panel-soft p-4 sm:p-5 shadow-sm border gaia-border"
+            className="rounded-2xl gaia-panel-soft p-4 sm:p-5 shadow-sm border border-white/5"
           >
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] gaia-muted">
               {arc.label}
@@ -270,7 +270,7 @@ export default function AccountingTrackPage() {
                 <li
                   id={lesson.id}
                   key={lesson.id}
-                  className="flex items-baseline justify-between gap-2 border-b gaia-border pb-1 last:border-b-0 last:pb-0"
+                  className="flex items-baseline justify-between gap-2 border-b border-white/5 pb-1 last:border-b-0 last:pb-0"
                 >
                   <button
                     type="button"

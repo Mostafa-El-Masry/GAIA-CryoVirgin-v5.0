@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useWealthUnlocks } from "../hooks/useWealthUnlocks";
 import type {
   WealthAccount,
   WealthAccountType,
@@ -39,6 +40,23 @@ function formatCurrency(value: number, currency: string) {
 }
 
 export default function WealthAccountsPage() {
+  const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
+  if (!canAccess("accounts")) {
+    return (
+      <main className="mx-auto max-w-5xl px-4 py-8">
+        <section className="rounded-3xl border border-base-300 bg-base-100/90 p-8 shadow-lg">
+          <h1 className="text-xl font-semibold text-base-content mb-2">Accounts & balances locked</h1>
+          <p className="text-sm text-base-content/70 mb-3">
+            Complete more Academy lessons in Apollo to unlock this part of Wealth.
+          </p>
+          <p className="text-xs text-base-content/60">
+            Lessons completed: <span className="font-semibold">{totalLessonsCompleted}</span> · Wealth stage <span className="font-semibold">{stage}</span>/5
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   const [state, setState] = useState<WealthState | null>(null);
   const [editing, setEditing] = useState<WealthAccount | null>(null);
   const [isNew, setIsNew] = useState(false);

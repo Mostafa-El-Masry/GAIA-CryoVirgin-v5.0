@@ -4,7 +4,7 @@ import WealthAwakeningClientPage from "./ClientPage";
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 
 export default function WealthGateWrapper() {
-  const { wealthUnlocked, wealthStage, totalCompletedLessons } =
+  const { wealthUnlocked, wealthStage, totalLessonsCompleted } =
     useGaiaFeatureUnlocks();
 
   if (!wealthUnlocked) {
@@ -28,7 +28,7 @@ export default function WealthGateWrapper() {
           <p className="text-xs sm:text-sm gaia-muted">
             Completed lessons so far:{" "}
             <span className="font-semibold gaia-strong">
-              {totalCompletedLessons}
+              {totalLessonsCompleted}
             </span>
           </p>
           <p className="text-xs sm:text-sm gaia-muted">

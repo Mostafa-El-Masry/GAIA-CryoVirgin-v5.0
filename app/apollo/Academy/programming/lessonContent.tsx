@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CodePlayground from "../components/CodePlayground";
+import { readJSON, writeJSON } from "@/lib/user-storage";
 import {
   StudyDescription,
   QuizConfig,
@@ -158,6 +159,23 @@ const ProgrammingLessonContent = ({
   isCompleted,
   onLessonCompleted,
 }: ProgrammingLessonContentProps) => {
+  const [notes, setNotes] = useState<string>("");
+  const notesKey = `gaia.academy.notes.programming.${lessonCode}`;
+
+  useEffect(() => {
+    const stored = readJSON<string | null>(notesKey, null);
+    if (stored !== null) {
+      setNotes(stored);
+    } else {
+      setNotes("");
+    }
+  }, [notesKey]);
+
+  const handleNotesChange = (value: string) => {
+    setNotes(value);
+    writeJSON(notesKey, value);
+  };
+
   const [activeTab, setActiveTab] = useState<TabId>("study");
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -250,10 +268,10 @@ const ProgrammingLessonContent = ({
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] sm:text-xs font-semibold border transition ${
+            className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] sm:text-xs font-semibold border ${
               activeTab === tab
-                ? "gaia-contrast shadow-sm"
-                : "gaia-ink-soft gaia-border gaia-hover-soft"
+                ? "bg-white text-black border-white"
+                : "bg-black/40 text-white border-white/20 hover:border-white/40"
             }`}
           >
             {tab === "study" && "1 - Study"}
@@ -296,7 +314,7 @@ const ProgrammingLessonContent = ({
                   return (
                     <div
                       key={q.id}
-                      className="rounded-xl border gaia-border gaia-ink-soft p-3 sm:p-4 space-y-2 shadow-sm"
+                      className="rounded-xl border border-white/10 bg-black/40 p-3 sm:p-4 space-y-2"
                     >
                       <p className="text-xs sm:text-sm gaia-strong">
                         Q{index + 1}. {q.prompt}
@@ -328,14 +346,13 @@ const ProgrammingLessonContent = ({
                       </div>
                       {quizSubmitted && (
                         <p
-                          className="text-[11px] sm:text-xs"
-                          style={{
-                            color: isCorrect
-                              ? "var(--gaia-positive)"
+                          className={`text-[11px] sm:text-xs ${
+                            isCorrect
+                              ? "text-emerald-300"
                               : isWrong
-                              ? "var(--gaia-warning)"
-                              : "var(--gaia-text-muted)",
-                          }}
+                              ? "text-amber-300"
+                              : "gaia-muted"
+                          }`}
                         >
                           {isCorrect
                             ? "Correct."
@@ -357,15 +374,12 @@ const ProgrammingLessonContent = ({
                   type="button"
                   onClick={handleQuizSubmit}
                   disabled={!quizConfig || !allAnswered}
-                  className="inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] sm:text-xs font-semibold gaia-contrast shadow-sm transition hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] sm:text-xs font-semibold bg-white text-black disabled:bg-white/30 disabled:text-black/50"
                 >
                   Check my answers
                 </button>
                 {quizSubmitted && quizConfig && allCorrect && (
-                  <p
-                    className="text-[11px] sm:text-xs"
-                    style={{ color: "var(--gaia-positive)" }}
-                  >
+                  <p className="text-[11px] sm:text-xs text-emerald-300">
                     Great. You&apos;re ready to move to practice.
                   </p>
                 )}
@@ -400,7 +414,7 @@ const ProgrammingLessonContent = ({
           </ul>
 
           <textarea
-            className="mt-2 h-32 w-full rounded-xl gaia-input border gaia-border p-2 text-xs sm:text-sm shadow-sm gaia-focus"
+            className="mt-2 h-32 w-full rounded-xl border border-white/15 bg-black/40 p-2 text-xs sm:text-sm text-white outline-none focus:border-white/40"
             placeholder="Write your explanation or code here..."
             value={practiceText}
             onChange={(e) => {
@@ -414,7 +428,7 @@ const ProgrammingLessonContent = ({
             <button
               type="button"
               onClick={handlePracticeCheck}
-              className="inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] sm:text-xs font-semibold gaia-contrast shadow-sm transition hover:shadow-md gaia-focus"
+              className="inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] sm:text-xs font-semibold bg-white text-black"
             >
               Check practice &amp; mark lesson
             </button>
@@ -424,23 +438,17 @@ const ProgrammingLessonContent = ({
           </div>
 
           {practiceStatus === "error" && practiceMessage && (
-            <p
-              className="text-[11px] sm:text-xs"
-              style={{ color: "var(--gaia-warning)" }}
-            >
+            <p className="text-[11px] sm:text-xs text-amber-300">
               {practiceMessage}
             </p>
           )}
           {practiceStatus === "success" && practiceMessage && (
-            <p
-              className="text-[11px] sm:text-xs"
-              style={{ color: "var(--gaia-positive)" }}
-            >
+            <p className="text-[11px] sm:text-xs text-emerald-300">
               {practiceMessage}
             </p>
           )}
 
-          <div className="mt-4 rounded-xl border gaia-border gaia-ink-soft p-3 shadow-sm">
+          <div className="mt-4 rounded-xl border border-white/10 bg-black/40 p-3">
             <p className="text-[11px] sm:text-xs gaia-muted mb-2">
               Optional: play in the code playground for this lesson. For HTML,
               CSS, and JavaScript lessons, try building the structures we
@@ -466,6 +474,23 @@ const ProgrammingLessonContent = ({
   </body>
 </html>`
               }
+            />
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3 sm:p-4 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs sm:text-sm font-semibold gaia-strong">
+                Your notes for this lesson
+              </p>
+              <p className="text-[10px] sm:text-xs gaia-muted">
+                Saved automatically · stays even if you switch device/session.
+              </p>
+            </div>
+            <textarea
+              value={notes}
+              onChange={(e) => handleNotesChange(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-white/15 bg-black/30 px-3 py-2 text-xs sm:text-sm gaia-strong outline-none focus:border-emerald-400/70 focus:ring-1 focus:ring-emerald-400/50 min-h-[96px]"
+              placeholder="Rewrite these ideas in your own words, or paste key code snippets you want future-you to remember."
             />
           </div>
         </div>
