@@ -1,230 +1,546 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { selfRepairArcs, totalSelfRepairLessons, type Lesson } from "./trackConfig";
-import { getLessonContent } from "./lessonContent";
+import { usePathname } from "next/navigation";
 import { useAcademyProgress } from "../useAcademyProgress";
 
-// The lessons and arcs live in `trackConfig.ts`; this file only renders them.
+type LessonContent = {
+  intro: string;
+  actions: string[];
+  prompts: string[];
+  safeguard?: string;
+};
+
+type Lesson = {
+  id: string;
+  arcId: string;
+  code: string;
+  title: string;
+  estimate: string;
+  content?: LessonContent;
+};
+
+type Arc = {
+  id: string;
+  label: string;
+  title: string;
+  focus: string;
+  lessons: Lesson[];
+};
+
+const lessonContent: Record<string, LessonContent> = {
+  "self-1-1": {
+    intro:
+      "Get a clean snapshot of how your days actually run so you can see where you lose energy.",
+    actions: [
+      "Track three days in a simple table: bed time, wake time, meals, caffeine, screen time, and energy (1-10).",
+      "Mark any pain spikes, anxiety peaks, or focus dips with a quick note about what happened right before.",
+      "Highlight one pattern that repeats (sleep timing, skipping meals, doom scrolling).",
+    ],
+    prompts: [
+      'What does a "good" day look like now versus a rough one?',
+      "Where do you usually lose the thread: morning, afternoon, or evening?",
+      "Which tiny change would remove the most friction tomorrow?",
+    ],
+    safeguard:
+      "If tracking feels heavy, do it once per day in three bullet points instead of minute by minute.",
+  },
+  "self-1-2": {
+    intro:
+      "Install one reliable daily anchor that survives bad days and keeps you pointed at recovery.",
+    actions: [
+      "Pick one anchor that takes 5-10 minutes (sunlight walk, protein breakfast, or one glass of water before screens).",
+      "Define the minimum version for bad days and the normal version for average days.",
+      "Place the anchor in your calendar with a reminder and a visible cue (post-it or phone alarm).",
+    ],
+    prompts: [
+      "Which anchor would reduce the most chaos if it fired every day?",
+      "What blocks stopped you before (time, supplies, mood)? How will you sidestep them?",
+      "How will you know the anchor is working after one week?",
+    ],
+    safeguard:
+      "If you miss a day, restart the next one without doubling it. The win is consistency, not intensity.",
+  },
+  "self-1-3": {
+    intro:
+      "Move gently to signal safety to your body without triggering perfectionism or injury.",
+    actions: [
+      "Choose one 10-15 minute walk route you can do without planning.",
+      "Add a five minute stretch sequence (neck, shoulders, hips, calves) you can play while one song runs.",
+      "Set two movement windows in your week (for example Tue/Thu) and one optional weekend bonus.",
+    ],
+    prompts: [
+      "What movements feel good versus punishing?",
+      "When in the day do you feel most willing to move, even slightly?",
+      "How will you notice early fatigue signals and slow down instead of quitting?",
+    ],
+    safeguard:
+      "If you are sore or low, swap to breath work or a five minute floor stretch instead of skipping entirely.",
+  },
+  "self-1-4": {
+    intro:
+      'Design a "bad day" script so you know exactly what minimums to do and what to avoid.',
+    actions: [
+      "Write a 10 line protocol: wake steps, hydration, one safe meal, one short movement, one person to message.",
+      "List three things to avoid on bad days (news, arguments, caffeine spikes).",
+      "Pre-pack a small kit: shelf stable snacks, electrolytes, a warm layer, headphones with a calming playlist.",
+    ],
+    prompts: [
+      "What usually makes bad days spiral faster?",
+      "Who can you update with a one line check-in so you are not invisible?",
+      'What proves you have done "enough" for today, even if nothing else moves?',
+    ],
+    safeguard:
+      "If you cannot do the full protocol, do the first two lines only: drink water and send the check-in message.",
+  },
+};
+
+const arcs: Arc[] = [
+  {
+    id: "self-1-basics",
+    label: "Arc 1",
+    title: "Stabilizing the Basics",
+    focus:
+      "Sleep, food, basic movement, and tiny daily anchors. No perfection, just a steady baseline that keeps you upright.",
+    lessons: [
+      {
+        id: "self-1-1",
+        arcId: "self-1-basics",
+        code: "1.1",
+        title: "Mapping Your Current Rhythm (Sleep, Food, Energy)",
+        estimate: "45 min reflection",
+        content: lessonContent["self-1-1"],
+      },
+      {
+        id: "self-1-2",
+        arcId: "self-1-basics",
+        code: "1.2",
+        title: "Designing One Small Daily Anchor",
+        estimate: "45 min reflection",
+        content: lessonContent["self-1-2"],
+      },
+      {
+        id: "self-1-3",
+        arcId: "self-1-basics",
+        code: "1.3",
+        title: "Gentle Movement: Walks, Stretching, and Realistic Goals",
+        estimate: "45 min reflection",
+        content: lessonContent["self-1-3"],
+      },
+      {
+        id: "self-1-4",
+        arcId: "self-1-basics",
+        code: "1.4",
+        title: "Bad Days Protocol: Minimum Baseline to Not Collapse",
+        estimate: "45 min reflection",
+        content: lessonContent["self-1-4"],
+      },
+    ],
+  },
+  {
+    id: "self-2-voice",
+    label: "Arc 2",
+    title: "The Inner Voice",
+    focus:
+      "Notice the inner attacker, separate it from reality, and slowly replace automatic self-hate with more honest, kinder thoughts.",
+    lessons: [
+      {
+        id: "self-2-1",
+        arcId: "self-2-voice",
+        code: "2.1",
+        title: "Catching the Inner Attacker in Real Sentences",
+        estimate: "50 min reflection",
+      },
+      {
+        id: "self-2-2",
+        arcId: "self-2-voice",
+        code: "2.2",
+        title: "Separating Facts from Attacks",
+        estimate: "50 min reflection",
+      },
+      {
+        id: "self-2-3",
+        arcId: "self-2-voice",
+        code: "2.3",
+        title: "Building a More Honest, Kinder Counter-Voice",
+        estimate: "50 min reflection",
+      },
+      {
+        id: "self-2-4",
+        arcId: "self-2-voice",
+        code: "2.4",
+        title: "Responding to Shame Without Disappearing",
+        estimate: "50 min reflection",
+      },
+    ],
+  },
+  {
+    id: "self-3-people",
+    label: "Arc 3",
+    title: "People and Boundaries",
+    focus:
+      "Understand which relationships drain you and which support you, and practice tiny boundaries so you do not feel like a toy or a burden.",
+    lessons: [
+      {
+        id: "self-3-1",
+        arcId: "self-3-people",
+        code: "3.1",
+        title: "Mapping Draining vs Supportive People",
+        estimate: "50 min reflection",
+      },
+      {
+        id: "self-3-2",
+        arcId: "self-3-people",
+        code: "3.2",
+        title: "Tiny Boundaries: Delays, Shorter Calls, Less Explaining",
+        estimate: "50 min reflection",
+      },
+      {
+        id: "self-3-3",
+        arcId: "self-3-people",
+        code: "3.3",
+        title: "Guilt vs Responsibility",
+        estimate: "50 min reflection",
+      },
+      {
+        id: "self-3-4",
+        arcId: "self-3-people",
+        code: "3.4",
+        title: "Protecting Your Energy Around Family and Work",
+        estimate: "50 min reflection",
+      },
+    ],
+  },
+  {
+    id: "self-4-meaning",
+    label: "Arc 4",
+    title: "Meaning and GAIA",
+    focus:
+      "Use GAIA as a map instead of a stick to beat yourself with. Connect your studies and work to a bigger story that makes sense.",
+    lessons: [
+      {
+        id: "self-4-1",
+        arcId: "self-4-meaning",
+        code: "4.1",
+        title: "Reframing GAIA: From Self-Attack to Self-Support",
+        estimate: "45 min reflection",
+      },
+      {
+        id: "self-4-2",
+        arcId: "self-4-meaning",
+        code: "4.2",
+        title: "Connecting Study Paths to Real Future Scenarios",
+        estimate: "45 min reflection",
+      },
+      {
+        id: "self-4-3",
+        arcId: "self-4-meaning",
+        code: "4.3",
+        title: "Designing Rituals that Make You Feel Like a Person, Not a Machine",
+        estimate: "45 min reflection",
+      },
+    ],
+  },
+  {
+    id: "self-5-relapse",
+    label: "Arc 5",
+    title: "Relapse and Maintenance Plan",
+    focus:
+      "Design what you will do on bad days before they happen: who to talk to, what to avoid, and which tiny steps help you not disappear.",
+    lessons: [
+      {
+        id: "self-5-1",
+        arcId: "self-5-relapse",
+        code: "5.1",
+        title: "Defining Your Early Warning Signs",
+        estimate: "45 min reflection",
+      },
+      {
+        id: "self-5-2",
+        arcId: "self-5-relapse",
+        code: "5.2",
+        title: "Building a Personal Emergency List (People, Actions, Words)",
+        estimate: "45 min reflection",
+      },
+      {
+        id: "self-5-3",
+        arcId: "self-5-relapse",
+        code: "5.3",
+        title: "Review and Adjust: Keeping the Plan Realistic",
+        estimate: "45 min reflection",
+      },
+    ],
+  },
+];
+
+const totalLessons = arcs.reduce((sum, arc) => sum + arc.lessons.length, 0);
 
 export default function SelfRepairTrackPage() {
-const allLessons: Lesson[] = useMemo(
-  () => selfRepairArcs.flatMap((arc) => arc.lessons),
-  []
-);
-
-const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
-
-const activeLessonIndex = useMemo(
-  () => (activeLessonId ? allLessons.findIndex((l) => l.id === activeLessonId) : -1),
-  [activeLessonId, allLessons]
-);
-
-const activeLesson =
-  activeLessonIndex >= 0 && activeLessonIndex < allLessons.length
-    ? allLessons[activeLessonIndex]
-    : null;
-
-const prevLesson =
-  activeLessonIndex > 0 && activeLessonIndex < allLessons.length
-    ? allLessons[activeLessonIndex - 1]
-    : null;
-
-const nextLesson =
-  activeLessonIndex >= 0 && activeLessonIndex < allLessons.length - 1
-    ? allLessons[activeLessonIndex + 1]
-    : null;
-
-  const { isLessonCompleted, toggleLessonCompleted, markStudyVisit } = useAcademyProgress();
+  const { isLessonCompleted, toggleLessonCompleted, markStudyVisit } =
+    useAcademyProgress();
+  const pathname = usePathname();
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(
+    arcs[0]?.lessons[0]?.id ?? null
+  );
+  const [activeArcFilter, setActiveArcFilter] = useState<string>("all");
 
   useEffect(() => {
     markStudyVisit("self-repair");
   }, [markStudyVisit]);
+
+  const allLessons = useMemo(() => arcs.flatMap((arc) => arc.lessons), []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash.replace("#", "");
+    if (hash && allLessons.some((lesson) => lesson.id === hash)) {
+      setActiveLessonId(hash);
+      setActiveArcFilter("all");
+      return;
+    }
+    const lastSegment = pathname?.split("/").filter(Boolean).pop();
+    if (lastSegment && allLessons.some((lesson) => lesson.id === lastSegment)) {
+      setActiveLessonId(lastSegment);
+      setActiveArcFilter("all");
+    }
+  }, [allLessons, pathname]);
+
+  const activeLesson =
+    activeLessonId && allLessons.find((lesson) => lesson.id === activeLessonId);
+  const completionCount = allLessons.filter((lesson) =>
+    isLessonCompleted("self-repair", lesson.id)
+  ).length;
+  const completionPercent =
+    totalLessons === 0
+      ? 0
+      : Math.round((completionCount / totalLessons) * 100);
+
+  const arcFilters = useMemo(
+    () => [{ id: "all", label: "All arcs" }, ...arcs.map((arc) => ({ id: arc.id, label: arc.label }))],
+    []
+  );
+
+  const visibleArcs =
+    activeArcFilter === "all"
+      ? arcs
+      : arcs.filter((arc) => arc.id === activeArcFilter);
+
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 space-y-8">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold">Self-Repair · Rebuilding Me</h1>
-        <p className="text-sm gaia-muted max-w-2xl">
-          This track has no fixed end date. It&apos;s the quiet work of taking yourself seriously
-          again — body, mind, and story — while you keep studying and working.
-        </p>
-        <p className="text-xs gaia-muted mt-1">
-          Total planned reflections / lessons:{" "}
-            <span className="gaia-strong">{totalSelfRepairLessons}</span>. You keep Fridays free from heavy
-          studying and use them for this path: reflection, walks, reading, and honest check-ins.
-        </p>
+    <main className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.22em] gaia-muted">
+            Academy - Self-Repair path
+          </p>
+          <h1 className="text-xl sm:text-2xl font-semibold gaia-strong">
+            Self-Repair - Rebuilding Me
+          </h1>
+          <p className="text-sm gaia-muted max-w-2xl">
+            Stabilize body, voice, and story while you keep studying and working. Fridays are reserved for this path.
+          </p>
+          <p className="text-xs gaia-muted">
+            Total planned reflections: <span className="gaia-strong">{totalLessons}</span>. Repeat the lessons that help.
+          </p>
+        </div>
+
+        <div className="inline-flex items-center gap-3 rounded-full border gaia-border gaia-ink-soft px-3 py-2 text-xs sm:text-sm shadow-sm">
+          <div className="flex flex-col">
+            <span className="gaia-muted text-[11px] uppercase tracking-[0.22em]">
+              Overall progress
+            </span>
+            <span className="gaia-strong text-sm">
+              {completionCount}/{totalLessons} lessons - {completionPercent}%
+            </span>
+          </div>
+        </div>
       </header>
 
-{activeLesson && (
-  <section className="rounded-2xl gaia-panel-soft border border-white/10 p-4 sm:p-5 space-y-4">
-    <header className="space-y-2">
-      <div className="flex items-start justify-between">
-        <h2 className="text-lg sm:text-xl font-semibold gaia-strong">
-          {activeLesson.code} · {activeLesson.title}
-        </h2>
-        <button
-          type="button"
-          onClick={() => setActiveLessonId(null)}
-          className="ml-4 mt-1 rounded-full border px-3 py-1 text-[11px] sm:text-xs bg-black/10 hover:bg-black/20"
-        >
-          Back to list
-        </button>
-      </div>
-      <p className="text-xs sm:text-sm gaia-muted">
-        Self-Repair · Arc 1 · Stabilizing the Basics
-      </p>
-      <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs gaia-muted">
-        <span>
-          Estimated time:{" "}
-          <span className="gaia-strong">
-            {(() => {
-              if (!activeLesson) return "";
-              const content = getLessonContent(activeLesson.code);
-              return content.minutes === 0 ? "0 min (MBT)" : `${content.minutes} min`;
-            })()}
-          </span>
-        </span>
-        <span className="opacity-60">·</span>
-        <span>
-          Status:{" "}
-          <span className="gaia-strong">
-            {isLessonCompleted("self-repair", activeLesson.id) ? "Completed" : "In progress"}
-          </span>
-        </span>
-      </div>
-    </header>
-
-    <div className="flex flex-wrap items-center justify-end gap-2">
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => prevLesson && setActiveLessonId(prevLesson.id)}
-          disabled={!prevLesson}
-          className={`inline-flex items-center justify-center rounded-full border px-3 py-1 text-[11px] sm:text-xs ${
-            prevLesson
-              ? "border-white/30 bg-white/5 hover:bg-white/10 gaia-muted"
-              : "border-white/10 bg-black/20 text-white/40 cursor-default"
-          }`}
-        >
-          ← Previous
-        </button>
-        <button
-          type="button"
-          onClick={() => nextLesson && nextLesson.code === "1.1" ? setActiveLessonId(nextLesson.id) : null}
-          disabled={!nextLesson}
-          className={`inline-flex items-center justify-center rounded-full border px-3 py-1 text-[11px] sm:text-xs ${
-            nextLesson
-              ? "border-white/30 bg-white/5 hover:bg-white/10 gaia-muted"
-              : "border-white/10 bg-black/20 text-white/40 cursor-default"
-          }`}
-        >
-          Next →
-        </button>
-      </div>
-    </div>
-
-    <div className="space-y-4">
-      <div className="space-y-3 text-sm sm:text-[15px] leading-relaxed gaia-muted">
-        <h3 className="text-sm sm:text-base font-semibold gaia-strong">
-          Today&apos;s focus: mapping your current work rhythm
-        </h3>
-        <p>
-          For this first Self-Repair lesson, you are not fixing anything. You are just
-          putting your current pattern on the table so it stops hiding in the dark.
-        </p>
-        <p>
-          Choose one workday (today or yesterday) and write it as a timeline: when you
-          woke up, commuted, worked, scrolled, ate, played, watched, and finally went to
-          sleep. No judgment. Just facts.
-        </p>
-        <p>
-          Notice which moments feel heavy, empty, or blurry. These are usually the
-          autopilot zones: late-night scrolling, gaming to avoid thinking, ordering food
-          because everything feels too much.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-white/15 bg-black/40 p-3 sm:p-4 space-y-2">
-        <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-gray-200">
-          Workshop · Rebuild Me at Work
-        </p>
-        <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm text-gray-200">
-          <li>Write your full workday as a simple timeline.</li>
-          <li>Circle or highlight the moments where you typically escape or shut down.</li>
-          <li>Next to each of those moments, write one honest sentence about what you are trying not to feel or think.</li>
-          <li>Choose just one of these moments and star it. This will be your first repair point for future lessons.</li>
-        </ol>
-        <p className="mt-2 text-[11px] sm:text-xs text-gray-200">
-          You can keep these notes in your own notebook, in GAIA notes, or both. Later
-          lessons will use this map as a reference.
-        </p>
-      </div>
-
-      <button
-        type="button"
-        onClick={() => {
-          if (!isLessonCompleted("self-repair", activeLesson.id)) {
-            toggleLessonCompleted("self-repair", activeLesson.id);
-          }
-        }}
-        className="inline-flex items-center justify-center rounded-full border border-emerald-400/60 bg-emerald-400/10 px-3 py-1.5 text-[11px] sm:text-xs font-medium text-emerald-50 hover:bg-emerald-400/20"
-      >
-        {isLessonCompleted("self-repair", activeLesson.id)
-          ? "Lesson completed"
-          : "Mark lesson as done"}
-      </button>
-    </div>
-  </section>
-)}
-
-
-
-      {!activeLesson && (
-      <section className="space-y-4">
-        {selfRepairArcs.map((arc) => (
-          <article
-            key={arc.id}
-            className="rounded-2xl gaia-panel-soft p-4 sm:p-5 shadow-sm border border-white/5"
+        {arcFilters.map((filter) => (
+          <button
+            key={filter.id}
+            type="button"
+            onClick={() => setActiveArcFilter(filter.id)}
+            className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] sm:text-xs font-semibold border transition ${
+              activeArcFilter === filter.id
+                ? "gaia-contrast shadow-sm"
+                : "gaia-ink-soft gaia-border gaia-hover-soft"
+            }`}
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] gaia-muted">
-              {arc.label}
-            </p>
-            <h2 className="mt-1 text-sm font-semibold gaia-strong">{arc.title}</h2>
-            <p className="mt-2 text-xs gaia-muted">{arc.focus}</p>
+            {filter.label}
+          </button>
+        ))}
+      </div>
 
-            <ul className="mt-3 space-y-1.5 text-xs gaia-muted">
-              {arc.lessons.map((lesson) => (
-                <li
-                  id={lesson.id}
-                  key={lesson.id}
-                  className="flex items-baseline justify-between gap-2 border-b border-white/5 pb-1 last:border-b-0 last:pb-0"
-                >
+            {!activeLesson && (
+        <section className="space-y-4">
+                  {visibleArcs.map((arc) => (
+                    <article
+                      key={arc.id}
+                      className="rounded-2xl gaia-panel-soft p-4 sm:p-5 shadow-sm border gaia-border"
+                    >
+                      <div className="flex items-center gap-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] rounded-full px-2 py-0.5 text-contrast-text bg-info">
+                          {arc.label}
+                        </p>
+                        <h2 className="mt-0 text-sm font-semibold gaia-strong">
+                          {arc.title}
+                        </h2>
+                      </div>
+                      <p className="mt-2 text-xs gaia-muted">{arc.focus}</p>
+
+                      <ul className="mt-3 space-y-1.5 text-xs gaia-muted">
+                        {arc.lessons.map((lesson) => {
+                          const completed = isLessonCompleted("self-repair", lesson.id);
+                          const isActive = lesson.id === activeLessonId;
+                          return (
+                            <li
+                              id={lesson.id}
+                              key={lesson.id}
+                              className={`flex flex-col gap-2 rounded-xl border gaia-border px-3 py-2 ${
+                                completed ? "bg-info/10" : "gaia-ink-soft"
+                              } ${isActive ? "ring-2 ring-info/60" : ""}`}
+                            >
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveLessonId(lesson.id)}
+                                  className="flex w-full items-center justify-between gap-3 text-left"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span
+                                      className={`inline-flex items-center justify-center text-[11px] font-semibold rounded-full px-2 py-0.5 w-10 ${
+                                        completed
+                                          ? "bg-info text-contrast-text"
+                                          : "bg-info/10 text-info"
+                                      }`}
+                                    >
+                                      {lesson.code}
+                                    </span>
+                                    <span className="flex-1 text-[13px] sm:text-sm gaia-strong">
+                                      {lesson.title}
+                                    </span>
+                                  </div>
+                                  <span className="text-[11px] font-semibold gaia-muted">
+                                    {lesson.content ? lesson.estimate : "0 min (MBT)"}
+                                  </span>
+                                </button>
+
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[11px] gaia-muted">
+                                    {completed ? "Completed" : "Mark done"}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      toggleLessonCompleted("self-repair", lesson.id)
+                                    }
+                                    className={`inline-flex h-8 w-8 items-center justify-center rounded-full border ${
+                                      completed
+                                        ? "bg-info text-contrast-text border-info"
+                                        : "gaia-border gaia-hover-soft"
+                                    }`}
+                                    aria-label={
+                                      completed
+                                        ? "Mark lesson incomplete"
+                                        : "Mark lesson complete"
+                                    }
+                                  >
+                                    {completed ? "✓" : ""}
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </article>
+                  ))}
+                </section>
+      )}
+
+      {activeLesson && (
+        <section className="rounded-2xl border gaia-border p-4 sm:p-5 shadow-sm space-y-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] gaia-muted">
+                    Lesson workspace
+                  </p>
                   <button
                     type="button"
-                    onClick={() => setActiveLessonId(lesson.id)}
-                    className="flex w-full items-baseline justify-between gap-2 text-left"
+                    onClick={() => setActiveLessonId(null)}
+                    className="inline-flex items-center gap-1 rounded-full border gaia-border gaia-ink-soft px-3 py-1 text-[11px] sm:text-xs"
                   >
-                    <span className="text-[11px] w-4">
-                      {isLessonCompleted("self-repair", lesson.id) ? "✓" : ""}
-                    </span>
-                    <span className="gaia-strong text-[11px] w-10">
-                      {lesson.code}
-                    </span>
-                    <span className="flex-1">{lesson.title}</span>
-                    <span className="text-[11px]">{(() => {
-                      const content = getLessonContent(lesson.code);
-                      if (content.minutes === 0) return "0 min";
-                      if (lesson.estimate === "Flexible") return `${content.minutes} min`;
-                      return lesson.estimate;
-                    })()}</span>
+                    ← Back to Self-Repair list
                   </button>
-                </li>
-              ))}
-            </ul>
-          </article>
-        ))}
-      </section>
+                  {activeLesson ? (
+                    <>
+                      <div className="space-y-1">
+                        <p className="text-xs gaia-muted">Active lesson</p>
+                        <h3 className="text-lg font-semibold gaia-strong">
+                          {activeLesson.code} - {activeLesson.title}
+                        </h3>
+                        <p className="text-xs gaia-muted">
+                          Estimate: {activeLesson.content ? activeLesson.estimate : "0 min (MBT)"}
+                        </p>
+                      </div>
+
+                      {activeLesson.content ? (
+                        <div className="space-y-3 text-sm gaia-muted">
+                          <p className="gaia-strong text-sm">
+                            {activeLesson.content.intro}
+                          </p>
+                          <div>
+                            <p className="text-xs font-semibold gaia-muted uppercase tracking-[0.12em]">
+                              Do this now
+                            </p>
+                            <ul className="mt-1 list-disc space-y-1 pl-4">
+                              {activeLesson.content.actions.map((item) => (
+                                <li key={item}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold gaia-muted uppercase tracking-[0.12em]">
+                              Journal prompts
+                            </p>
+                            <ul className="mt-1 list-disc space-y-1 pl-4">
+                              {activeLesson.content.prompts.map((item) => (
+                                <li key={item}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          {activeLesson.content.safeguard ? (
+                            <div className="rounded-lg gaia-ink-faint border gaia-border px-3 py-2 text-xs">
+                              Safety net: {activeLesson.content.safeguard}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div className="text-sm gaia-muted">
+                          Content for this arc is coming soon. Use the checklist on the left to mark progress and add your own notes.
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!activeLesson) return;
+                          toggleLessonCompleted("self-repair", activeLesson.id);
+                        }}
+                        className="w-full rounded-lg gaia-contrast px-3 py-2 text-sm font-semibold shadow-sm transition hover:shadow-md"
+                      >
+                        {isLessonCompleted("self-repair", activeLesson.id)
+                          ? "Mark as incomplete"
+                          : "Mark lesson as done"}
+                      </button>
+                    </>
+                  ) : (
+                    <p className="text-sm gaia-muted">
+                      Select a lesson to load its checklist and prompts.
+                    </p>
+                  )}
+                </section>
       )}
+
     </main>
   );
 }
