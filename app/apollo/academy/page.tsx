@@ -384,6 +384,17 @@ export default function AcademyPage() {
           </div>
         </div>
       </section>
+
+      {/* Temporary: direct link to structured Paths view */}
+      <section className="flex justify-end">
+        <Link
+          href="/apollo/academy/Paths"
+          className="inline-flex items-center gap-2 rounded-full border gaia-border px-3 py-1.5 text-xs sm:text-sm gaia-muted hover:gaia-ink-soft hover:border-emerald-400"
+        >
+          <span>Browse all paths (beta)</span>
+          <span className="text-[11px] opacity-70">→</span>
+        </Link>
+      </section>
     </main>
   );
 }
