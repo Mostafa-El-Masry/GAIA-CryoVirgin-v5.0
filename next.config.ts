@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
     // Don't fail build on type errors during development
     ignoreBuildErrors: process.env.NODE_ENV === "development",
   },
+  // Disable source maps in development to avoid invalid source map warnings
+  productionBrowserSourceMaps: false,
   // Handle CSS properly
   webpack: (config) => {
     return config;

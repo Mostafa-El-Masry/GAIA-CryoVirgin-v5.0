@@ -1,8 +1,8 @@
-import type { LessonDefinition } from "../../../types";
+import type { LessonDefinition } from "../../../../types"
 
 export const lesson_1_1: LessonDefinition = {
-  id: "accounting-arc1-1.1",
+  id: "acc-1-1",
   code: "1.1",
-  title: "Debits, credits, and the equation",
+  title: "Accounting Equation & Double-Entry Logic",
   status: "active",
 };

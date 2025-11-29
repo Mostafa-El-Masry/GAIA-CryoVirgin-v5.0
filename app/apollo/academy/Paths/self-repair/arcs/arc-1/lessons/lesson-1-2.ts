@@ -1,8 +1,8 @@
-import type { LessonDefinition } from "../../../types";
+import type { LessonDefinition } from "../../../../types"
 
 export const lesson_1_2: LessonDefinition = {
-  id: "self-repair-arc1-1.2",
+  id: "self-1-2",
   code: "1.2",
-  title: "Choosing one daily anchor",
+  title: "Designing One Small Daily Anchor",
   status: "active",
 };
