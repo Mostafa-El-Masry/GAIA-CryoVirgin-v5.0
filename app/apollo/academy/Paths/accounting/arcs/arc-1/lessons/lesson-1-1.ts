@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_1_1: LessonDefinition = {
-  id: "acc-1-1",
-  code: "1.1",
-  title: "Accounting Equation & Double-Entry Logic",
-  status: "active",
+export const accountingLesson11: LessonContentData = {
+  study: {
+    title: "Accounting Equation & Double-Entry Logic",
+    paragraphs: [
+      "Understand the fundamental accounting equation and how double-entry bookkeeping works.",
+      "See how every transaction keeps Assets = Liabilities + Equity in balance.",
+      "Practice mapping common business events into debits and credits.",
+    ],
+  },
 };

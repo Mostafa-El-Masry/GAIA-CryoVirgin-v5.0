@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_3_1: LessonDefinition = {
-  id: "acc-3-1",
-  code: "3.1",
-  title: "Excel / Sheets Basics for Accounting",
-  status: "active",
+export const accountingLesson31: LessonContentData = {
+  study: {
+    title: "Excel / Sheets Basics for Accounting",
+    paragraphs: [
+      "Master spreadsheets as a tool for accounting work.",
+      "Use core functions, tables, and simple data validation to reduce errors.",
+      "Set up templates that stay stable across months and users.",
+    ],
+  },
 };

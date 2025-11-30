@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_3_2: LessonDefinition = {
-  id: "acc-3-2",
-  code: "3.2",
-  title: "Templates and Schedules for Recurring Work",
-  status: "active",
+export const accountingLesson32: LessonContentData = {
+  study: {
+    title: "Templates and Schedules for Recurring Work",
+    paragraphs: [
+      "Create reusable templates to streamline your monthly processes.",
+      "Standardize inputs, assumptions, and outputs so reviews go faster.",
+      "Design schedules that minimize manual edits and highlight variances automatically.",
+    ],
+  },
 };

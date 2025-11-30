@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_2_2: LessonDefinition = {
-  id: "acc-2-2",
-  code: "2.2",
-  title: "Income Statement Structure and Logic",
-  status: "active",
+export const accountingLesson22: LessonContentData = {
+  study: {
+    title: "Income Statement Structure and Logic",
+    paragraphs: [
+      "Read and interpret the income statement to understand your profitability.",
+      "Understand how revenue, cost of sales, and operating expenses flow to net income.",
+      "Spot common presentation formats and where misclassifications tend to hide.",
+    ],
+  },
 };

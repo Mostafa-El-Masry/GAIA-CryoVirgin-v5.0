@@ -2,22 +2,22 @@ import type { LessonContentData } from "../lesson/lessonContent";
 import {
   getFoundationsStudy,
   getFoundationsQuiz,
-} from "../../programming/sections/foundations";
-import { getHtmlStudy, getHtmlQuiz } from "../../programming/sections/html";
-import { getCssStudy, getCssQuiz } from "../../programming/sections/css";
-import { getJsStudy, getJsQuiz } from "../../programming/sections/javascript";
+} from "./sections/foundations";
+import { getHtmlStudy, getHtmlQuiz } from "./sections/html";
+import { getCssStudy, getCssQuiz } from "./sections/css";
+import { getJsStudy, getJsQuiz } from "./sections/javascript";
 import {
   getReactNextStudy,
   getReactNextQuiz,
-} from "../../programming/sections/reactNext";
+} from "./sections/reactNext";
 import {
   getSupabaseStudy,
   getSupabaseQuiz,
-} from "../../programming/sections/supabase";
+} from "./sections/supabase";
 import {
   getCapstoneStudy,
   getCapstoneQuiz,
-} from "../../programming/sections/capstone";
+} from "./sections/capstone";
 
 export function resolveProgrammingContent(lessonId: string): LessonContentData {
   // lessonId format: "prog-0-1", "prog-1-1", etc.
@@ -37,7 +37,7 @@ export function resolveProgrammingContent(lessonId: string): LessonContentData {
   const lessonCode = `${courseNum}.${lessonNum}`;
 
   // Try all resolvers to find the lesson content
-  const resolvers = [
+  const studyResolvers = [
     getFoundationsStudy,
     getHtmlStudy,
     getCssStudy,
@@ -47,12 +47,25 @@ export function resolveProgrammingContent(lessonId: string): LessonContentData {
     getCapstoneStudy,
   ];
 
-  for (const resolver of resolvers) {
+  const quizResolvers = [
+    getFoundationsQuiz,
+    getHtmlQuiz,
+    getCssQuiz,
+    getJsQuiz,
+    getReactNextQuiz,
+    getSupabaseQuiz,
+    getCapstoneQuiz,
+  ];
+
+  for (const resolver of studyResolvers) {
     const study = resolver(lessonCode);
     if (study) {
       return {
         study,
-        quiz: null, // Quiz support can be added later
+        quiz:
+          quizResolvers
+            .map((r) => r(lessonCode))
+            .find((quiz) => !!quiz) || null,
       };
     }
   }

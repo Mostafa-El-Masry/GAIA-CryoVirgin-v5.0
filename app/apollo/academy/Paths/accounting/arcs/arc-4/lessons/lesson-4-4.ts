@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_4_4: LessonDefinition = {
-  id: "acc-4-4",
-  code: "4.4",
-  title: "Accruals and Cut-off",
-  status: "active",
+export const accountingLesson44: LessonContentData = {
+  study: {
+    title: "Accruals and Cut-off",
+    paragraphs: [
+      "Master accrual accounting and period-end cutoff procedures.",
+      "Learn which entries commonly slip and how to check completeness.",
+      "Design simple controls to keep accruals accurate month to month.",
+    ],
+  },
 };

@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_5_2: LessonDefinition = {
-  id: "acc-5-2",
-  code: "5.2",
-  title: "Defining Ideal Workflows",
-  status: "active",
+export const accountingLesson52: LessonContentData = {
+  study: {
+    title: "Defining Ideal Workflows",
+    paragraphs: [
+      "Design how your ideal accounting workflow would look.",
+      "Map roles, steps, and handoffs to reduce delays and errors.",
+      "Specify what ‘good’ looks like so improvements are concrete.",
+    ],
+  },
 };

@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_1_4: LessonDefinition = {
-  id: "acc-1-4",
-  code: "1.4",
-  title: "Journals, Ledgers, and Posting Flow",
-  status: "active",
+export const accountingLesson14: LessonContentData = {
+  study: {
+    title: "Journals, Ledgers, and Posting Flow",
+    paragraphs: [
+      "Trace the complete flow from journal entries through to the general ledger.",
+      "See how batches, subledgers, and the GL connect to produce accurate statements.",
+      "Spot where errors can enter and how to reconcile them quickly.",
+    ],
+  },
 };

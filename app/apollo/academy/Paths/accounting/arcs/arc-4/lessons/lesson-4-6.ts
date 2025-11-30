@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_4_6: LessonDefinition = {
-  id: "acc-4-6",
-  code: "4.6",
-  title: "Handling Questions and Pressure in Reviews",
-  status: "active",
+export const accountingLesson46: LessonContentData = {
+  study: {
+    title: "Handling Questions and Pressure in Reviews",
+    paragraphs: [
+      "Prepare for and handle difficult questions about financial results.",
+      "Build a calm, evidence-first approach that keeps reviews focused on facts.",
+      "Use pre-reads and documentation to reduce ad-hoc fire drills.",
+    ],
+  },
 };

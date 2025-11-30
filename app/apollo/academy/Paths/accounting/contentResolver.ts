@@ -1,135 +1,61 @@
 import type { LessonContentData } from "../lesson/lessonContent";
+import { accountingLesson11 } from "./arcs/arc-1/lessons/lesson-1-1";
+import { accountingLesson12 } from "./arcs/arc-1/lessons/lesson-1-2";
+import { accountingLesson13 } from "./arcs/arc-1/lessons/lesson-1-3";
+import { accountingLesson14 } from "./arcs/arc-1/lessons/lesson-1-4";
+import { accountingLesson15 } from "./arcs/arc-1/lessons/lesson-1-5";
+import { accountingLesson21 } from "./arcs/arc-2/lessons/lesson-2-1";
+import { accountingLesson22 } from "./arcs/arc-2/lessons/lesson-2-2";
+import { accountingLesson23 } from "./arcs/arc-2/lessons/lesson-2-3";
+import { accountingLesson24 } from "./arcs/arc-2/lessons/lesson-2-4";
+import { accountingLesson25 } from "./arcs/arc-2/lessons/lesson-2-5";
+import { accountingLesson31 } from "./arcs/arc-3/lessons/lesson-3-1";
+import { accountingLesson32 } from "./arcs/arc-3/lessons/lesson-3-2";
+import { accountingLesson33 } from "./arcs/arc-3/lessons/lesson-3-3";
+import { accountingLesson34 } from "./arcs/arc-3/lessons/lesson-3-4";
+import { accountingLesson35 } from "./arcs/arc-3/lessons/lesson-3-5";
+import { accountingLesson36 } from "./arcs/arc-3/lessons/lesson-3-6";
+import { accountingLesson41 } from "./arcs/arc-4/lessons/lesson-4-1";
+import { accountingLesson42 } from "./arcs/arc-4/lessons/lesson-4-2";
+import { accountingLesson43 } from "./arcs/arc-4/lessons/lesson-4-3";
+import { accountingLesson44 } from "./arcs/arc-4/lessons/lesson-4-4";
+import { accountingLesson45 } from "./arcs/arc-4/lessons/lesson-4-5";
+import { accountingLesson46 } from "./arcs/arc-4/lessons/lesson-4-6";
+import { accountingLesson51 } from "./arcs/arc-5/lessons/lesson-5-1";
+import { accountingLesson52 } from "./arcs/arc-5/lessons/lesson-5-2";
+import { accountingLesson53 } from "./arcs/arc-5/lessons/lesson-5-3";
+import { accountingLesson54 } from "./arcs/arc-5/lessons/lesson-5-4";
 
-// Placeholder accounting content
-// Full accounting lesson content will be added later
-const ACCOUNTING_LESSONS: Record<
-  string,
-  { title: string; description: string }
-> = {
-  "1.1": {
-    title: "Accounting Equation & Double-Entry Logic",
-    description:
-      "Understand the fundamental accounting equation and how double-entry bookkeeping works.",
-  },
-  "1.2": {
-    title: "Debits & Credits in Practice",
-    description:
-      "Learn how debits and credits flow through journal entries and practice with real examples.",
-  },
-  "1.3": {
-    title: "Chart of Accounts and Account Types",
-    description:
-      "Build and understand your chart of accounts to organize all financial transactions.",
-  },
-  "1.4": {
-    title: "Journals, Ledgers, and Posting Flow",
-    description:
-      "Trace the complete flow from journal entries through to the general ledger.",
-  },
-  "1.5": {
-    title: "Trial Balance and Basic Self-Checks",
-    description:
-      "Create and verify trial balances to ensure your bookkeeping is in balance.",
-  },
-  "2.1": {
-    title: "Balance Sheet Structure and Logic",
-    description:
-      "Understand the balance sheet as a snapshot of your financial position.",
-  },
-  "2.2": {
-    title: "Income Statement Structure and Logic",
-    description:
-      "Read and interpret the income statement to understand your profitability.",
-  },
-  "2.3": {
-    title: "Cash Flow Basics",
-    description:
-      "Learn the cash flow statement and why cash differs from profit.",
-  },
-  "2.4": {
-    title: "Linking Balance Sheet and P&L",
-    description:
-      "Connect the three main financial statements and understand their relationships.",
-  },
-  "2.5": {
-    title: "Common Statement Mistakes and How to Spot Them",
-    description: "Identify and prevent common errors in financial statements.",
-  },
-  "3.1": {
-    title: "Excel / Sheets Basics for Accounting",
-    description: "Master spreadsheets as a tool for accounting work.",
-  },
-  "3.2": {
-    title: "Templates and Schedules for Recurring Work",
-    description:
-      "Create reusable templates to streamline your monthly processes.",
-  },
-  "3.3": {
-    title: "Importing and Cleaning Data",
-    description:
-      "Import data from various sources and clean it for accounting use.",
-  },
-  "3.4": {
-    title: "Reconciliations: Bank, Vendors, and Customers",
-    description:
-      "Master the reconciliation process for all major account categories.",
-  },
-  "3.5": {
-    title: "Monthly Close Checklist",
-    description:
-      "Build a comprehensive checklist for your monthly close process.",
-  },
-  "3.6": {
-    title: "Documentation and Workpapers",
-    description:
-      "Create organized documentation to support your accounting work.",
-  },
-  "4.1": {
-    title: "Variance Analysis Basics",
-    description: "Analyze differences between actual and budgeted results.",
-  },
-  "4.2": {
-    title: "Margins and Key Ratios",
-    description: "Calculate and interpret key financial ratios and margins.",
-  },
-  "4.3": {
-    title: "Year-End Adjustments and Provisions",
-    description: "Handle year-end adjustments and accrual entries correctly.",
-  },
-  "4.4": {
-    title: "Accruals and Cut-off",
-    description: "Master accrual accounting and period-end cutoff procedures.",
-  },
-  "4.5": {
-    title: "Explaining Numbers to Non-Accountants",
-    description: "Develop skills to communicate financial information clearly.",
-  },
-  "4.6": {
-    title: "Handling Questions and Pressure in Reviews",
-    description:
-      "Prepare for and handle difficult questions about financial results.",
-  },
-  "5.1": {
-    title: "Mapping Your Current Pain Points",
-    description: "Identify your biggest challenges in current accounting work.",
-  },
-  "5.2": {
-    title: "Defining Ideal Workflows",
-    description: "Design how your ideal accounting workflow would look.",
-  },
-  "5.3": {
-    title: "Designing GAIA Helpers and Checks",
-    description: "Conceptualize GAIA features that would help your work.",
-  },
-  "5.4": {
-    title: "Turning Pain Points into Features and Rules",
-    description:
-      "Transform your needs into concrete GAIA feature requirements.",
-  },
+const LESSONS: Record<string, LessonContentData> = {
+  "1.1": accountingLesson11,
+  "1.2": accountingLesson12,
+  "1.3": accountingLesson13,
+  "1.4": accountingLesson14,
+  "1.5": accountingLesson15,
+  "2.1": accountingLesson21,
+  "2.2": accountingLesson22,
+  "2.3": accountingLesson23,
+  "2.4": accountingLesson24,
+  "2.5": accountingLesson25,
+  "3.1": accountingLesson31,
+  "3.2": accountingLesson32,
+  "3.3": accountingLesson33,
+  "3.4": accountingLesson34,
+  "3.5": accountingLesson35,
+  "3.6": accountingLesson36,
+  "4.1": accountingLesson41,
+  "4.2": accountingLesson42,
+  "4.3": accountingLesson43,
+  "4.4": accountingLesson44,
+  "4.5": accountingLesson45,
+  "4.6": accountingLesson46,
+  "5.1": accountingLesson51,
+  "5.2": accountingLesson52,
+  "5.3": accountingLesson53,
+  "5.4": accountingLesson54,
 };
 
 export function resolveAccountingContent(lessonId: string): LessonContentData {
-  // lessonId format: "acc-1-1", "acc-1-2", etc.
   const match = lessonId.match(/acc-(\d+)-(\d+)/);
   if (!match) {
     return {
@@ -140,13 +66,10 @@ export function resolveAccountingContent(lessonId: string): LessonContentData {
     };
   }
 
-  const courseNum = match[1];
-  const lessonNum = match[2];
-  const lessonCode = `${courseNum}.${lessonNum}`;
+  const lessonCode = `${match[1]}.${match[2]}`;
+  const content = LESSONS[lessonCode];
 
-  const lessonInfo = ACCOUNTING_LESSONS[lessonCode];
-
-  if (!lessonInfo) {
+  if (!content) {
     return {
       study: {
         title: "Lesson coming soon",
@@ -158,13 +81,5 @@ export function resolveAccountingContent(lessonId: string): LessonContentData {
     };
   }
 
-  return {
-    study: {
-      title: lessonInfo.title,
-      paragraphs: [
-        lessonInfo.description,
-        "Detailed lesson content coming soon. Use this space for your own notes and practice.",
-      ],
-    },
-  };
+  return content;
 }

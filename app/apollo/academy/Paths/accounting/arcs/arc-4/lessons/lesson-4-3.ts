@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_4_3: LessonDefinition = {
-  id: "acc-4-3",
-  code: "4.3",
-  title: "Year-End Adjustments and Provisions",
-  status: "active",
+export const accountingLesson43: LessonContentData = {
+  study: {
+    title: "Year-End Adjustments and Provisions",
+    paragraphs: [
+      "Handle year-end adjustments and accrual entries correctly.",
+      "Review common provisions and how to document assumptions and support.",
+      "Set up a repeatable checklist so year-end doesn’t become a fire drill.",
+    ],
+  },
 };

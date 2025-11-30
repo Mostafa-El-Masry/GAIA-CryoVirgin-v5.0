@@ -1,14 +1,42 @@
-import type { ArcDefinition } from "../../../types";
-import { lesson_1_1 } from "./lessons/lesson-1-1";
-import { lesson_1_2 } from "./lessons/lesson-1-2";
-import { lesson_1_3 } from "./lessons/lesson-1-3";
-import { lesson_1_4 } from "./lessons/lesson-1-4";
-import { lesson_1_5 } from "./lessons/lesson-1-5";
+import type { ArcDefinition, LessonDefinition } from "../../../types";
+
+const lessons: LessonDefinition[] = [
+  {
+    id: "acc-1-1",
+    code: "1.1",
+    title: "Accounting Equation & Double-Entry Logic",
+    status: "active",
+  },
+  {
+    id: "acc-1-2",
+    code: "1.2",
+    title: "Debits & Credits in Practice",
+    status: "active",
+  },
+  {
+    id: "acc-1-3",
+    code: "1.3",
+    title: "Chart of Accounts and Account Types",
+    status: "active",
+  },
+  {
+    id: "acc-1-4",
+    code: "1.4",
+    title: "Journals, Ledgers, and Posting Flow",
+    status: "active",
+  },
+  {
+    id: "acc-1-5",
+    code: "1.5",
+    title: "Trial Balance and Basic Self-Checks",
+    status: "active",
+  },
+];
 
 export const arc1: ArcDefinition = {
   id: "accounting-arc-1",
   label: "1",
   title: "Foundations & Reset",
   description: "Rebuild your base in double-entry, core concepts, and everyday language grounded in your current job.",
-  lessons: [lesson_1_1, lesson_1_2, lesson_1_3, lesson_1_4, lesson_1_5],
+  lessons,
 };

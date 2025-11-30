@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_5_4: LessonDefinition = {
-  id: "acc-5-4",
-  code: "5.4",
-  title: "Turning Pain Points into Features and Rules",
-  status: "active",
+export const accountingLesson54: LessonContentData = {
+  study: {
+    title: "Turning Pain Points into Features and Rules",
+    paragraphs: [
+      "Transform your needs into concrete GAIA feature requirements.",
+      "Draft simple rules or automation ideas that address the top pain points.",
+      "Plan a lightweight feedback loop so you can refine these helpers over time.",
+    ],
+  },
 };

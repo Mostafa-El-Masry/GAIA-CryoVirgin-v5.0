@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_3_4: LessonDefinition = {
-  id: "acc-3-4",
-  code: "3.4",
-  title: "Reconciliations: Bank, Vendors, and Customers",
-  status: "active",
+export const accountingLesson34: LessonContentData = {
+  study: {
+    title: "Reconciliations: Bank, Vendors, and Customers",
+    paragraphs: [
+      "Master the reconciliation process for all major account categories.",
+      "Structure reconciliations to surface timing vs. true errors quickly.",
+      "Document findings and follow-ups so reviews are lightweight.",
+    ],
+  },
 };

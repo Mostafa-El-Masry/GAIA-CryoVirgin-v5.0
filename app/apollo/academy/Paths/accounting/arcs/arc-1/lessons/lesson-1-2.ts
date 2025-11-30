@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_1_2: LessonDefinition = {
-  id: "acc-1-2",
-  code: "1.2",
-  title: "Debits & Credits in Practice",
-  status: "active",
+export const accountingLesson12: LessonContentData = {
+  study: {
+    title: "Debits & Credits in Practice",
+    paragraphs: [
+      "Learn how debits and credits flow through journal entries and practice with real examples.",
+      "See the direction of entries across assets, liabilities, equity, revenue, and expenses.",
+      "Work through sample entries to reinforce the habit of balancing every transaction.",
+    ],
+  },
 };

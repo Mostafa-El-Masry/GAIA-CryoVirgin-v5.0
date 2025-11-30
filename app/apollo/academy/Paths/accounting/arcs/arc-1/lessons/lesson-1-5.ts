@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_1_5: LessonDefinition = {
-  id: "acc-1-5",
-  code: "1.5",
-  title: "Trial Balance and Basic Self-Checks",
-  status: "active",
+export const accountingLesson15: LessonContentData = {
+  study: {
+    title: "Trial Balance and Basic Self-Checks",
+    paragraphs: [
+      "Create and verify trial balances to ensure your bookkeeping is in balance.",
+      "Use quick self-checks to catch out-of-balance conditions before close.",
+      "Apply simple diagnostics to isolate which accounts or entries are causing issues.",
+    ],
+  },
 };

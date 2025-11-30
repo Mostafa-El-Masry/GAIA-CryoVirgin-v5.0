@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_3_5: LessonDefinition = {
-  id: "acc-3-5",
-  code: "3.5",
-  title: "Monthly Close Checklist",
-  status: "active",
+export const accountingLesson35: LessonContentData = {
+  study: {
+    title: "Monthly Close Checklist",
+    paragraphs: [
+      "Build a comprehensive checklist for your monthly close process.",
+      "Sequence tasks to minimize rework and surface blockers early.",
+      "Track owners, due dates, and completeness so reviews are predictable.",
+    ],
+  },
 };

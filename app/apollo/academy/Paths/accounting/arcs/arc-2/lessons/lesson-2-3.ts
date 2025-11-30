@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_2_3: LessonDefinition = {
-  id: "acc-2-3",
-  code: "2.3",
-  title: "Cash Flow Basics",
-  status: "active",
+export const accountingLesson23: LessonContentData = {
+  study: {
+    title: "Cash Flow Basics",
+    paragraphs: [
+      "Learn the cash flow statement and why cash differs from profit.",
+      "Understand operating, investing, and financing sections and what typical movements signal.",
+      "Map common cash drivers from the income statement and balance sheet to the cash flow.",
+    ],
+  },
 };

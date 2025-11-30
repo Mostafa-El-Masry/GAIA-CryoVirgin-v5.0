@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_3_3: LessonDefinition = {
-  id: "acc-3-3",
-  code: "3.3",
-  title: "Importing and Cleaning Data",
-  status: "active",
+export const accountingLesson33: LessonContentData = {
+  study: {
+    title: "Importing and Cleaning Data",
+    paragraphs: [
+      "Import data from various sources and clean it for accounting use.",
+      "Handle common issues: duplicates, missing values, wrong signs, and inconsistent dates.",
+      "Build a short checklist for every import to reduce rework later in close.",
+    ],
+  },
 };

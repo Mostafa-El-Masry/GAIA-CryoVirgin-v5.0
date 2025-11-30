@@ -1,13 +1,16 @@
-import type { ArcDefinition } from "../../../types";
-import { lesson_5_1 } from "./lessons/lesson-5-1";
-import { lesson_5_2 } from "./lessons/lesson-5-2";
-import { lesson_5_3 } from "./lessons/lesson-5-3";
-import { lesson_5_4 } from "./lessons/lesson-5-4";
+import type { ArcDefinition, LessonDefinition } from "../../../types";
+
+const lessons: LessonDefinition[] = [
+  { id: "acc-5-1", code: "5.1", title: "Mapping Your Current Pain Points", status: "active" },
+  { id: "acc-5-2", code: "5.2", title: "Defining Ideal Workflows", status: "active" },
+  { id: "acc-5-3", code: "5.3", title: "Designing GAIA Helpers and Checks", status: "active" },
+  { id: "acc-5-4", code: "5.4", title: "Turning Pain Points into Features and Rules", status: "active" },
+];
 
 export const arc5: ArcDefinition = {
   id: "accounting-arc-5",
   label: "5",
   title: "GAIA Accounting Center Preparation",
   description: "Capture pain points and sketch helpers so future GAIA modules solve real problems at work.",
-  lessons: [lesson_5_1, lesson_5_2, lesson_5_3, lesson_5_4],
+  lessons,
 };

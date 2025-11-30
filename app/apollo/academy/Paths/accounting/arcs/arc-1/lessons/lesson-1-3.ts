@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_1_3: LessonDefinition = {
-  id: "acc-1-3",
-  code: "1.3",
-  title: "Chart of Accounts and Account Types",
-  status: "active",
+export const accountingLesson13: LessonContentData = {
+  study: {
+    title: "Chart of Accounts and Account Types",
+    paragraphs: [
+      "Build and understand your chart of accounts to organize all financial transactions.",
+      "Differentiate account types and how they roll up into the primary statements.",
+      "Learn to keep codes, names, and hierarchy consistent so reporting is reliable.",
+    ],
+  },
 };

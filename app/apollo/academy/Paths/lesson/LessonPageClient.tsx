@@ -7,6 +7,7 @@ import { useAcademyProgress } from "../../useAcademyProgress";
 import type { TrackId } from "../../lessonsMap";
 import type { ArcDefinition, PathDefinition } from "../types";
 import { getLessonContent } from "./lessonContent";
+import CodePlayground from "../../components/CodePlayground";
 
 type LessonPageClientProps = {
   trackId: TrackId;
@@ -15,7 +16,7 @@ type LessonPageClientProps = {
   lessonId: string;
 };
 
-type TabId = "lesson" | "downloads" | "notes";
+type TabId = "lesson" | "quiz" | "downloads" | "notes";
 
 type FlatLesson = {
   id: string;
@@ -57,6 +58,9 @@ export default function LessonPageClient({
 
   const [notes, setNotes] = useState<string>("");
   const notesKey = `gaia.academy.notes.${trackId}.${lessonId}`;
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [testMessage, setTestMessage] = useState<string | null>(null);
 
   useEffect(() => {
     markStudyVisit(trackId);
@@ -69,6 +73,8 @@ export default function LessonPageClient({
     } else {
       setNotes("");
     }
+    setQuizAnswers({});
+    setQuizSubmitted(false);
   }, [notesKey]);
 
   const handleNotesChange = (value: string) => {
@@ -87,11 +93,47 @@ export default function LessonPageClient({
     [lessonId, trackId]
   );
 
+  const codeLanguage: "html" | "css" | "js" = useMemo(() => {
+    if (trackId !== "programming") return "html";
+    const major = Number(activeLesson?.code?.split(".")[0] ?? 0);
+    if (major === 3) return "css";
+    if (major >= 4) return "js";
+    return "html";
+  }, [trackId, activeLesson]);
+
+  const defaultCodeSnippet =
+    codeLanguage === "css"
+      ? "/* Try your CSS here */\n.preview-target {\n  padding: 12px;\n  background: #eef2ff;\n  border-radius: 12px;\n}\n"
+      : codeLanguage === "js"
+      ? "// Write a quick JS experiment here\nconsole.log('Hello from this lesson');\n"
+      : `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lesson practice</title>
+  </head>
+  <body>
+    <h1>Hello from this lesson</h1>
+    <p>Edit this HTML to practice.</p>
+  </body>
+</html>`;
+
   const [openArcIds, setOpenArcIds] = useState<Set<string>>(() => {
     if (activeArc?.id) return new Set([activeArc.id]);
     return new Set(arcs.map((arc) => arc.id));
   });
-  const [activeTab, setActiveTab] = useState<TabId>("lesson");
+  const tabs: TabId[] =
+    trackId === "programming"
+      ? ["lesson", "quiz", "notes"]
+      : ["lesson", "downloads", "notes"];
+
+  const [activeTab, setActiveTab] = useState<TabId>(tabs[0]);
+
+  useEffect(() => {
+    if (!tabs.includes(activeTab)) {
+      setActiveTab(tabs[0]);
+    }
+  }, [tabs, activeTab]);
 
   const orderedLessons = flatLessons;
   const activeIndex = orderedLessons.findIndex(
@@ -137,7 +179,7 @@ export default function LessonPageClient({
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10 space-y-6">
+    <main className="mx-auto max-w-[75vw] px-4 py-8 sm:px-6 lg:py-10 space-y-6">
       <header className="rounded-2xl gaia-panel-soft border gaia-border p-4 sm:p-5 shadow-sm space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -189,8 +231,8 @@ export default function LessonPageClient({
         </div>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[300px,minmax(0,1fr)]">
-        <aside className="rounded-2xl gaia-panel-soft border gaia-border p-3 sm:p-4 space-y-2 h-fit">
+      <div className="grid gap-5 lg:grid-cols-[360px,minmax(0,1fr)]">
+        <aside className="rounded-2xl gaia-panel-soft border gaia-border bg-white p-4 sm:p-5 space-y-3 h-fit">
           <div className="flex items-center justify-between gap-2">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] gaia-muted">
@@ -230,7 +272,7 @@ export default function LessonPageClient({
                       <span className="text-[10px] uppercase tracking-[0.18em] gaia-muted">
                         Course {arc.label}
                       </span>
-                      <span className="text-xs font-semibold gaia-strong truncate">
+                      <span className="text-xs font-semibold gaia-strong leading-snug text-left">
                         {arc.title}
                       </span>
                     </div>
@@ -277,7 +319,7 @@ export default function LessonPageClient({
                             </span>
                             <span
                               className={[
-                                "truncate",
+                                "leading-snug text-left break-words",
                                 isDone
                                   ? "gaia-muted line-through"
                                   : "gaia-strong",
@@ -309,7 +351,7 @@ export default function LessonPageClient({
           </div>
 
           <div className="border-b gaia-border flex gap-3 text-sm">
-            {(["lesson", "downloads", "notes"] as TabId[]).map((tab) => {
+            {tabs.map((tab) => {
               const isActive = tab === activeTab;
               return (
                 <button
@@ -324,6 +366,7 @@ export default function LessonPageClient({
                   ].join(" ")}
                 >
                   {tab === "lesson" && "Lesson"}
+                  {tab === "quiz" && "Quiz"}
                   {tab === "downloads" && "Downloads"}
                   {tab === "notes" && "Notes"}
                 </button>
@@ -332,7 +375,7 @@ export default function LessonPageClient({
           </div>
 
           {activeTab === "lesson" && (
-            <div className="space-y-4 text-sm sm:text-base gaia-muted">
+            <div className="space-y-4 text-sm sm:text-base gaia-muted leading-relaxed">
               <div className="space-y-3">
                 <h3 className="text-base sm:text-lg font-semibold gaia-strong">
                   {lessonContent.study.title}
@@ -345,6 +388,106 @@ export default function LessonPageClient({
                   ))}
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "quiz" && (
+            <div className="space-y-3 text-sm sm:text-base gaia-muted">
+              {lessonContent.quiz ? (
+                <>
+                  <h3 className="text-base sm:text-lg font-semibold gaia-strong">
+                    {lessonContent.quiz.title}
+                  </h3>
+                  <div className="space-y-3">
+                    {lessonContent.quiz.questions.map((q, index) => {
+                      const selected = quizAnswers[q.id];
+                      const isCorrect =
+                        quizSubmitted && selected === q.correctOptionId;
+                      const isWrong =
+                        quizSubmitted &&
+                        selected &&
+                        selected !== q.correctOptionId;
+                      return (
+                        <div
+                          key={q.id}
+                          className="rounded-xl border gaia-border gaia-panel-soft p-3 sm:p-4 space-y-2"
+                        >
+                          <p className="text-xs sm:text-sm gaia-strong">
+                            Q{index + 1}. {q.prompt}
+                          </p>
+                          <div className="space-y-1.5">
+                            {q.options.map((opt) => (
+                              <label
+                                key={opt.id}
+                                className="flex items-center gap-2 text-[11px] sm:text-xs gaia-muted cursor-pointer"
+                              >
+                                <input
+                                  type="radio"
+                                  name={q.id}
+                                  className="h-3 w-3"
+                                  checked={selected === opt.id}
+                                  onChange={() => {
+                                    setQuizAnswers((prev) => ({
+                                      ...prev,
+                                      [q.id]: opt.id,
+                                    }));
+                                    setQuizSubmitted(false);
+                                  }}
+                                />
+                                <span>{opt.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                          {quizSubmitted && (
+                            <p
+                              className={`text-[11px] sm:text-xs ${
+                                isCorrect
+                                  ? "text-emerald-600"
+                                  : isWrong
+                                  ? "text-amber-600"
+                                  : "gaia-muted"
+                              }`}
+                            >
+                              {isCorrect
+                                ? "Correct."
+                                : isWrong
+                                ? "Not quite. Check the explanation and try again."
+                                : "Select an answer to check."}
+                            </p>
+                          )}
+                          {quizSubmitted && (
+                            <p className="text-[11px] sm:text-xs gaia-muted">
+                              {q.explanation}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setQuizSubmitted(true)}
+                      className="inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] sm:text-xs font-semibold bg-white text-black"
+                    >
+                      Check answers
+                    </button>
+                    {quizSubmitted &&
+                      lessonContent.quiz.questions.every(
+                        (q) => quizAnswers[q.id] === q.correctOptionId
+                      ) && (
+                        <p className="text-[11px] sm:text-xs text-emerald-600">
+                          Great. All answers correct.
+                        </p>
+                      )}
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs sm:text-sm gaia-muted">
+                  Quiz coming soon for this lesson.
+                </p>
+              )}
             </div>
           )}
 
@@ -363,7 +506,7 @@ export default function LessonPageClient({
               <div className="flex items-center justify-between gap-2">
                 <p className="gaia-strong text-base">Your Notes</p>
                 <p className="text-[10px] sm:text-xs gaia-muted">
-                  Saved automatically · stays even if you switch sessions.
+                  Saved automatically - stays even if you switch sessions.
                 </p>
               </div>
               <textarea
@@ -372,6 +515,46 @@ export default function LessonPageClient({
                 className="mt-2 w-full rounded-xl border border-white/15 bg-black/30 px-3 py-2 text-xs sm:text-sm gaia-strong outline-none focus:border-emerald-400/70 focus:ring-1 focus:ring-emerald-400/50 min-h-[200px]"
                 placeholder="Add your own notes, reflections, or code examples for this lesson..."
               />
+
+              {trackId === "programming" && (
+                <div className="space-y-3 pt-3 border-t gaia-border">
+                  <div className="flex items-center justify-between">
+                    <p className="gaia-strong text-base">Code playground</p>
+                    <p className="text-[10px] sm:text-xs gaia-muted">
+                      Preview and test quick snippets.
+                    </p>
+                  </div>
+                  <CodePlayground
+                    initialCode={defaultCodeSnippet}
+                    language={codeLanguage}
+                  />
+
+                  <div className="rounded-xl border gaia-border gaia-panel-soft p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="gaia-strong text-sm">Quick test</p>
+                      <span className="text-[10px] gaia-muted">
+                        Placeholder tests
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setTestMessage(
+                          "Basic test runner coming soon. For now, use this space to sanity-check your snippet."
+                        )
+                      }
+                      className="inline-flex items-center justify-center rounded-full border gaia-border px-3 py-1 text-[11px] sm:text-xs font-semibold gaia-ink-soft"
+                    >
+                      Run test
+                    </button>
+                    {testMessage && (
+                      <p className="text-[11px] sm:text-xs gaia-muted">
+                        {testMessage}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

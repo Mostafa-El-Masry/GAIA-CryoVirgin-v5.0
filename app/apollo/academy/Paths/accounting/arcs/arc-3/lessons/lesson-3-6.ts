@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_3_6: LessonDefinition = {
-  id: "acc-3-6",
-  code: "3.6",
-  title: "Documentation and Workpapers",
-  status: "active",
+export const accountingLesson36: LessonContentData = {
+  study: {
+    title: "Documentation and Workpapers",
+    paragraphs: [
+      "Create organized documentation to support your accounting work.",
+      "Keep workpapers clear enough that someone else can review or continue them.",
+      "Use consistent file naming, cross-links, and notes to reduce future confusion.",
+    ],
+  },
 };

@@ -1,8 +1,12 @@
-import type { LessonDefinition } from "../../../../types"
+import type { LessonContentData } from "../../../../lesson/lessonContent";
 
-export const lesson_5_3: LessonDefinition = {
-  id: "acc-5-3",
-  code: "5.3",
-  title: "Designing GAIA Helpers and Checks",
-  status: "active",
+export const accountingLesson53: LessonContentData = {
+  study: {
+    title: "Designing GAIA Helpers and Checks",
+    paragraphs: [
+      "Conceptualize GAIA features that would help your work.",
+      "Translate recurring pain points into automated checks or flows.",
+      "Define success criteria so you can validate whether a helper is working.",
+    ],
+  },
 };
