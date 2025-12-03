@@ -411,7 +411,7 @@ export function getFoundationsQuiz(lessonCode: string): QuizConfig | null {
           {
             id: "q7",
             prompt:
-              "Which action best matches the idea of "basic comfort" with your computer?",
+              'Which action best matches the idea of "basic comfort" with your computer?',
             options: [
               {
                 id: "q7-a",
@@ -489,7 +489,7 @@ export function getFoundationsQuiz(lessonCode: string): QuizConfig | null {
           {
             id: "q10",
             prompt:
-              "What does "from noob to hero" mean in the context of this lesson?",
+              'What does "from noob to hero" mean in the context of this lesson?',
             options: [
               {
                 id: "q10-a",

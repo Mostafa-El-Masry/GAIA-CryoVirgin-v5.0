@@ -21,24 +21,32 @@ function formatCurrency(value: number, currency: string) {
   }).format(value);
 }
 
-export default function WealthInstrumentsPage() {
-  const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
-  if (!canAccess("instruments")) {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <section className="rounded-3xl border border-base-300 bg-base-100/90 p-8 shadow-lg">
-          <h1 className="text-xl font-semibold text-base-content mb-2">Certificates & instruments locked</h1>
-          <p className="text-sm text-base-content/70 mb-3">
-            Complete more Academy lessons in Apollo to unlock this part of Wealth.
-          </p>
-          <p className="text-xs text-base-content/60">
-            Lessons completed: <span className="font-semibold">{totalLessonsCompleted}</span> · Wealth stage <span className="font-semibold">{stage}</span>/5
-          </p>
-        </section>
-      </main>
-    );
-  }
+function LockedState({
+  stage,
+  totalLessonsCompleted,
+}: {
+  stage: number;
+  totalLessonsCompleted: number;
+}) {
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-8">
+      <section className="rounded-3xl border border-base-300 bg-base-100/90 p-8 shadow-lg">
+        <h1 className="mb-2 text-xl font-semibold text-base-content">
+          Certificates & instruments locked
+        </h1>
+        <p className="mb-3 text-sm text-base-content/70">
+          Complete more Academy lessons in Apollo to unlock this part of Wealth.
+        </p>
+        <p className="text-xs text-base-content/60">
+          Lessons completed: <span className="font-semibold">{totalLessonsCompleted}</span>{" "}
+          Aú Wealth stage <span className="font-semibold">{stage}</span>/5
+        </p>
+      </section>
+    </main>
+  );
+}
 
+function WealthInstrumentsContent() {
   const [state, setState] = useState<WealthState | null>(null);
 
   useEffect(() => {
@@ -47,7 +55,6 @@ export default function WealthInstrumentsPage() {
   }, []);
 
   const today = getTodayInKuwait();
-
   const instruments = state?.instruments ?? [];
 
   const portfolioByCurrency = useMemo(() => {
@@ -239,7 +246,7 @@ export default function WealthInstrumentsPage() {
                       {formatCurrency(total12, inst.currency)}
                     </td>
                     <td className="px-3 py-2 align-top text-[11px] text-base-content/65">
-                      {inst.note || <span className="opacity-60">—</span>}
+                      {inst.note || <span className="opacity-60">ƒ?"</span>}
                     </td>
                   </tr>
                 );
@@ -258,11 +265,22 @@ export default function WealthInstrumentsPage() {
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-[11px] text-base-content/60">
-          These are soft, approximate numbers meant to give you a feeling for
-          your interest income, not legal or banking-grade precision.
-        </p>
       </section>
     </main>
   );
+}
+
+export default function WealthInstrumentsPage() {
+  const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
+
+  if (!canAccess("instruments")) {
+    return (
+      <LockedState
+        stage={stage}
+        totalLessonsCompleted={totalLessonsCompleted}
+      />
+    );
+  }
+
+  return <WealthInstrumentsContent />;
 }

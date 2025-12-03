@@ -303,6 +303,42 @@ function CallCenterPythonPanel({
   );
 }
 
+function AccountsLocked({
+  totalLessonsCompleted,
+}: {
+  totalLessonsCompleted: number;
+}) {
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-8">
+      <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">
+        <h1 className="text-2xl font-semibold text-[var(--gaia-text-strong)] mb-2">
+          Accounts module locked Aú keep learning
+        </h1>
+        <p className="text-sm text-[var(--gaia-text-muted)] mb-3">
+          Complete more Academy lessons in Apollo to unlock the Accounts control center.
+        </p>
+        <p className="text-xs text-[var(--gaia-text-muted)]">
+          Lessons completed:{" "}
+          <span className="font-semibold">{totalLessonsCompleted}</span>
+        </p>
+      </section>
+    </main>
+  );
+}
+
+export default function AccountsPage() {
+  const { isFeatureUnlocked, totalLessonsCompleted } = useGaiaFeatureUnlocks();
+  const unlocked = isFeatureUnlocked("accounts");
+
+  if (!unlocked) {
+    return (
+      <AccountsLocked totalLessonsCompleted={totalLessonsCompleted} />
+    );
+  }
+
+  return <AccountsContent />;
+}
+
 type ImportTargetKey =
   | "branches"
   | "staff"
@@ -585,29 +621,7 @@ function ImportCard({
   );
 }
 
-export default function AccountsPage() {
-  const { isFeatureUnlocked, totalLessonsCompleted } = useGaiaFeatureUnlocks();
-  const unlocked = isFeatureUnlocked("accounts");
-
-  if (!unlocked) {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">
-          <h1 className="text-2xl font-semibold text-[var(--gaia-text-strong)] mb-2">
-            Accounts module locked · keep learning
-          </h1>
-          <p className="text-sm text-[var(--gaia-text-muted)] mb-3">
-            Complete more Academy lessons in Apollo to unlock the Accounts control center.
-          </p>
-          <p className="text-xs text-[var(--gaia-text-muted)]">
-            Lessons completed:{" "}
-            <span className="font-semibold">{totalLessonsCompleted}</span>
-          </p>
-        </section>
-      </main>
-    );
-  }
-
+function AccountsContent() {
   const [companies, setCompanies] = useState<Company[] | null>(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(
     null

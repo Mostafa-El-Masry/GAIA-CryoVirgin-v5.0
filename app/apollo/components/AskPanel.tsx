@@ -13,11 +13,11 @@ import {
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
 const fieldStyles =
-  'gaia-input w-full rounded-2xl px-4 py-2 text-sm font-medium shadow-sm border gaia-border placeholder:gaia-muted gaia-focus';
+  'w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200';
 const primaryButton =
-  'inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold gaia-contrast shadow-sm transition gaia-focus disabled:opacity-60 disabled:cursor-not-allowed';
+  'inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:opacity-60 disabled:cursor-not-allowed';
 const subtleButton =
-  'inline-flex items-center justify-center rounded-2xl border gaia-border gaia-surface px-3 py-1 text-xs font-semibold shadow-sm transition hover:shadow gaia-focus disabled:opacity-60 disabled:cursor-not-allowed';
+  'inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:opacity-60 disabled:cursor-not-allowed';
 
 
 type AskPanelProps = {
@@ -171,17 +171,15 @@ export default function AskPanel({ onChange }: AskPanelProps) {
       </div>
 
       <div className='flex flex-wrap items-center gap-3 text-sm'>
-        {statusMessage && <span className='gaia-muted'>{statusMessage}</span>}
+        {statusMessage && <span className='text-slate-600'>{statusMessage}</span>}
         {error && (
-          <span
-            className='font-semibold'
-            style={{ color: 'var(--gaia-negative)' }}
-          >
-            {error}
-          </span>
+          <span className='font-semibold text-rose-600'>{error}</span>
         )}
         {!error && hasHistory && (
-          <button className='gaia-muted underline-offset-4 hover:underline' onClick={resetChat}>
+          <button
+            className='text-slate-600 underline-offset-4 hover:text-slate-800 hover:underline'
+            onClick={resetChat}
+          >
             Reset chat
           </button>
         )}
@@ -189,7 +187,7 @@ export default function AskPanel({ onChange }: AskPanelProps) {
 
       <textarea
         ref={taRef}
-        className='gaia-input min-h-[220px] w-full rounded-2xl px-4 py-3 text-sm leading-relaxed border gaia-border shadow-sm gaia-focus'
+        className='min-h-[220px] w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-900 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200'
         value={buffer}
         onChange={(e) => setBuffer(e.target.value)}
       />

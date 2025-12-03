@@ -15,23 +15,27 @@ export default async function LessonPage({ params }: PageProps) {
     notFound();
   }
 
-  const allLessonIds = Object.values(lessonsByTrack).flatMap((trackLessons) =>
-    trackLessons.map((lesson) => lesson.id)
-  );
-
-  if (!allLessonIds.includes(lessonId)) {
-    notFound();
-  }
-
-  const trackId = (Object.keys(lessonsByTrack) as TrackId[]).find((track) =>
-    lessonsByTrack[track].some((lesson) => lesson.id === lessonId)
-  );
+  const trackId: TrackId | null = lessonId.startsWith("prog")
+    ? "programming"
+    : lessonId.startsWith("acc")
+    ? "accounting"
+    : lessonId.startsWith("self")
+    ? "self-repair"
+    : null;
 
   if (!trackId) {
     notFound();
   }
 
-  const path = allPaths[trackId];
+  const lessonExists = lessonsByTrack[trackId]?.some(
+    (lesson) => lesson.id === lessonId
+  );
+
+  if (!lessonExists) {
+    notFound();
+  }
+
+  const path = allPaths.find((p) => p.id === trackId);
   const arcs = arcsByTrack[trackId];
 
   if (!path || !arcs) {

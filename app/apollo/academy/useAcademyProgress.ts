@@ -9,10 +9,11 @@ import {
 } from "@/lib/user-storage";
 import type { TrackId } from "./lessonsMap";
 
-type TrackProgress = {
+export type TrackProgress = {
   completedLessonIds: string[];
   startedOn?: string; // YYYY-MM-DD
-  lastStudyDate?: string; // YYYY-MM-DD
+  lastStudyDate?: string; // YYYY-MM-DD (most recent date you studied this track)
+  studyHistory?: string[]; // sorted list of unique YYYY-MM-DD dates
 };
 
 export type AcademyProgressState = {
@@ -29,30 +30,44 @@ const EMPTY_STATE: AcademyProgressState = {
   },
 };
 
+function normalizeHistory(history: string[] | undefined): string[] {
+  if (!history || history.length === 0) return [];
+  const unique = Array.from(new Set(history.filter(Boolean)));
+  unique.sort();
+  return unique;
+}
+
 function safeParseState(raw: unknown): AcademyProgressState {
   if (!raw || typeof raw !== "object") return EMPTY_STATE;
   try {
     const parsed = raw as AcademyProgressState;
     if (!parsed.byTrack) return EMPTY_STATE;
+
+    const programming = parsed.byTrack.programming ?? { completedLessonIds: [] };
+    const accounting = parsed.byTrack.accounting ?? { completedLessonIds: [] };
+    const selfRepair = parsed.byTrack["self-repair"] ?? {
+      completedLessonIds: [],
+    };
+
     return {
       byTrack: {
         programming: {
-          completedLessonIds:
-            parsed.byTrack.programming?.completedLessonIds ?? [],
-          startedOn: parsed.byTrack.programming?.startedOn,
-          lastStudyDate: parsed.byTrack.programming?.lastStudyDate,
+          completedLessonIds: programming.completedLessonIds ?? [],
+          startedOn: programming.startedOn,
+          lastStudyDate: programming.lastStudyDate,
+          studyHistory: normalizeHistory(programming.studyHistory),
         },
         accounting: {
-          completedLessonIds:
-            parsed.byTrack.accounting?.completedLessonIds ?? [],
-          startedOn: parsed.byTrack.accounting?.startedOn,
-          lastStudyDate: parsed.byTrack.accounting?.lastStudyDate,
+          completedLessonIds: accounting.completedLessonIds ?? [],
+          startedOn: accounting.startedOn,
+          lastStudyDate: accounting.lastStudyDate,
+          studyHistory: normalizeHistory(accounting.studyHistory),
         },
         "self-repair": {
-          completedLessonIds:
-            parsed.byTrack["self-repair"]?.completedLessonIds ?? [],
-          startedOn: parsed.byTrack["self-repair"]?.startedOn,
-          lastStudyDate: parsed.byTrack["self-repair"]?.lastStudyDate,
+          completedLessonIds: selfRepair.completedLessonIds ?? [],
+          startedOn: selfRepair.startedOn,
+          lastStudyDate: selfRepair.lastStudyDate,
+          studyHistory: normalizeHistory(selfRepair.studyHistory),
         },
       },
     };
@@ -62,44 +77,38 @@ function safeParseState(raw: unknown): AcademyProgressState {
 }
 
 function todayIsoDate(): string {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 export function useAcademyProgress() {
-  const [state, setState] = useState<AcademyProgressState>(() => {
-    const cached =
-      readJSON<AcademyProgressState | null>(STORAGE_KEY, null);
-    return cached ? safeParseState(cached) : EMPTY_STATE;
-  });
+  const [state, setState] = useState<AcademyProgressState>(EMPTY_STATE);
 
-  // Hydrate from user-storage (local + Supabase) on first client render
   useEffect(() => {
     let cancelled = false;
 
-    async function hydrateFromUserStorage() {
+    async function init() {
       await waitForUserStorage();
       if (cancelled) return;
-      const stored =
-        readJSON<AcademyProgressState | null>(STORAGE_KEY, null);
-      if (!stored) {
-        setState(EMPTY_STATE);
-        return;
-      }
+
+      const stored = readJSON<AcademyProgressState>(STORAGE_KEY, EMPTY_STATE);
       setState(safeParseState(stored));
     }
 
-    void hydrateFromUserStorage();
+    init();
 
-    const unsubscribe = subscribe(({ key }) => {
-      if (!key || key !== STORAGE_KEY) return;
-      const stored =
-        readJSON<AcademyProgressState | null>(STORAGE_KEY, null);
-      if (!stored) {
-        setState(EMPTY_STATE);
-        return;
-      }
-      setState(safeParseState(stored));
+    const unsubscribe = subscribe((detail) => {
+      if (detail.key !== STORAGE_KEY) return;
+      setState((prev) => {
+        const nextRaw = readJSON<AcademyProgressState>(
+          STORAGE_KEY,
+          prev ?? EMPTY_STATE
+        );
+        return safeParseState(nextRaw);
+      });
     });
 
     return () => {
@@ -111,8 +120,8 @@ export function useAcademyProgress() {
   const updateState = useCallback(
     (updater: (prev: AcademyProgressState) => AcademyProgressState) => {
       setState((prev) => {
-        const next = updater(prev);
-        // Persist into user-storage (local + Supabase)
+        const base = prev ?? EMPTY_STATE;
+        const next = updater(base);
         writeJSON(STORAGE_KEY, next);
         return next;
       });
@@ -120,25 +129,27 @@ export function useAcademyProgress() {
     []
   );
 
-  const toggleLessonCompleted = useCallback(
-    (trackId: TrackId, lessonId: string) => {
+  const markStudyVisit = useCallback(
+    (trackId: TrackId) => {
       updateState((prev) => {
         const today = todayIsoDate();
-        const track = prev.byTrack[trackId] ?? {
+        const existing = prev.byTrack[trackId] ?? {
           completedLessonIds: [],
         };
-        const already = track.completedLessonIds.includes(lessonId);
-        const nextCompleted = already
-          ? track.completedLessonIds.filter((id) => id !== lessonId)
-          : [...track.completedLessonIds, lessonId];
+
+        const history = normalizeHistory([
+          ...(existing.studyHistory ?? []),
+          today,
+        ]);
 
         return {
           byTrack: {
             ...prev.byTrack,
             [trackId]: {
-              completedLessonIds: nextCompleted,
-              startedOn: track.startedOn ?? today,
+              ...existing,
+              startedOn: existing.startedOn ?? today,
               lastStudyDate: today,
+              studyHistory: history,
             },
           },
         };
@@ -147,21 +158,33 @@ export function useAcademyProgress() {
     [updateState]
   );
 
-  const markStudyVisit = useCallback(
-    (trackId: TrackId) => {
+  const toggleLessonCompleted = useCallback(
+    (trackId: TrackId, lessonId: string) => {
       updateState((prev) => {
         const today = todayIsoDate();
-        const track = prev.byTrack[trackId] ?? {
+        const existing = prev.byTrack[trackId] ?? {
           completedLessonIds: [],
         };
+
+        const already = existing.completedLessonIds.includes(lessonId);
+        const nextCompleted = already
+          ? existing.completedLessonIds.filter((id) => id !== lessonId)
+          : [...existing.completedLessonIds, lessonId];
+
+        const history = normalizeHistory([
+          ...(existing.studyHistory ?? []),
+          today,
+        ]);
 
         return {
           byTrack: {
             ...prev.byTrack,
             [trackId]: {
-              ...track,
-              startedOn: track.startedOn ?? today,
+              ...existing,
+              completedLessonIds: nextCompleted,
+              startedOn: existing.startedOn ?? today,
               lastStudyDate: today,
+              studyHistory: history,
             },
           },
         };
