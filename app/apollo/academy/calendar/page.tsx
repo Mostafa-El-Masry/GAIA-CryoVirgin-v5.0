@@ -193,6 +193,47 @@ export default function AcademyMonthlyCalendarPage() {
     year: "numeric",
   });
 
+  // Allocate completed credits from study history to the earliest pending study days.
+  const historyCountByTrack: Record<TrackId, number> = {
+    programming:
+      state.byTrack.programming?.studyHistory?.filter((d) => d <= isoToday)
+        .length ?? 0,
+    accounting:
+      state.byTrack.accounting?.studyHistory?.filter((d) => d <= isoToday)
+        .length ?? 0,
+    "self-repair":
+      state.byTrack["self-repair"]?.studyHistory?.filter((d) => d <= isoToday)
+        .length ?? 0,
+  };
+
+  const studyDaysByTrack: Record<TrackId, string[]> = {
+    programming: [],
+    accounting: [],
+    "self-repair": [],
+  };
+
+  for (const cell of dayCells) {
+    if (cell.schedule.minutes <= 0) continue;
+    if (cell.iso > isoToday) continue;
+    studyDaysByTrack[cell.schedule.trackId].push(cell.iso);
+  }
+
+  const completedByTrack: Record<TrackId, Set<string>> = {
+    programming: new Set(),
+    accounting: new Set(),
+    "self-repair": new Set(),
+  };
+
+  (Object.keys(studyDaysByTrack) as TrackId[]).forEach((trackId) => {
+    const ordered = studyDaysByTrack[trackId].slice().sort();
+    let credits = historyCountByTrack[trackId] ?? 0;
+    for (const iso of ordered) {
+      if (credits <= 0) break;
+      completedByTrack[trackId].add(iso);
+      credits -= 1;
+    }
+  });
+
   const infoRows = [
     { color: TRACK_STYLES.programming.bg, label: "Web Programming" },
     { color: TRACK_STYLES.accounting.bg, label: "Accounting" },
@@ -254,11 +295,10 @@ export default function AcademyMonthlyCalendarPage() {
                 const study = cell.schedule.minutes > 0;
                 const style = study ? TRACK_STYLES[cell.schedule.trackId] : null;
 
-                const history =
-                  state.byTrack[cell.schedule.trackId]?.studyHistory ?? [];
-                const isDone = history.includes(cell.iso);
-                const isBacklog =
-                  study && cell.iso < isoToday && !isDone;
+                const isDone = completedByTrack[cell.schedule.trackId]?.has(
+                  cell.iso
+                );
+                const isBacklog = study && cell.iso < isoToday && !isDone;
 
                 const baseBg = study
                   ? style?.bg ?? "#f7f7f7"

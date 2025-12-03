@@ -5,11 +5,11 @@ import { arcsByTrack } from "../../arcs";
 import { allPaths } from "../../index";
 
 type PageProps = {
-  params: { lessonId: string };
+  params: Promise<{ lessonId: string }>;
 };
 
 export default async function LessonPage({ params }: PageProps) {
-  const { lessonId } = params;
+  const { lessonId } = await params;
 
   if (!lessonId) {
     notFound();

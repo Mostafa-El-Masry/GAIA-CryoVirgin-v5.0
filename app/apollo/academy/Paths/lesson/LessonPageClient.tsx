@@ -12,7 +12,7 @@ import {
 import { useAcademyProgress } from "../../useAcademyProgress";
 import type { TrackId } from "../../lessonsMap";
 import type { ArcDefinition, PathDefinition } from "../types";
-import { getLessonContent } from "./lessonContent";
+import { getLessonContent, type LessonContentData } from "./lessonContent";
 import CodePlayground from "../../components/CodePlayground";
 import { LessonVideoBlock } from "../../components/LessonVideoBlock";
 
@@ -35,6 +35,8 @@ type FlatLesson = {
   arcTitle: string;
 };
 
+type LessonContentOverride = Partial<LessonContentData>;
+
 function buildFlatLessons(arcs: ArcDefinition[]): FlatLesson[] {
   return arcs.flatMap((arc) =>
     arc.lessons.map((lesson) => ({
@@ -47,6 +49,48 @@ function buildFlatLessons(arcs: ArcDefinition[]): FlatLesson[] {
       arcTitle: arc.title,
     }))
   );
+}
+
+function mergeLessonContent(
+  base: LessonContentData,
+  override?: LessonContentOverride | null
+): LessonContentData {
+  if (!override) return base;
+
+  const study =
+    (override.study as Partial<LessonContentData["study"]>) ?? {};
+  const practice =
+    (override.practice as Partial<LessonContentData["practice"]>) ?? undefined;
+
+  return {
+    study: {
+      ...base.study,
+      ...study,
+      title: study.title ?? base.study.title,
+      videoUrl:
+        typeof study.videoUrl === "string" ? study.videoUrl : base.study.videoUrl,
+      paragraphs:
+        study.paragraphs && study.paragraphs.length > 0
+          ? study.paragraphs
+          : base.study.paragraphs,
+    },
+    quiz: base.quiz,
+    practice:
+      (base.practice || practice)
+        ? {
+            ...(base.practice ?? {
+              title: "",
+              description: "",
+              instructions: [],
+            }),
+            ...(practice ?? {}),
+            instructions:
+              practice?.instructions && practice.instructions.length > 0
+                ? practice.instructions
+                : base.practice?.instructions ?? [],
+          }
+        : null,
+  };
 }
 
 function formatProgress(completed: number, total: number) {
@@ -79,6 +123,44 @@ export default function LessonPageClient({
   const { isLessonCompleted, toggleLessonCompleted, markStudyVisit } =
     useAcademyProgress();
 
+  const baseContent = useMemo(
+    () => getLessonContent(lessonId, trackId),
+    [lessonId, trackId]
+  );
+
+  const overrideKey = useMemo(
+    () => `gaia.academy.lesson.content.${lessonId}`,
+    [lessonId]
+  );
+  const [override, setOverride] = useState<LessonContentOverride | null>(null);
+  const lessonContent = useMemo(
+    () => mergeLessonContent(baseContent, override),
+    [baseContent, override]
+  );
+
+  const [draftStudyTitle, setDraftStudyTitle] = useState(
+    baseContent.study.title
+  );
+  const [draftParagraphs, setDraftParagraphs] = useState(
+    baseContent.study.paragraphs.join("\n\n")
+  );
+  const [draftVideoUrl, setDraftVideoUrl] = useState(
+    baseContent.study.videoUrl ?? ""
+  );
+  const [draftPracticeTitle, setDraftPracticeTitle] = useState(
+    baseContent.practice?.title ?? ""
+  );
+  const [draftPracticeDescription, setDraftPracticeDescription] = useState(
+    baseContent.practice?.description ?? ""
+  );
+  const [draftPracticeInstructions, setDraftPracticeInstructions] = useState(
+    (baseContent.practice?.instructions ?? []).join("\n")
+  );
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  );
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
   const [notes, setNotes] = useState<string>("");
   const notesKey = `gaia.academy.notes.${trackId}.${lessonId}`;
   const quizKey = `gaia.academy.quiz.${trackId}.${lessonId}`;
@@ -89,6 +171,99 @@ export default function LessonPageClient({
   useEffect(() => {
     markStudyVisit(trackId);
   }, [markStudyVisit, trackId]);
+
+  useEffect(() => {
+    const loadOverride = () => {
+      const stored = readJSON<LessonContentOverride | null>(overrideKey, null);
+      setOverride(stored ?? null);
+    };
+
+    loadOverride();
+    const offReady = onUserStorageReady(loadOverride);
+    const offStorage = subscribeStorage(({ key }) => {
+      if (key === overrideKey) loadOverride();
+    });
+
+    return () => {
+      offReady();
+      offStorage();
+    };
+  }, [overrideKey]);
+
+  useEffect(() => {
+    const study =
+      (override?.study as Partial<LessonContentData["study"]>) ?? {};
+    const paragraphs =
+      study.paragraphs && study.paragraphs.length > 0
+        ? study.paragraphs
+        : baseContent.study.paragraphs;
+    const practiceSource =
+      override?.practice ?? baseContent.practice ?? {
+        title: "",
+        description: "",
+        instructions: [],
+      };
+
+    setDraftStudyTitle(study.title ?? baseContent.study.title);
+    setDraftParagraphs(paragraphs.join("\n\n"));
+    setDraftVideoUrl(study.videoUrl ?? baseContent.study.videoUrl ?? "");
+    setDraftPracticeTitle(practiceSource.title ?? "");
+    setDraftPracticeDescription(practiceSource.description ?? "");
+    setDraftPracticeInstructions((practiceSource.instructions ?? []).join("\n"));
+    setSaveStatus("idle");
+    setSaveMessage(null);
+  }, [lessonId, baseContent, override]);
+
+  const handleSaveOverride = () => {
+    setSaveStatus("saving");
+    setSaveMessage(null);
+
+    const parsedParagraphs = draftParagraphs
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    const parsedInstructions = draftPracticeInstructions
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const payload: LessonContentOverride = {
+      study: {
+        title: draftStudyTitle.trim() || baseContent.study.title,
+        paragraphs:
+          parsedParagraphs.length > 0
+            ? parsedParagraphs
+            : baseContent.study.paragraphs,
+        videoUrl: draftVideoUrl.trim() || baseContent.study.videoUrl || "",
+      },
+    };
+
+    if (
+      draftPracticeTitle.trim() ||
+      draftPracticeDescription.trim() ||
+      parsedInstructions.length > 0
+    ) {
+      payload.practice = {
+        title: draftPracticeTitle.trim(),
+        description: draftPracticeDescription.trim(),
+        instructions: parsedInstructions,
+      };
+    }
+
+    writeJSON(overrideKey, payload);
+    setOverride(payload);
+    setSaveStatus("saved");
+    setSaveMessage("Saved. Your edits sync across your devices.");
+    setTimeout(() => setSaveStatus("idle"), 1200);
+  };
+
+  const handleResetOverride = () => {
+    removeItem(overrideKey);
+    setOverride(null);
+    setSaveStatus("idle");
+    setSaveMessage("Reverted to the original lesson content.");
+  };
 
   useEffect(() => {
     const loadNotes = () => {
@@ -142,10 +317,6 @@ export default function LessonPageClient({
     arc.lessons.some((lesson) => lesson.id === lessonId)
   );
 
-  const lessonContent = useMemo(
-    () => getLessonContent(lessonId, trackId),
-    [lessonId, trackId]
-  );
   const videoId = useMemo(
     () => getYoutubeId(lessonContent.study.videoUrl),
     [lessonContent.study.videoUrl]
@@ -418,6 +589,119 @@ export default function LessonPageClient({
         </aside>
 
         <section className="rounded-3xl border gaia-border bg-[var(--gaia-surface)] p-5 sm:p-7 space-y-5 shadow-md">
+          <div className="rounded-2xl border gaia-border bg-[var(--gaia-surface-soft)] p-4 sm:p-5 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--gaia-text-muted)]">
+                  Personal copy
+                </p>
+                <p className="text-sm text-[var(--gaia-text-muted)]">
+                  Edit this lesson text. Saves to your account and syncs across devices.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                {saveMessage && (
+                  <span className="rounded-full bg-[var(--gaia-surface)] px-3 py-1 font-semibold text-[var(--gaia-text-muted)]">
+                    {saveMessage}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleResetOverride}
+                  className="rounded-full border gaia-border px-3 py-1 font-semibold text-[var(--gaia-text-default)] hover:bg-[var(--gaia-surface)]"
+                >
+                  Reset to default
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                  Study title
+                </label>
+                <input
+                  value={draftStudyTitle}
+                  onChange={(e) => setDraftStudyTitle(e.target.value)}
+                  className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                  Video URL (YouTube)
+                </label>
+                <input
+                  value={draftVideoUrl}
+                  onChange={(e) => setDraftVideoUrl(e.target.value)}
+                  placeholder="https://youtube.com/watch?v=..."
+                  className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                Study paragraphs (separate blocks with a blank line)
+              </label>
+              <textarea
+                value={draftParagraphs}
+                onChange={(e) => setDraftParagraphs(e.target.value)}
+                className="min-h-[140px] w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-3 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                  Practice title
+                </label>
+                <input
+                  value={draftPracticeTitle}
+                  onChange={(e) => setDraftPracticeTitle(e.target.value)}
+                  className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                  placeholder="Optional practice title"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                  Practice description
+                </label>
+                <input
+                  value={draftPracticeDescription}
+                  onChange={(e) => setDraftPracticeDescription(e.target.value)}
+                  className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                  placeholder="Short description"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                Practice steps (one per line)
+              </label>
+              <textarea
+                value={draftPracticeInstructions}
+                onChange={(e) => setDraftPracticeInstructions(e.target.value)}
+                className="min-h-[120px] w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-3 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                placeholder="Write practice steps, each on its own line."
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
+              <span className="text-xs text-[var(--gaia-text-muted)]">
+                Changes save to your GAIA storage (cloud + local backup).
+              </span>
+              <button
+                type="button"
+                onClick={handleSaveOverride}
+                disabled={saveStatus === "saving"}
+                className="inline-flex items-center justify-center rounded-full bg-info px-4 py-2 text-xs sm:text-sm font-semibold text-contrast-text shadow-sm hover:shadow-md transition disabled:opacity-60"
+              >
+                {saveStatus === "saving" ? "Saving..." : "Save lesson copy"}
+              </button>
+            </div>
+          </div>
+
           {videoId ? (
             <LessonVideoBlock
               title={lessonContent.study.title}
