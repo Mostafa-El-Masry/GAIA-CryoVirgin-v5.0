@@ -346,7 +346,13 @@ export default function AcademyDashboardPage() {
               This is your study control panel with your stepped schedule.
             </p>
           </div>
-          <div className="text-xs text-slate-500">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <Link
+              href="/apollo/academy/calendar"
+              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 shadow-sm hover:bg-slate-50 transition"
+            >
+              Monthly calendar →
+            </Link>
             <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 shadow-sm">
               <span className="h-2 w-2 rounded-full bg-emerald-500 mr-2" />
               Learning engine online

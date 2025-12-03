@@ -113,6 +113,18 @@ function taskMatchesToday(t: Task, today: string): boolean {
   return hasRepeatToday || dueToday;
 }
 
+function earliestPendingDate(tasks: Task[], today: string): string {
+  let focus = today;
+  for (const t of tasks) {
+    if (!t.due_date) continue;
+    if (t.due_date > today) continue;
+    const status = t.status_by_date?.[t.due_date];
+    if (status === "done" || status === "skipped") continue;
+    if (t.due_date < focus) focus = t.due_date;
+  }
+  return focus;
+}
+
 export type SlotState = "pending" | "done" | "idle";
 
 export type SlotInfo = {
@@ -148,9 +160,11 @@ export function useTodoDaily() {
       await waitForUserStorage();
       if (cancelled) return;
       const current = getTodayInTZ(KUWAIT_TZ);
-      setToday(current);
-      setStorage(loadStorage());
-      setSelection(loadSelection(current));
+      const stored = loadStorage();
+      const focusDate = earliestPendingDate(stored.tasks, current);
+      setToday(focusDate);
+      setStorage(stored);
+      setSelection(loadSelection(focusDate));
     }
     void hydrateFromUserStorage();
     const unsubscribe = subscribe(({ key }) => {
@@ -217,8 +231,11 @@ export function useTodoDaily() {
 
     const onVis = () => {
       const t = getTodayInTZ(KUWAIT_TZ);
-      setToday(t);
-      setSelection(loadSelection(t));
+      const latest = loadStorage();
+      setStorage(latest);
+      const focus = earliestPendingDate(latest.tasks, t);
+      setToday(focus);
+      setSelection(loadSelection(focus));
     };
     document.addEventListener("visibilitychange", onVis);
     const timer = setInterval(onVis, 60*60*1000);
@@ -448,6 +465,15 @@ export function useTodoDaily() {
     },
     []
   );
+
+  useEffect(() => {
+    const current = getTodayInTZ(KUWAIT_TZ);
+    const focus = earliestPendingDate(storage.tasks, current);
+    if (focus !== today) {
+      setToday(focus);
+      setSelection(loadSelection(focus));
+    }
+  }, [storage.tasks, today]);
 
   useEffect(() => {
     const cats: Category[] = ["life", "work", "distraction"];

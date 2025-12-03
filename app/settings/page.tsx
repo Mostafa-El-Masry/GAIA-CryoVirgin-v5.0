@@ -73,29 +73,7 @@ async function fetchGalleryManifest(): Promise<GalleryItem[]> {
   throw new Error("Unable to load gallery manifest.");
 }
 
-export default function SettingsPage() {
-  const { isFeatureUnlocked, totalLessonsCompleted } = useGaiaFeatureUnlocks();
-  const unlocked = isFeatureUnlocked("settings");
-
-  if (!unlocked) {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">
-          <h1 className="text-2xl font-semibold text-[var(--gaia-text-strong)] mb-2">
-            Settings locked · keep learning
-          </h1>
-          <p className="text-sm text-[var(--gaia-text-muted)] mb-3">
-            Complete more Academy lessons in Apollo to unlock GAIA settings.
-          </p>
-          <p className="text-xs text-[var(--gaia-text-muted)]">
-            Lessons completed:{" "}
-            <span className="font-semibold">{totalLessonsCompleted}</span>
-          </p>
-        </section>
-      </main>
-    );
-  }
-
+function SettingsContent() {
   const { theme, setTheme, button, setButton, search, setSearch } = useDesign();
   const { profile: authProfile } = useAuthSnapshot();
   const authName =
@@ -504,4 +482,38 @@ export default function SettingsPage() {
       </main>
     </PermissionGate>
   );
+}
+
+function SettingsLocked({
+  totalLessonsCompleted,
+}: {
+  totalLessonsCompleted: number;
+}) {
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-8">
+      <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">
+        <h1 className="text-2xl font-semibold text-[var(--gaia-text-strong)] mb-2">
+          Settings locked Aú keep learning
+        </h1>
+        <p className="text-sm text-[var(--gaia-text-muted)] mb-3">
+          Complete more Academy lessons in Apollo to unlock GAIA settings.
+        </p>
+        <p className="text-xs text-[var(--gaia-text-muted)]">
+          Lessons completed:{" "}
+          <span className="font-semibold">{totalLessonsCompleted}</span>
+        </p>
+      </section>
+    </main>
+  );
+}
+
+export default function SettingsPage() {
+  const { isFeatureUnlocked, totalLessonsCompleted } = useGaiaFeatureUnlocks();
+  const unlocked = isFeatureUnlocked("settings");
+
+  if (!unlocked) {
+    return <SettingsLocked totalLessonsCompleted={totalLessonsCompleted} />;
+  }
+
+  return <SettingsContent />;
 }
