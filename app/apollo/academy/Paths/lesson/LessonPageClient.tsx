@@ -114,6 +114,24 @@ function getYoutubeId(url?: string): string | null {
   return null;
 }
 
+function hashSeed(input: string): number {
+  let h = 1779033703 ^ input.length;
+  for (let i = 0; i < input.length; i++) {
+    h = Math.imul(h ^ input.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return (h >>> 0) || 1;
+}
+
+function mulberry32(seed: number): () => number {
+  return () => {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 export default function LessonPageClient({
   trackId,
   path,
@@ -137,6 +155,20 @@ export default function LessonPageClient({
     () => mergeLessonContent(baseContent, override),
     [baseContent, override]
   );
+  const quizContent = useMemo(() => {
+    if (!lessonContent.quiz) return null;
+    const seedBase = `${trackId}:${lessonId}`;
+    const questions = lessonContent.quiz.questions.map((q, idx) => {
+      const rng = mulberry32(hashSeed(`${seedBase}:${q.id}:${idx}`));
+      const shuffled = [...q.options];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return { ...q, options: shuffled };
+    });
+    return { ...lessonContent.quiz, questions };
+  }, [lessonContent.quiz, lessonId, trackId]);
 
   const [draftStudyTitle, setDraftStudyTitle] = useState(
     baseContent.study.title
@@ -160,6 +192,7 @@ export default function LessonPageClient({
     "idle"
   );
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [isEditingLesson, setIsEditingLesson] = useState(false);
 
   const [notes, setNotes] = useState<string>("");
   const notesKey = `gaia.academy.notes.${trackId}.${lessonId}`;
@@ -212,6 +245,7 @@ export default function LessonPageClient({
     setDraftPracticeInstructions((practiceSource.instructions ?? []).join("\n"));
     setSaveStatus("idle");
     setSaveMessage(null);
+    setIsEditingLesson(false);
   }, [lessonId, baseContent, override]);
 
   const handleSaveOverride = () => {
@@ -255,6 +289,7 @@ export default function LessonPageClient({
     setOverride(payload);
     setSaveStatus("saved");
     setSaveMessage("Saved. Your edits sync across your devices.");
+    setIsEditingLesson(false);
     setTimeout(() => setSaveStatus("idle"), 1200);
   };
 
@@ -263,6 +298,7 @@ export default function LessonPageClient({
     setOverride(null);
     setSaveStatus("idle");
     setSaveMessage("Reverted to the original lesson content.");
+    setIsEditingLesson(false);
   };
 
   useEffect(() => {
@@ -323,14 +359,14 @@ export default function LessonPageClient({
   );
 
   const allCorrectNow = useMemo(() => {
-    if (!lessonContent.quiz) return false;
-    return lessonContent.quiz.questions.every(
+    if (!quizContent) return false;
+    return quizContent.questions.every(
       (q) => quizAnswers[q.id] === q.correctOptionId
     );
-  }, [lessonContent.quiz, quizAnswers]);
+  }, [quizContent, quizAnswers]);
 
   useEffect(() => {
-    if (!lessonContent.quiz) return;
+    if (!quizContent) return;
     if (quizSubmitted && allCorrectNow) {
       writeJSON(quizKey, {
         answers: quizAnswers,
@@ -340,7 +376,7 @@ export default function LessonPageClient({
     } else {
       removeItem(quizKey);
     }
-  }, [quizSubmitted, allCorrectNow, quizAnswers, quizKey, lessonContent.quiz]);
+  }, [quizSubmitted, allCorrectNow, quizAnswers, quizKey, quizContent]);
 
   const codeLanguage: "html" | "css" | "js" = useMemo(() => {
     if (trackId !== "programming") return "html";
@@ -599,107 +635,135 @@ export default function LessonPageClient({
                   Edit this lesson text. Saves to your account and syncs across devices.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
                 {saveMessage && (
                   <span className="rounded-full bg-[var(--gaia-surface)] px-3 py-1 font-semibold text-[var(--gaia-text-muted)]">
                     {saveMessage}
                   </span>
                 )}
-                <button
-                  type="button"
-                  onClick={handleResetOverride}
-                  className="rounded-full border gaia-border px-3 py-1 font-semibold text-[var(--gaia-text-default)] hover:bg-[var(--gaia-surface)]"
-                >
-                  Reset to default
-                </button>
+                {isEditingLesson ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleResetOverride}
+                      className="rounded-full border gaia-border px-3 py-1 font-semibold text-[var(--gaia-text-default)] hover:bg-[var(--gaia-surface)]"
+                    >
+                      Reset to default
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingLesson(false)}
+                      className="rounded-full border gaia-border px-3 py-1 font-semibold text-[var(--gaia-text-default)] hover:bg-[var(--gaia-surface)]"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingLesson(true)}
+                    className="rounded-full border gaia-border px-3 py-1 font-semibold text-[var(--gaia-text-default)] hover:bg-[var(--gaia-surface)]"
+                  >
+                    Edit lesson copy
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
-                  Study title
-                </label>
-                <input
-                  value={draftStudyTitle}
-                  onChange={(e) => setDraftStudyTitle(e.target.value)}
-                  className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
-                  Video URL (YouTube)
-                </label>
-                <input
-                  value={draftVideoUrl}
-                  onChange={(e) => setDraftVideoUrl(e.target.value)}
-                  placeholder="https://youtube.com/watch?v=..."
-                  className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
-                />
-              </div>
-            </div>
+            {isEditingLesson ? (
+              <>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                      Study title
+                    </label>
+                    <input
+                      value={draftStudyTitle}
+                      onChange={(e) => setDraftStudyTitle(e.target.value)}
+                      className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                      Video URL (YouTube)
+                    </label>
+                    <input
+                      value={draftVideoUrl}
+                      onChange={(e) => setDraftVideoUrl(e.target.value)}
+                      placeholder="https://youtube.com/watch?v=..."
+                      className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                    />
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
-                Study paragraphs (separate blocks with a blank line)
-              </label>
-              <textarea
-                value={draftParagraphs}
-                onChange={(e) => setDraftParagraphs(e.target.value)}
-                className="min-h-[140px] w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-3 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
-              />
-            </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                    Study paragraphs (separate blocks with a blank line)
+                  </label>
+                  <textarea
+                    value={draftParagraphs}
+                    onChange={(e) => setDraftParagraphs(e.target.value)}
+                    className="min-h-[140px] w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-3 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                  />
+                </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
-                  Practice title
-                </label>
-                <input
-                  value={draftPracticeTitle}
-                  onChange={(e) => setDraftPracticeTitle(e.target.value)}
-                  className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
-                  placeholder="Optional practice title"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
-                  Practice description
-                </label>
-                <input
-                  value={draftPracticeDescription}
-                  onChange={(e) => setDraftPracticeDescription(e.target.value)}
-                  className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
-                  placeholder="Short description"
-                />
-              </div>
-            </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                      Practice title
+                    </label>
+                    <input
+                      value={draftPracticeTitle}
+                      onChange={(e) => setDraftPracticeTitle(e.target.value)}
+                      className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                      placeholder="Optional practice title"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                      Practice description
+                    </label>
+                    <input
+                      value={draftPracticeDescription}
+                      onChange={(e) => setDraftPracticeDescription(e.target.value)}
+                      className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                      placeholder="Short description"
+                    />
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
-                Practice steps (one per line)
-              </label>
-              <textarea
-                value={draftPracticeInstructions}
-                onChange={(e) => setDraftPracticeInstructions(e.target.value)}
-                className="min-h-[120px] w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-3 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
-                placeholder="Write practice steps, each on its own line."
-              />
-            </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                    Practice steps (one per line)
+                  </label>
+                  <textarea
+                    value={draftPracticeInstructions}
+                    onChange={(e) => setDraftPracticeInstructions(e.target.value)}
+                    className="min-h-[120px] w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-3 text-sm text-[var(--gaia-foreground)] outline-none focus:border-info focus:ring-2 focus:ring-info/30"
+                    placeholder="Write practice steps, each on its own line."
+                  />
+                </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
-              <span className="text-xs text-[var(--gaia-text-muted)]">
-                Changes save to your GAIA storage (cloud + local backup).
-              </span>
-              <button
-                type="button"
-                onClick={handleSaveOverride}
-                disabled={saveStatus === "saving"}
-                className="inline-flex items-center justify-center rounded-full bg-info px-4 py-2 text-xs sm:text-sm font-semibold text-contrast-text shadow-sm hover:shadow-md transition disabled:opacity-60"
-              >
-                {saveStatus === "saving" ? "Saving..." : "Save lesson copy"}
-              </button>
-            </div>
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
+                  <span className="text-xs text-[var(--gaia-text-muted)]">
+                    Changes save to your GAIA storage (cloud + local backup).
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSaveOverride}
+                    disabled={saveStatus === "saving"}
+                    className="inline-flex items-center justify-center rounded-full bg-info px-4 py-2 text-xs sm:text-sm font-semibold text-contrast-text shadow-sm hover:shadow-md transition disabled:opacity-60"
+                  >
+                    {saveStatus === "saving" ? "Saving..." : "Save lesson copy"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-[var(--gaia-text-muted)]">
+                Your lesson copy is hidden until you choose to edit. Click{" "}
+                <span className="font-semibold text-[var(--gaia-foreground)]">Edit lesson copy</span> to customize this lesson.
+              </p>
+            )}
           </div>
 
           {videoId ? (
@@ -758,21 +822,21 @@ export default function LessonPageClient({
 
           {activeTab === "quiz" && (
             <div className="space-y-4 text-sm sm:text-base text-[var(--gaia-text-default)]">
-              {lessonContent.quiz ? (
+              {quizContent ? (
                 <>
                   <div className="space-y-1">
                     <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--gaia-text-muted)]">
                       Quick check
                     </p>
                     <h3 className="text-xl sm:text-2xl font-semibold text-[var(--gaia-foreground)] leading-tight">
-                      {lessonContent.quiz.title}
+                      {quizContent.title}
                     </h3>
                     <p className="text-sm text-[var(--gaia-text-muted)]">
                       Answer each question and then check for feedback.
                     </p>
                   </div>
                   <div className="space-y-3">
-                    {lessonContent.quiz.questions.map((q, index) => {
+                    {quizContent.questions.map((q, index) => {
                       const selected = quizAnswers[q.id];
                       const isCorrect =
                         quizSubmitted && selected === q.correctOptionId;

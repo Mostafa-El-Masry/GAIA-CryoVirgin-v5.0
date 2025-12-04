@@ -290,11 +290,30 @@ export async function hydrateUserStorage(
     try {
       activeToken = session?.access_token ?? null;
       const rows = await fetchRows(userId, activeToken ?? undefined);
+
+      // Merge any local/offline cache values over the fetched rows so we
+      // do not lose progress that was stored before the user logged in.
+      const merged = new Map(rows);
+      const offlineOverrides: Array<[string, string]> = [];
+      cache.forEach((value, key) => {
+        const remoteValue = rows.get(key) ?? null;
+        if (remoteValue !== value) {
+          offlineOverrides.push([key, value]);
+        }
+        merged.set(key, value);
+      });
+
       activeUserId = userId;
-      diffAndApply(rows);
+      diffAndApply(merged);
       subscribeToRealtime(userId);
       ready = true;
       notifyReady();
+
+      if (offlineOverrides.length > 0) {
+        void Promise.allSettled(
+          offlineOverrides.map(([key, value]) => persist(key, value))
+        );
+      }
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       console.error("Unable to hydrate user storage:", errMsg);

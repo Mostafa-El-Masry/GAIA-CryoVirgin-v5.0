@@ -20,8 +20,6 @@ export type AcademyProgressState = {
   byTrack: Record<TrackId, TrackProgress>;
 };
 
-const STORAGE_KEY = "gaia_academy_progress_v1";
-
 const EMPTY_STATE: AcademyProgressState = {
   byTrack: {
     programming: { completedLessonIds: [] },
@@ -29,6 +27,11 @@ const EMPTY_STATE: AcademyProgressState = {
     "self-repair": { completedLessonIds: [] },
   },
 };
+
+const STORAGE_KEY = "gaia_academy_progress_v1";
+const INITIAL_STATE = safeParseState(
+  readJSON<AcademyProgressState>(STORAGE_KEY, EMPTY_STATE)
+);
 
 function normalizeHistory(history: string[] | undefined): string[] {
   if (!history || history.length === 0) return [];
@@ -85,7 +88,9 @@ function todayIsoDate(): string {
 }
 
 export function useAcademyProgress() {
-  const [state, setState] = useState<AcademyProgressState>(EMPTY_STATE);
+  const [state, setState] =
+    useState<AcademyProgressState>(INITIAL_STATE);
+  const [hydrated, setHydrated] = useState<boolean>(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +101,7 @@ export function useAcademyProgress() {
 
       const stored = readJSON<AcademyProgressState>(STORAGE_KEY, EMPTY_STATE);
       setState(safeParseState(stored));
+      setHydrated(true);
     }
 
     init();
@@ -120,13 +126,20 @@ export function useAcademyProgress() {
   const updateState = useCallback(
     (updater: (prev: AcademyProgressState) => AcademyProgressState) => {
       setState((prev) => {
-        const base = prev ?? EMPTY_STATE;
+        const base = hydrated
+          ? prev ?? EMPTY_STATE
+          : safeParseState(
+              readJSON<AcademyProgressState>(
+                STORAGE_KEY,
+                prev ?? EMPTY_STATE
+              )
+            );
         const next = updater(base);
         writeJSON(STORAGE_KEY, next);
         return next;
       });
     },
-    []
+    [hydrated]
   );
 
   const markStudyVisit = useCallback(

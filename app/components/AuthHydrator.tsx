@@ -23,6 +23,8 @@ export default function AuthHydrator() {
         console.warn(
           "Supabase environment variables are missing. Skipping auth hydration."
         );
+        // Still mark user storage as ready so local-only storage works in dev.
+        await hydrateUserStorage(null);
         return;
       }
 
