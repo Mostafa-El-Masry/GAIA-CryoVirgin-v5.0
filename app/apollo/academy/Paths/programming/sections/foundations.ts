@@ -10,7 +10,7 @@ export function getFoundationsStudy(lessonCode: string): StudyDescription | null
     case "0.0":
       return {
         title: "A Short History of Programming",
-        videoUrl: "https://www.youtube.com/watch?v=OwS9aTE2Go4",
+        videoUrl: "https://www.youtube.com/watch?v=IcrBqCFLHIU",
         paragraphs: [
           "Before we write any code, zoom out and see where programming came from. In the 1800s, Ada Lovelace wrote the first published algorithm for Babbage's Analytical Engine, showing a machine could follow precise instructions.",
           "Mechanical-to-electrical: early computers used punched cards inspired by the Jacquard loom to feed instructions. Those cards led to low-level assembly languages that talked almost directly to hardware.",

@@ -86,7 +86,7 @@ const nextConfig = {
               "font-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data:",
               `connect-src ${connectSrc.join(" ")}`,
-              "frame-src 'self' https://sandpack.codesandbox.io https://*.codesandbox.io blob: data:",
+              "frame-src 'self' https://sandpack.codesandbox.io https://*.codesandbox.io https://www.youtube.com https://www.youtube-nocookie.com blob: data:",
               "worker-src 'self' blob: https://sandpack.codesandbox.io https://*.codesandbox.io",
             ].join("; "),
           },
