@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { useWealthUnlocks } from "../hooks/useWealthUnlocks";
+
+const surface =
+  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] text-[var(--gaia-text-default)] shadow-[0_18px_60px_rgba(0,0,0,0.18)]";
 
 const QuickLinks = () => {
   const links = [
@@ -16,27 +18,27 @@ const QuickLinks = () => {
     {
       href: "/wealth-awakening/flows",
       title: "Monthly story & flows",
-      body: "This month’s deposits, income, interest, expenses, and withdrawals.",
+      body: "This month's deposits, income, interest, expenses, and withdrawals.",
     },
     {
       href: "/wealth-awakening/levels",
       title: "Wealth levels",
-      body: "Poor → Stable → Wealthy, defined using your real numbers.",
+      body: "Poor -> Stable -> Wealthy, defined using your real numbers.",
     },
     {
       href: "/wealth-awakening/projections",
       title: "Future projections",
-      body: "Simple \"if you keep going like this\" views over months and years.",
+      body: 'Simple "if you keep going like this" views over months and years.',
     },
   ] as const;
 
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-base-300 bg-base-100/90 p-4 shadow-lg shadow-primary/5 md:p-5">
+    <section className={`${surface} flex flex-col gap-3 p-4 md:p-5`}>
       <header>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-base-content/80">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--gaia-text-muted)]">
           Wall Street Drive Lanes
         </h2>
-        <p className="mt-1 text-xs text-base-content/70">
+        <p className="mt-1 text-xs gaia-muted">
           As v3.2 unfolds, these lanes become full views for your Wealth life.
         </p>
       </header>
@@ -45,19 +47,15 @@ const QuickLinks = () => {
           <li key={link.href}>
             <Link
               href={link.href}
-              className="group block rounded-xl border border-base-300/80 bg-base-200/60 px-3 py-2 text-xs transition hover:border-primary/60 hover:bg-base-100"
+              className="group block rounded-xl border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-2 text-xs transition hover:border-[var(--gaia-contrast-bg)]/70 hover:bg-[var(--gaia-surface)]"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="font-semibold text-base-content/90">
-                  {link.title}
-                </span>
-                <span className="text-[11px] text-primary/80 group-hover:text-primary">
+                <span className="font-semibold text-[var(--gaia-text-strong)]">{link.title}</span>
+                <span className="text-[11px] text-[var(--gaia-contrast-bg)] group-hover:text-[var(--gaia-text-strong)]">
                   Open
                 </span>
               </div>
-              <p className="mt-0.5 text-[11px] text-base-content/70">
-                {link.body}
-              </p>
+              <p className="mt-0.5 text-[11px] gaia-muted">{link.body}</p>
             </Link>
           </li>
         ))}

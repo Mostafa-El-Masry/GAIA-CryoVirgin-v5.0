@@ -14,6 +14,9 @@ import { getTodayInKuwait } from "../lib/summary";
 
 const HORIZON_OPTIONS = [12, 24, 36] as const;
 
+const surface =
+  "rounded-2xl border border-slate-800 bg-slate-900/80 shadow-[0_18px_60px_rgba(0,0,0,0.45)]";
+
 function formatCurrency(value: number, currency: string) {
   if (!Number.isFinite(value)) return "-";
   return new Intl.NumberFormat("en-US", {
@@ -27,14 +30,15 @@ export default function WealthProjectionsPage() {
   const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
   if (!canAccess("projections")) {
     return (
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <section className="rounded-3xl border border-base-300 bg-base-100/90 p-8 shadow-lg">
-          <h1 className="text-xl font-semibold text-base-content mb-2">Future projections locked</h1>
-          <p className="text-sm text-base-content/70 mb-3">
+      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-slate-100">
+        <section className={`${surface} p-8`}>
+          <h1 className="text-xl font-semibold text-white">Future projections locked</h1>
+          <p className="mt-2 text-sm text-slate-300">
             Complete more Academy lessons in Apollo to unlock this part of Wealth.
           </p>
-          <p className="text-xs text-base-content/60">
-            Lessons completed: <span className="font-semibold">{totalLessonsCompleted}</span> · Wealth stage <span className="font-semibold">{stage}</span>/5
+          <p className="mt-2 text-xs text-slate-400">
+            Lessons completed: <span className="font-semibold text-white">{totalLessonsCompleted}</span>{" "}
+            - Wealth stage <span className="font-semibold text-white">{stage}</span>/5
           </p>
         </section>
       </main>
@@ -42,9 +46,7 @@ export default function WealthProjectionsPage() {
   }
 
   const [state, setState] = useState<WealthState | null>(null);
-  const [horizon, setHorizon] = useState<(typeof HORIZON_OPTIONS)[number]>(
-    12,
-  );
+  const [horizon, setHorizon] = useState<(typeof HORIZON_OPTIONS)[number]>(12);
 
   useEffect(() => {
     const s = loadWealthState();
@@ -78,44 +80,35 @@ export default function WealthProjectionsPage() {
 
   if (!state) {
     return (
-      <main className="mx-auto max-w-4xl px-4 py-8">
-        <h1 className="text-2xl font-semibold text-base-content">
-          Future projections
-        </h1>
-        <p className="mt-2 text-sm text-base-content/70">
+      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-slate-100">
+        <section className={`${surface} p-6 text-sm text-slate-300`}>
           Loading your instruments and projections from local cache...
-        </p>
+        </section>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
+    <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-slate-100">
       <header className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-300/80">
             Wall Street Drive
           </p>
-          <h1 className="mt-1 text-2xl font-semibold text-base-content md:text-3xl">
-            Future projections
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-base-content/70">
-            Rough, calm projections of your interest income if nothing
-            changes. No step-downs or complex compounding – just a simple view
-            over the next 12–36 months.
+          <h1 className="mt-1 text-3xl font-semibold text-white">Future projections</h1>
+          <p className="mt-2 max-w-3xl text-sm text-slate-300">
+            Rough, calm projections of your interest income if nothing changes. No step-downs or
+            complex compounding - just a simple view over the next 12-36 months.
           </p>
         </div>
         <div className="mt-3 flex items-center gap-2 md:mt-0">
-          <label className="text-xs text-base-content/70">
+          <label className="text-xs text-slate-300">
             Horizon
             <select
-              className="ml-2 rounded-full border border-base-300 bg-base-100 px-2 py-1 text-xs text-base-content/80"
+              className="ml-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-white shadow-inner shadow-black/30"
               value={horizon}
               onChange={(e) =>
-                setHorizon(parseInt(e.target.value, 10) as
-                  | 12
-                  | 24
-                  | 36)
+                setHorizon(parseInt(e.target.value, 10) as 12 | 24 | 36)
               }
             >
               {HORIZON_OPTIONS.map((h) => (
@@ -128,41 +121,39 @@ export default function WealthProjectionsPage() {
         </div>
       </header>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
-        <article className="rounded-2xl border border-base-300 bg-base-100/90 p-4 shadow-md shadow-primary/5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+      <section className="grid gap-4 md:grid-cols-3">
+        <article className={`${surface} p-4`}>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             Simple, on-purpose rough
           </h2>
-          <p className="mt-2 text-xs text-base-content/70">
-            These projections assume your principal, rates, and payout rules
-            stay the same. They&apos;re meant for a feeling, not a contract.
+          <p className="mt-2 text-xs text-slate-300">
+            These projections assume your principal, rates, and payout rules stay the same.
+            They&apos;re meant for a feeling, not a contract.
           </p>
         </article>
 
-        <article className="rounded-2xl border border-base-300 bg-base-100/90 p-4 shadow-md shadow-primary/5 md:col-span-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+        <article className={`${surface} p-4 md:col-span-2`}>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             Interest by currency
           </h3>
           <div className="mt-2 grid gap-3 md:grid-cols-2">
             {Array.from(byCurrency.entries()).map(([currency, agg]) => (
               <div
                 key={currency}
-                className="rounded-xl border border-base-300 bg-base-200/60 p-3 text-xs text-base-content/80"
+                className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-xs text-slate-200"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-base-content/70">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                     {currency}
                   </span>
-                  <span className="text-[11px] text-base-content/60">
-                    Horizon: {horizon} months
-                  </span>
+                  <span className="text-[11px] text-slate-500">Horizon: {horizon} months</span>
                 </div>
-                <p className="mt-1 text-sm font-semibold text-base-content">
+                <p className="mt-1 text-sm font-semibold text-white">
                   {formatCurrency(agg.monthlyInterest, currency)} / month
                 </p>
-                <p className="mt-0.5 text-[11px] text-base-content/65">
+                <p className="mt-0.5 text-[11px] text-slate-400">
                   Roughly{" "}
-                  <span className="font-semibold">
+                  <span className="font-semibold text-white">
                     {formatCurrency(agg.totalOverHorizon, currency)}
                   </span>{" "}
                   total interest over the next {horizon} months.
@@ -170,78 +161,64 @@ export default function WealthProjectionsPage() {
               </div>
             ))}
             {byCurrency.size === 0 && (
-              <p className="text-xs text-base-content/60">
-                No instruments defined yet. Add certificates first, then
-                revisit projections.
+              <p className="text-xs text-slate-400">
+                No instruments defined yet. Add certificates first, then revisit projections.
               </p>
             )}
           </div>
         </article>
       </section>
 
-      <section className="mt-8 rounded-2xl border border-base-300 bg-base-100/90 p-4 shadow-md shadow-primary/5">
-        <h2 className="text-sm font-semibold text-base-content">
-          Instrument breakdown
-        </h2>
-        <p className="mt-1 text-xs text-base-content/70">
-          For each instrument, see the approximate monthly interest and how
-          much it could pay you over the selected horizon, within its term.
+      <section className={`${surface} p-5 md:p-6`}>
+        <h2 className="text-sm font-semibold text-white">Instrument breakdown</h2>
+        <p className="mt-1 text-xs text-slate-400">
+          For each instrument, see the approximate monthly interest and how much it could pay you
+          over the selected horizon, within its term.
         </p>
         <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full text-left text-xs text-base-content/80">
+          <table className="min-w-full text-left text-xs text-slate-200">
             <thead>
-              <tr className="border-b border-base-300 text-[11px] uppercase tracking-wide text-base-content/60">
+              <tr className="border-b border-slate-800 text-[11px] uppercase tracking-wide text-slate-500">
                 <th className="py-2 pr-3">Name</th>
                 <th className="px-3 py-2">Currency</th>
                 <th className="px-3 py-2 text-right">Principal</th>
                 <th className="px-3 py-2 text-right">Annual rate</th>
                 <th className="px-3 py-2 text-right">Term</th>
                 <th className="px-3 py-2 text-right">Monthly interest</th>
-                <th className="px-3 py-2 text-right">
-                  Interest over horizon
-                </th>
+                <th className="px-3 py-2 text-right">Interest over horizon</th>
               </tr>
             </thead>
             <tbody>
               {instruments.map((inst: WealthInstrument) => {
                 const monthly = estimateMonthlyInterest(inst);
-                const total = estimateTotalInterestOverHorizon(
-                  inst,
-                  horizon,
-                  today,
-                );
+                const total = estimateTotalInterestOverHorizon(inst, horizon, today);
                 const endMonth = instrumentEndMonth(inst);
                 return (
-                  <tr
-                    key={inst.id}
-                    className="border-b border-base-200/70 last:border-b-0"
-                  >
+                  <tr key={inst.id} className="border-b border-slate-800 last:border-b-0">
                     <td className="py-2 pr-3 align-top">
                       <div className="flex flex-col">
-                        <span className="font-medium text-base-content/90">
-                          {inst.name}
-                        </span>
-                        <span className="mt-0.5 text-[11px] text-base-content/60">
+                        <span className="font-medium text-white">{inst.name}</span>
+                        <span className="mt-0.5 text-[11px] text-slate-500">
                           Ends around {monthLabel(endMonth)}
                         </span>
                       </div>
                     </td>
-                    <td className="px-3 py-2 align-top text-[11px] text-base-content/70">
+                    <td className="px-3 py-2 align-top text-[11px] text-slate-400">
                       {inst.currency}
                     </td>
-                    <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-base-content/90">
+                    <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-white">
                       {formatCurrency(inst.principal, inst.currency)}
                     </td>
-                    <td className="px-3 py-2 align-top text-right text-[11px] text-base-content/80">
+                    <td className="px-3 py-2 align-top text-right text-[11px] text-slate-300">
                       {inst.annualRatePercent.toFixed(2)}%
                     </td>
-                    <td className="px-3 py-2 align-top text-right text-[11px] text-base-content/80">
+                    <td className="px-3 py-2 align-top text-right text-[11px] text-slate-300">
                       {inst.termMonths} m
                     </td>
-                    <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-base-content/90">
+                    <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-white">
                       {formatCurrency(monthly, inst.currency)}
                     </td>
-                    <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-base-content/90">
+                    <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-white">
                       {formatCurrency(total, inst.currency)}
                     </td>
                   </tr>
@@ -249,23 +226,18 @@ export default function WealthProjectionsPage() {
               })}
               {instruments.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={7}
-                    className="py-4 text-center text-xs text-base-content/60"
-                  >
-                    No instruments defined yet, so there is nothing to project
-                    yet.
+                  <td colSpan={7} className="py-4 text-center text-xs text-slate-400">
+                    No instruments defined yet, so there is nothing to project yet.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-[11px] text-base-content/60">
-          Later versions of GAIA can add more precise formulas, step-down
-          rules, and multi-currency conversions. For Awakening, the goal is a
-          gentle, human-scale feeling of what your current certificates are
-          doing for you.
+        <p className="mt-3 text-[11px] text-slate-500">
+          Later versions of GAIA can add more precise formulas, step-down rules, and multi-currency
+          conversions. For Awakening, the goal is a gentle, human-scale feeling of what your current
+          certificates are doing for you.
         </p>
       </section>
     </main>
