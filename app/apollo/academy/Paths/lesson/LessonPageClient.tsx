@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Pause, Play, Square, Volume2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  PauseCircleIcon,
+  PlayCircleIcon,
+  StopIcon,
+  VolumeHighIcon,
+} from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   readJSON,
@@ -1310,11 +1316,11 @@ export default function LessonPageClient({
                       }
                     >
                       {narrationState === "playing" ? (
-                        <Pause className="h-4 w-4" />
+                        <HugeiconsIcon icon={PauseCircleIcon} size={16} />
                       ) : narrationState === "paused" ? (
-                        <Play className="h-4 w-4" />
+                        <HugeiconsIcon icon={PlayCircleIcon} size={16} />
                       ) : (
-                        <Volume2 className="h-4 w-4" />
+                        <HugeiconsIcon icon={VolumeHighIcon} size={16} />
                       )}
                       </button>
                     {narrationState !== "idle" && (
@@ -1323,7 +1329,7 @@ export default function LessonPageClient({
                         onClick={stopNarration}
                         className="inline-flex items-center gap-1 rounded-full border gaia-border bg-[var(--gaia-surface)] px-2.5 py-1 text-[12px] font-semibold text-[var(--gaia-text-muted)] hover:bg-[var(--gaia-surface-soft)] transition"
                       >
-                        <Square className="h-3.5 w-3.5" />
+                        <HugeiconsIcon icon={StopIcon} size={14} />
                         <span>Stop</span>
                       </button>
                     )}

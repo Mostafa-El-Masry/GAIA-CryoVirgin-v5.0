@@ -2,7 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel02Icon } from "@hugeicons/core-free-icons";
 import type { Category } from "../hooks/useTodoDaily";
 
 type Props = {
@@ -50,7 +51,7 @@ export default function TodoQuickAdd({ category, onAdd, onClose }: Props) {
             className="rounded-lg border border-[var(--gaia-border)] px-4 py-2 font-semibold text-[var(--gaia-text-default)] transition-colors hover:bg-[var(--gaia-border)]"
             onClick={onClose}
           >
-            <X size={18} />
+            <HugeiconsIcon icon={Cancel02Icon} size={18} />
           </button>
         </div>
       </div>

@@ -11,8 +11,11 @@
     "postinstall": "node scripts/patch-next.cjs"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
     "@aws-sdk/client-s3": "^3.925.0",
     "@codesandbox/sandpack-react": "^2.20.0",
+    "@hugeicons/core-free-icons": "^2.0.0",
+    "@hugeicons/react": "^1.1.1",
     "@monaco-editor/react": "^4.7.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.81.1",
@@ -21,7 +24,6 @@
     "file-saver": "^2.0.5",
     "idb-keyval": "^6.2.2",
     "jszip": "^3.10.1",
-    "lucide-react": "^0.553.0",
     "monaco-editor": "^0.54.0",
     "next": "^16.0.0",
     "pg": "^8.16.3",

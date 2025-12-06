@@ -1,15 +1,27 @@
 ﻿// app/TODO/page.tsx
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import type { ReactNode } from "react";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useTodoDaily } from "../dashboard/hooks/useTodoDaily";
 import type { Task, Category } from "../dashboard/hooks/useTodoDaily";
 import {
   snapshotStorage,
   waitForUserStorage,
   subscribe,
+  setItem,
+  getItem,
 } from "@/lib/user-storage";
 import { shiftDate } from "@/utils/dates";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  SparklesIcon,
+  CalendarAdd02Icon,
+  Calendar02Icon,
+  CheckListIcon,
+  ShuffleIcon,
+} from "@hugeicons/core-free-icons";
 
 type StatusTone = "pending" | "done" | "skipped";
 type StatusResolution = { label: string; tone: StatusTone; dateLabel: string };
@@ -39,6 +51,19 @@ const EMPTY_DRAFTS: Record<Category, string> = {
   work: "",
   distraction: "",
 };
+type NavFilter = "day" | "tomorrow" | "week" | "all" | "custom";
+const NAV_FILTER_KEY = "gaia.todo.v2.0.6.filter";
+const NAV_CUSTOM_DATE_KEY = "gaia.todo.v2.0.6.filter.date";
+
+function isNavFilter(value: unknown): value is NavFilter {
+  return (
+    value === "day" ||
+    value === "tomorrow" ||
+    value === "week" ||
+    value === "all" ||
+    value === "custom"
+  );
+}
 
 function formatShortDate(value?: string | null) {
   if (!value || value === "Unscheduled") return value ?? "Unscheduled";
@@ -72,6 +97,20 @@ function todayInput(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+const KUWAIT_TZ = "Asia/Kuwait";
+function todayInTZ(tz: string = KUWAIT_TZ): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const y = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const m = parts.find((p) => p.type === "month")?.value ?? "01";
+  const d = parts.find((p) => p.type === "day")?.value ?? "01";
+  return `${y}-${m}-${d}`;
+}
+
 export default function TODOPage() {
   const {
     tasks,
@@ -92,6 +131,7 @@ export default function TODOPage() {
     work: todayInput(),
     distraction: todayInput(),
   });
+  const [hydrated, setHydrated] = useState(false);
   const [dragging, setDragging] = useState<DragState>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget>(null);
   const todayMeta = useMemo(() => {
@@ -142,13 +182,27 @@ export default function TODOPage() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   }, []);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+  const calendarToday = useMemo(() => todayInTZ(), []);
+  const [customDate, setCustomDate] = useState<string>(() => {
+    const cached = getItem(NAV_CUSTOM_DATE_KEY);
+    if (typeof cached === "string" && cached.trim().match(/^\d{4}-\d{2}-\d{2}$/))
+      return cached;
+    return calendarToday;
+  });
   const counts = useMemo(() => {
-    const todayDate = parseDate(today);
+    const todayDate = parseDate(calendarToday);
+    const customDateParsed = parseDate(customDate);
     let todayPending = 0;
+    let tomorrowPending = 0;
     let nextSeven = 0;
+    let customPending = 0;
     let allPending = 0;
     tasks.forEach((t) => {
-      const status = t.status_by_date?.[today];
+      const status = t.status_by_date?.[calendarToday];
       const isDone = status === "done" || status === "skipped";
       if (!isDone) allPending += 1;
       const due = parseDate(t.due_date);
@@ -157,32 +211,59 @@ export default function TODOPage() {
           (due.getTime() - todayDate.getTime()) / 86400000
         );
         if (!isDone && diffDays === 0) todayPending += 1;
-        if (!isDone && diffDays >= 0 && diffDays <= 6) nextSeven += 1;
+        if (!isDone && diffDays === 1) tomorrowPending += 1;
+        if (!isDone && diffDays >= 1 && diffDays <= 7) nextSeven += 1;
+      }
+      if (!isDone && customDateParsed && due) {
+        const diffCustom = Math.round(
+          (due.getTime() - customDateParsed.getTime()) / 86400000
+        );
+        if (diffCustom === 0) customPending += 1;
       }
     });
-    return { todayPending, nextSeven, allPending };
-  }, [tasks, today]);
+    return { todayPending, tomorrowPending, nextSeven, customPending, allPending };
+  }, [tasks, calendarToday, customDate]);
   const navItems = [
     {
       key: "day",
       label: "My Day",
       count: counts.todayPending,
       helper: "Due today",
+      icon: <HugeiconsIcon icon={SparklesIcon} size={16} />,
+    },
+    {
+      key: "tomorrow",
+      label: "Tomorrow",
+      count: counts.tomorrowPending,
+      helper: "Due tomorrow",
+      icon: <HugeiconsIcon icon={CalendarAdd02Icon} size={16} />,
     },
     {
       key: "week",
       label: "Next 7 days",
       count: counts.nextSeven,
       helper: "Upcoming week",
+      icon: <HugeiconsIcon icon={Calendar02Icon} size={16} />,
+    },
+    {
+      key: "custom",
+      label: "Pick a date",
+      count: counts.customPending,
+      helper: customDate,
+      icon: <HugeiconsIcon icon={Calendar02Icon} size={16} />,
     },
     {
       key: "all",
       label: "All tasks",
       count: counts.allPending,
       helper: "Pending total",
+      icon: <HugeiconsIcon icon={CheckListIcon} size={16} />,
     },
   ];
-  const [navActive, setNavActive] = useState<"day" | "week" | "all">("day");
+  const [navActive, setNavActive] = useState<NavFilter>(() => {
+    const cached = snapshotStorage()[NAV_FILTER_KEY] ?? getItem(NAV_FILTER_KEY);
+    return isNavFilter(cached) ? cached : "day";
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -192,6 +273,10 @@ export default function TODOPage() {
       const localRaw = snapshot["gaia.todo.v2.0.6"];
       const hasTasks =
         typeof localRaw === "string" && !localRaw.includes('"tasks":[]');
+      const savedFilter = snapshot[NAV_FILTER_KEY] ?? null;
+      if (isNavFilter(savedFilter)) {
+        setNavActive(savedFilter);
+      }
       setStorageStatus({ synced: hasSupabase, hasTasks });
     };
     (async () => {
@@ -240,6 +325,28 @@ export default function TODOPage() {
     });
     return map;
   }, [byCat]);
+
+  const filteredByCat = useMemo<Record<Category, Task[]>>(() => {
+    if (navActive === "all") return orderedByCat;
+    const tomorrow = shiftDate(calendarToday, 1);
+    const endOfWeek = shiftDate(calendarToday, 7);
+    const targetCustom = customDate;
+    const map: Record<Category, Task[]> = {
+      life: [],
+      work: [],
+      distraction: [],
+    };
+    (Object.keys(orderedByCat) as Category[]).forEach((cat) => {
+      map[cat] = orderedByCat[cat].filter((t) => {
+        if (!t.due_date || t.due_date === "Unscheduled") return false;
+        if (navActive === "day") return t.due_date === calendarToday;
+        if (navActive === "tomorrow") return t.due_date === tomorrow;
+        if (navActive === "custom") return t.due_date === targetCustom;
+        return t.due_date > calendarToday && t.due_date <= endOfWeek;
+      });
+    });
+    return map;
+  }, [navActive, orderedByCat, calendarToday, customDate]);
 
   const resolveStatus = useCallback((task: Task): StatusResolution => {
     const entries = Object.entries(task.status_by_date ?? {});
@@ -321,24 +428,18 @@ export default function TODOPage() {
     [editTask, today]
   );
 
-  const handleDrop = useCallback(
+  const handleReorder = useCallback(
     async (
       category: Category,
+      sourceId: string,
       targetId: string | null,
       position: "before" | "after"
     ) => {
-      if (!dragging || dragging.category !== category) {
-        setDragging(null);
-        setDropTarget(null);
-        return;
-      }
-      const list = orderedByCat[category];
-      const currentIdx = list.findIndex((t) => t.id === dragging.id);
+      const list = filteredByCat[category];
+      const currentIdx = list.findIndex((t) => t.id === sourceId);
       if (currentIdx === -1) return;
-
       const next = list.slice();
       const [item] = next.splice(currentIdx, 1);
-
       let insertAt = next.length;
       if (targetId) {
         const targetIdx = next.findIndex((t) => t.id === targetId);
@@ -346,13 +447,12 @@ export default function TODOPage() {
           insertAt = position === "after" ? targetIdx + 1 : targetIdx;
         }
       }
-
       next.splice(insertAt, 0, item);
       await resequenceCategory(category, next);
       setDragging(null);
       setDropTarget(null);
     },
-    [dragging, orderedByCat, resequenceCategory]
+    [filteredByCat, resequenceCategory]
   );
 
   const dragIndicator = (taskId: string, category: Category) => {
@@ -367,22 +467,36 @@ export default function TODOPage() {
     return "";
   };
 
-  const navTargets: Record<"day" | "week" | "all", string> = {
-    day: "todo-hero",
-    week: "todo-grid",
-    all: "todo-grid-bottom",
-  };
+  const navTargets = useMemo<Record<NavFilter, string>>(
+    () => ({
+      day: "todo-hero",
+      tomorrow: "todo-grid",
+      week: "todo-grid",
+      custom: "todo-grid",
+      all: "todo-grid-bottom",
+    }),
+    []
+  );
+
+  const persistNavFilter = useCallback((key: NavFilter) => {
+    setNavActive(key);
+    setItem(NAV_FILTER_KEY, key);
+  }, []);
+
+  if (!hydrated) {
+    return <main className="relative w-[100vw] gaia-surface text-[var(--gaia-text-default)]" />;
+  }
 
   const handleNavClick = useCallback(
-    (key: "day" | "week" | "all") => {
-      setNavActive(key);
+    (key: NavFilter) => {
+      persistNavFilter(key);
       const targetId = navTargets[key];
       const el = document.getElementById(targetId);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     },
-    []
+    [navTargets, persistNavFilter]
   );
 
   return (
@@ -417,7 +531,8 @@ export default function TODOPage() {
                     }`}
                   >
                     <div className="flex flex-col leading-tight text-left">
-                      <span className="text-[var(--gaia-text-strong)]">
+                      <span className="flex items-center gap-2 text-[var(--gaia-text-strong)]">
+                        {item.icon}
                         {item.label}
                       </span>
                       <span className="text-[11px] font-medium text-[var(--gaia-text-muted)]">
@@ -428,6 +543,24 @@ export default function TODOPage() {
                       {item.count}
                     </span>
                   </button>
+                  {item.key === "custom" && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <label className="sr-only" htmlFor="custom-date">
+                        Pick a date
+                      </label>
+                      <input
+                        id="custom-date"
+                        type="date"
+                        className="w-full rounded-lg border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-2 text-sm text-[var(--gaia-text-default)]"
+                        value={customDate}
+                        onChange={(e) => {
+                          const next = e.target.value || calendarToday;
+                          setCustomDate(next);
+                          setItem(NAV_CUSTOM_DATE_KEY, next);
+                        }}
+                      />
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -518,11 +651,19 @@ export default function TODOPage() {
                 </div>
                 <div className="flex flex-wrap gap-2 border-t gaia-border px-4 py-3 text-[11px] text-[var(--gaia-text-default)]">
                   <span className="inline-flex items-center gap-2 rounded-full bg-[var(--gaia-surface)] px-3 py-1 font-semibold ring-1 ring-[var(--gaia-border)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--gaia-info)]" />
+                    <HugeiconsIcon
+                      icon={ShuffleIcon}
+                      size={12}
+                      color="var(--gaia-info)"
+                    />
                     Drag to reorder
                   </span>
                   <span className="inline-flex items-center gap-2 rounded-full bg-[var(--gaia-surface)] px-3 py-1 font-semibold ring-1 ring-[var(--gaia-border)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--gaia-positive)]" />
+                    <HugeiconsIcon
+                      icon={Calendar02Icon}
+                      size={12}
+                      color="var(--gaia-positive)"
+                    />
                     Auto reschedules dates
                   </span>
                 </div>
@@ -545,9 +686,6 @@ export default function TODOPage() {
                           {HINTS[cat]}
                         </p>
                       </div>
-                      <span className="rounded-full bg-[var(--gaia-surface)] px-3 py-1 text-xs font-semibold text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)]">
-                        {orderedByCat[cat].length} tasks
-                      </span>
                     </div>
 
                     <form
@@ -593,7 +731,7 @@ export default function TODOPage() {
                     </form>
 
                     <div className="flex flex-1 flex-col">
-                      {orderedByCat[cat].length === 0 ? (
+                      {filteredByCat[cat].length === 0 ? (
                         <div className="space-y-2 px-4 py-6 text-sm text-[var(--gaia-text-muted)]">
                           <p className="font-semibold text-[var(--gaia-text-strong)]">
                             No tasks yet.
@@ -604,81 +742,22 @@ export default function TODOPage() {
                           </p>
                         </div>
                       ) : (
-                        <ul
-                          className="divide-y divide-[var(--gaia-border)]/60"
-                          onDragOver={(e) => {
-                            e.preventDefault();
-                            const lastId =
-                              orderedByCat[cat][orderedByCat[cat].length - 1]
-                                ?.id ?? null;
-                            if (dragging && dragging.category === cat) {
-                              setDropTarget({
-                                id: lastId,
-                                category: cat,
-                                position: "after",
-                              });
-                            }
-                          }}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            void handleDrop(
-                              cat,
-                              dropTarget?.id ?? null,
-                              dropTarget?.position ?? "after"
-                            );
-                          }}
-                        >
-                          {orderedByCat[cat].map((t) => {
+                        <ul className="divide-y divide-[var(--gaia-border)]/60">
+                          {filteredByCat[cat].map((t) => {
                             const statusMeta = resolveStatus(t);
 
                             return (
-                              <li
+                              <TaskDraggable
                                 key={t.id}
+                                task={t}
+                                category={cat}
                                 className={`relative p-4 transition duration-150 ${dragIndicator(
                                   t.id,
                                   cat
                                 )}`}
-                                draggable
-                                onDragStart={(e) => {
-                                  e.dataTransfer?.setData("text/plain", t.id);
-                                  e.dataTransfer?.setDragImage(
-                                    e.currentTarget,
-                                    10,
-                                    10
-                                  );
-                                  e.dataTransfer.effectAllowed = "move";
-                                  setDragging({ id: t.id, category: cat });
-                                }}
-                                onDragEnter={(e) => {
-                                  const { top, height } =
-                                    e.currentTarget.getBoundingClientRect();
-                                  const before = e.clientY < top + height / 2;
-                                  setDropTarget({
-                                    id: t.id,
-                                    category: cat,
-                                    position: before ? "before" : "after",
-                                  });
-                                }}
-                                onDragOver={(e) => {
-                                  e.preventDefault();
-                                  const { top, height } =
-                                    e.currentTarget.getBoundingClientRect();
-                                  const before = e.clientY < top + height / 2;
-                                  setDropTarget({
-                                    id: t.id,
-                                    category: cat,
-                                    position: before ? "before" : "after",
-                                  });
-                                }}
-                                onDrop={(e) => {
-                                  e.preventDefault();
-                                  const pos = dropTarget?.position ?? "after";
-                                  void handleDrop(cat, t.id, pos);
-                                }}
-                                onDragEnd={() => {
-                                  setDragging(null);
-                                  setDropTarget(null);
-                                }}
+                                onReorder={handleReorder}
+                                setDragging={setDragging}
+                                setDropTarget={setDropTarget}
                               >
                                 <div className="flex items-start gap-3">
                                   <span className="mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--gaia-surface)] text-[11px] font-bold uppercase text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)] cursor-grab active:cursor-grabbing">
@@ -705,7 +784,7 @@ export default function TODOPage() {
                                         {LABELS[cat]}
                                       </span>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--gaia-text-default)]">
+                                    <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--gaia-text-default)] md:flex-nowrap">
                                       <label
                                         className={`flex items-center gap-2 rounded-lg px-3 py-2 font-semibold shadow-sm ${
                                           toneStyles[statusMeta.tone]
@@ -747,11 +826,6 @@ export default function TODOPage() {
                                           }
                                         />
                                       </label>
-                                      <span className="inline-flex items-center gap-2 rounded-lg bg-[var(--gaia-surface)] px-3 py-2 font-semibold text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)]">
-                                        <span className="h-2 w-2 rounded-full bg-[var(--gaia-text-muted)]" />
-                                        {statusMeta.label} -{" "}
-                                        {formatShortDate(t.due_date)}
-                                      </span>
                                     </div>
                                   </div>
                                   <button
@@ -762,7 +836,7 @@ export default function TODOPage() {
                                     Delete
                                   </button>
                                 </div>
-                              </li>
+                              </TaskDraggable>
                             );
                           })}
                         </ul>
@@ -785,6 +859,91 @@ type StatusRowProps = {
   toneStyles: Record<StatusTone, string>;
   status: StatusResolution;
 };
+
+type TaskDraggableProps = {
+  task: Task;
+  category: Category;
+  className?: string;
+  onReorder: (
+    category: Category,
+    sourceId: string,
+    targetId: string | null,
+    position: "before" | "after"
+  ) => void;
+  setDragging: (state: DragState) => void;
+  setDropTarget: (state: DropTarget) => void;
+  children: ReactNode;
+};
+
+function TaskDraggable({
+  task,
+  category,
+  className,
+  onReorder,
+  setDragging,
+  setDropTarget,
+  children,
+}: TaskDraggableProps) {
+  const ref = useRef<HTMLLIElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const cleanupDraggable = draggable({
+      element: el,
+      getInitialData: () => ({ taskId: task.id, category }),
+      onDragStart: () => setDragging({ id: task.id, category }),
+      onDrop: () => {
+        setDragging(null);
+        setDropTarget(null);
+      },
+    });
+
+    const cleanupDropTarget = dropTargetForElements({
+      element: el,
+      getData: ({ input }) => {
+        if (!ref.current) return {};
+        const { top, height } = ref.current.getBoundingClientRect();
+        const before = input.clientY < top + height / 2;
+        return {
+          taskId: task.id,
+          category,
+          position: before ? "before" : "after",
+        };
+      },
+      canDrop: ({ source }) =>
+        (source.data as any)?.category === category &&
+        (source.data as any)?.taskId !== task.id,
+      onDragEnter: ({ self }) => {
+        const pos =
+          (self.data as any)?.position === "before" ? "before" : "after";
+        setDropTarget({ id: task.id, category, position: pos });
+      },
+      onDragLeave: () => setDropTarget(null),
+      onDrop: ({ source, self }) => {
+        const sourceId = (source.data as any)?.taskId as string | undefined;
+        const pos =
+          (self.data as any)?.position === "before" ? "before" : "after";
+        if (sourceId) {
+          onReorder(category, sourceId, task.id, pos);
+        }
+        setDropTarget(null);
+      },
+    });
+
+    return () => {
+      cleanupDraggable();
+      cleanupDropTarget();
+    };
+  }, [task.id, category, onReorder, setDragging, setDropTarget]);
+
+  return (
+    <li ref={ref} className={className}>
+      {children}
+    </li>
+  );
+}
 
 function StatusRow({ task, toneStyles, status }: StatusRowProps) {
   return (

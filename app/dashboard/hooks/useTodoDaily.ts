@@ -389,19 +389,35 @@ export function useTodoDaily() {
           repeat: base.repeat,
         }),
       });
-      // replace with server copy
-      replaceTask({
+      const serverTask: Task = {
         ...base,
         id: res.task.id,
         created_at: res.task.created_at,
         updated_at: res.task.updated_at,
+      };
+      setStorage((prev) => {
+        const tasks = prev.tasks.slice();
+        const idx = tasks.findIndex((t) => t.id === base.id);
+        if (idx >= 0) tasks[idx] = serverTask;
+        else tasks.push(serverTask);
+        const next = { ...prev, tasks };
+        saveStorage(next);
+        return next;
+      });
+      setSelection((prev) => {
+        const s: DailySelection = {
+          date: serverTask.due_date || prev.date,
+          selected: { ...prev.selected, [category]: serverTask.id },
+        };
+        saveSelection(s);
+        return s;
       });
       writeJSON(SUPABASE_SYNC_KEY, "true");
     } catch (e) {
       console.warn("DB insert failed; staying local.", e);
       writeJSON(SUPABASE_SYNC_KEY, "false");
     }
-  }, [replaceTask, storage.tasks]);
+  }, [storage.tasks]);
 
   const markDone = useCallback(async (category: Category) => {
     const t = slotInfo[category].task; if (!t) return;
