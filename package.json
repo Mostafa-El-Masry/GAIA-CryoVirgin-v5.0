@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "cross-env NODE_OPTIONS=--require=./scripts/suppress-baseline.cjs next build",
     "start": "next start",
     "lint": "next lint",
     "gallery:scan": "node scripts/scan-gallery.cjs",
@@ -40,7 +40,8 @@
     "@types/pg": "^8.15.6",
     "@types/react": "^19.2.2",
     "autoprefixer": "^10.4.21",
-    "baseline-browser-mapping": "^2.8.32",
+    "baseline-browser-mapping": "^2.9.4",
+    "cross-env": "^10.1.0",
     "eslint": "^9.14.0",
     "eslint-config-next": "^16.0.0",
     "postcss": "^8.5.6",

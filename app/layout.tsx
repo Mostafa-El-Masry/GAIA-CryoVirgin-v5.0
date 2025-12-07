@@ -68,7 +68,7 @@ export default async function RootLayout({
       data-gaia-theme={initialTheme}
       suppressHydrationWarning
     >
-      <body className="overflow-x-hidden">
+      <body className="overflow-x-hidden" suppressHydrationWarning>
         <DesignProvider>
           <AuthHydrator />
           <AppBar />

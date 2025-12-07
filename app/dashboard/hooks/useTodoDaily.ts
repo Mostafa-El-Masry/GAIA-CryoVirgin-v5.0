@@ -58,6 +58,7 @@ type StorageShape = { tasks: Task[] };
 const STORAGE_KEY = "gaia.todo.v2.0.6";
 const SUPABASE_SYNC_KEY = "gaia.todo.supabase.synced";
 const SELECTION_PREFIX = "gaia.todo.v2.0.6.selection.";
+const DELETED_KEY = "gaia.todo.v2.0.6.deleted";
 const KUWAIT_TZ = "Asia/Kuwait";
 function safeNowISO() { return new Date().toISOString(); }
 function uuid(): string {
@@ -108,6 +109,14 @@ function loadSelection(date: string): DailySelection {
 }
 function saveSelection(sel: DailySelection) {
   writeJSON(SELECTION_PREFIX + sel.date, sel);
+}
+function loadDeleted(): Set<string> {
+  const raw = readJSON<string[]>(DELETED_KEY, []);
+  if (!Array.isArray(raw)) return new Set();
+  return new Set(raw as string[]);
+}
+function saveDeleted(set: Set<string>) {
+  writeJSON(DELETED_KEY, Array.from(set));
 }
 function compareDates(a?: string | null, b?: string | null): number {
   if (!a && !b) return 0;
@@ -210,9 +219,11 @@ export function useTodoDaily() {
       try {
         const payload = await api<{tasks:any[]; statuses:any[]}>("/api/todo");
         if (!mounted) return;
+        const deleted = loadDeleted();
         // Merge: convert DB rows -> Task shape + status_by_date map
         const byId: Record<string, Task> = {};
         for (const t of payload.tasks) {
+          if (deleted.has(t.id)) continue;
           byId[t.id] = {
             id: t.id,
             category: t.category,
@@ -442,6 +453,11 @@ export function useTodoDaily() {
   }, [candidatesByCat, slotInfo, today]);
 
   const deleteTask = useCallback(async (taskId: string) => {
+    const deleted = loadDeleted();
+    if (!deleted.has(taskId)) {
+      deleted.add(taskId);
+      saveDeleted(deleted);
+    }
     setStorage(prev => { const next = { ...prev, tasks: prev.tasks.filter(t => t.id !== taskId) }; saveStorage(next); return next; });
     setSelection(prev => { const sel = { ...prev.selected }; (["life","work","distraction"] as Category[]).forEach(c => { if (sel[c] === taskId) sel[c] = null; }); const s: DailySelection = { date: prev.date, selected: sel }; saveSelection(s); return s; });
     try { await api(`/api/todo?id=${encodeURIComponent(taskId)}`, { method: "DELETE" }); } catch(e){ console.warn("DB delete failed", e); }

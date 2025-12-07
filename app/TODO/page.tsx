@@ -70,9 +70,9 @@ function formatShortDate(value?: string | null) {
   try {
     const date = new Date(value + "T00:00:00Z");
     if (Number.isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
+    return new Intl.DateTimeFormat("en-GB", {
       day: "numeric",
+      month: "short",
       year: "numeric",
     }).format(date);
   } catch {
@@ -130,6 +130,11 @@ export default function TODOPage() {
     life: todayInput(),
     work: todayInput(),
     distraction: todayInput(),
+  });
+  const [orderMap, setOrderMap] = useState<Record<Category, string[]>>({
+    life: [],
+    work: [],
+    distraction: [],
   });
   const [hydrated, setHydrated] = useState(false);
   const [dragging, setDragging] = useState<DragState>(null);
@@ -249,7 +254,7 @@ export default function TODOPage() {
       key: "custom",
       label: "Pick a date",
       count: counts.customPending,
-      helper: customDate,
+      helper: formatShortDate(customDate),
       icon: <HugeiconsIcon icon={Calendar02Icon} size={16} />,
     },
     {
@@ -315,15 +320,35 @@ export default function TODOPage() {
       distraction: [],
     };
     (Object.keys(byCat) as Category[]).forEach((cat) => {
+      const order = orderMap[cat] ?? [];
       map[cat] = byCat[cat]
         .slice()
-        .sort(
-          (a, b) =>
-            compareDueDate(a.due_date, b.due_date) ||
-            b.created_at.localeCompare(a.created_at)
-        );
+        .sort((a, b) => {
+          const ia = order.indexOf(a.id);
+          const ib = order.indexOf(b.id);
+          if (ia !== -1 && ib !== -1) return ia - ib;
+          if (ia !== -1) return -1;
+          if (ib !== -1) return 1;
+          return b.created_at.localeCompare(a.created_at);
+        });
     });
     return map;
+  }, [byCat, orderMap]);
+
+  useEffect(() => {
+    setOrderMap((prev) => {
+      const next: Record<Category, string[]> = { ...prev };
+      (Object.keys(byCat) as Category[]).forEach((cat) => {
+        const existing = prev[cat] ?? [];
+        const ids = byCat[cat].map((t) => t.id);
+        const merged = existing.filter((id) => ids.includes(id));
+        ids.forEach((id) => {
+          if (!merged.includes(id)) merged.push(id);
+        });
+        next[cat] = merged;
+      });
+      return next;
+    });
   }, [byCat]);
 
   const filteredByCat = useMemo<Record<Category, Task[]>>(() => {
@@ -412,20 +437,19 @@ export default function TODOPage() {
   );
 
   const resequenceCategory = useCallback(
-    async (category: Category, orderedTasks: Task[]) => {
-      if (orderedTasks.length === 0) return;
-      const firstDate =
-        orderedTasks.find((t) => t.due_date)?.due_date || shiftDate(today, 1);
+    async (category: Category, prevOrder: Task[], nextOrder: Task[]) => {
+      if (prevOrder.length === 0 || nextOrder.length === 0) return;
+      const dueSlots = prevOrder.map((t) => t.due_date ?? null);
       const updates: Promise<unknown>[] = [];
-      orderedTasks.forEach((task, idx) => {
-        const nextDate = shiftDate(firstDate, idx);
-        if (task.due_date !== nextDate) {
-          updates.push(editTask(task.id, { due_date: nextDate }));
+      nextOrder.forEach((task, idx) => {
+        const desiredDate = dueSlots[idx] ?? null;
+        if (task.due_date !== desiredDate) {
+          updates.push(editTask(task.id, { due_date: desiredDate }));
         }
       });
       await Promise.all(updates);
     },
-    [editTask, today]
+    [editTask]
   );
 
   const handleReorder = useCallback(
@@ -448,7 +472,11 @@ export default function TODOPage() {
         }
       }
       next.splice(insertAt, 0, item);
-      await resequenceCategory(category, next);
+      await resequenceCategory(category, list, next);
+      setOrderMap((prev) => ({
+        ...prev,
+        [category]: next.map((t) => t.id),
+      }));
       setDragging(null);
       setDropTarget(null);
     },
@@ -483,10 +511,6 @@ export default function TODOPage() {
     setItem(NAV_FILTER_KEY, key);
   }, []);
 
-  if (!hydrated) {
-    return <main className="relative w-[100vw] gaia-surface text-[var(--gaia-text-default)]" />;
-  }
-
   const handleNavClick = useCallback(
     (key: NavFilter) => {
       persistNavFilter(key);
@@ -498,6 +522,10 @@ export default function TODOPage() {
     },
     [navTargets, persistNavFilter]
   );
+
+  if (!hydrated) {
+    return <main className="relative w-[100vw] gaia-surface text-[var(--gaia-text-default)]" />;
+  }
 
   return (
     <main className="relative w-[100vw] gaia-surface text-[var(--gaia-text-default)]">
@@ -710,17 +738,22 @@ export default function TODOPage() {
                           }))
                         }
                       />
-                      <input
-                        type="date"
-                        className="w-[140px] rounded-xl border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-2 text-sm text-[var(--gaia-text-default)]"
-                        value={draftsDue[cat]}
-                        onChange={(e) =>
-                          setDraftsDue((prev) => ({
-                            ...prev,
-                            [cat]: e.target.value || todayInput(),
-                          }))
-                        }
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="date"
+                          className="w-[140px] rounded-xl border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-2 text-sm text-[var(--gaia-text-default)]"
+                          value={draftsDue[cat]}
+                          onChange={(e) =>
+                            setDraftsDue((prev) => ({
+                              ...prev,
+                              [cat]: e.target.value || todayInput(),
+                            }))
+                          }
+                        />
+                        <span className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                          {formatShortDate(draftsDue[cat])}
+                        </span>
+                      </div>
                       <button
                         type="submit"
                         className="rounded-xl bg-[var(--gaia-contrast-bg)] px-4 py-2 text-sm font-semibold text-[var(--gaia-contrast-text)] shadow-lg shadow-black/10 transition hover:translate-y-px hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
@@ -745,13 +778,22 @@ export default function TODOPage() {
                         <ul className="divide-y divide-[var(--gaia-border)]/60">
                           {filteredByCat[cat].map((t) => {
                             const statusMeta = resolveStatus(t);
+                            const dueLabel = formatShortDate(
+                              t.due_date ?? statusMeta.dateLabel
+                            );
+                            const clampStyle = {
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical" as const,
+                              overflow: "hidden",
+                            };
 
                             return (
                               <TaskDraggable
                                 key={t.id}
                                 task={t}
                                 category={cat}
-                                className={`relative p-4 transition duration-150 ${dragIndicator(
+                                className={`relative flex min-h-[170px] flex-col gap-3 overflow-hidden p-4 transition duration-150 ${dragIndicator(
                                   t.id,
                                   cat
                                 )}`}
@@ -760,38 +802,41 @@ export default function TODOPage() {
                                 setDropTarget={setDropTarget}
                               >
                                 <div className="flex items-start gap-3">
-                                  <span className="mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--gaia-surface)] text-[11px] font-bold uppercase text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)] cursor-grab active:cursor-grabbing">
+                                  <span className="mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--gaia-surface)] text-[11px] font-bold uppercase text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)] cursor-grab active:cursor-grabbing flex-shrink-0">
                                     ?
                                   </span>
-                                  <div className="flex-1 space-y-2">
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div className="space-y-1">
-                                        <div className="text-base font-semibold leading-tight text-[var(--gaia-text-strong)]">
+                                  <div className="flex-1 space-y-3 overflow-hidden">
+                                    <div className="flex items-start gap-3">
+                                      <div className="flex-1 space-y-1 overflow-hidden">
+                                        <div
+                                          className="text-base font-semibold leading-tight text-[var(--gaia-text-strong)]"
+                                          style={clampStyle}
+                                          title={t.title}
+                                        >
                                           {t.title}
                                         </div>
-                                        {t.note && (
-                                          <p className="text-sm text-[var(--gaia-text-muted)]">
-                                            {t.note}
-                                          </p>
-                                        )}
                                         {t.repeat && t.repeat !== "none" && (
                                           <p className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
                                             Repeats: {String(t.repeat)}
                                           </p>
                                         )}
                                       </div>
-                                      <span className="rounded-full bg-[var(--gaia-surface)] px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)]">
-                                        {LABELS[cat]}
-                                      </span>
+                                      <button
+                                        className="ml-2 inline-flex items-center self-start rounded-lg bg-[color-mix(in_srgb,var(--gaia-negative)_16%,transparent)] px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--gaia-text-strong)] ring-1 ring-[color-mix(in_srgb,var(--gaia-negative)_45%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--gaia-negative)_22%,transparent)]"
+                                        onClick={() => deleteTask(t.id)}
+                                        title="Delete task"
+                                      >
+                                        Delete
+                                      </button>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--gaia-text-default)] md:flex-nowrap">
+                                    <div className="flex w-full flex-wrap items-center gap-2 rounded-xl bg-[var(--gaia-surface)] px-3 py-2 text-xs text-[var(--gaia-text-default)] shadow-inner shadow-black/5">
                                       <label
-                                        className={`flex items-center gap-2 rounded-lg px-3 py-2 font-semibold shadow-sm ${
+                                        className={`flex w-full items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 font-semibold shadow-sm sm:w-auto ${
                                           toneStyles[statusMeta.tone]
                                         }`}
                                       >
-                                        <span>Status</span>
                                         <select
+                                          aria-label="Task status"
                                           className="rounded border gaia-border bg-[var(--gaia-surface)] px-2 py-1 text-[var(--gaia-text-default)]"
                                           value={statusMeta.tone}
                                           onChange={(e) =>
@@ -810,11 +855,11 @@ export default function TODOPage() {
                                           </option>
                                         </select>
                                       </label>
-                                      <label className="flex items-center gap-2 rounded-lg bg-[var(--gaia-surface)] px-3 py-2 font-semibold text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)]">
+                                      <div className="flex w-full flex-wrap items-center gap-2 rounded-lg bg-[var(--gaia-surface)] px-3 py-2 font-semibold text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)] sm:w-auto">
                                         <span>Due</span>
                                         <input
                                           type="date"
-                                          className="rounded border gaia-border bg-[var(--gaia-surface)] px-2 py-1 text-[var(--gaia-text-default)]"
+                                          className="min-w-[140px] rounded border gaia-border bg-[var(--gaia-surface)] px-2 py-1 text-[var(--gaia-text-default)] sm:min-w-[0]"
                                           value={t.due_date ?? ""}
                                           min="2025-01-01"
                                           max="2030-12-31"
@@ -825,16 +870,9 @@ export default function TODOPage() {
                                             )
                                           }
                                         />
-                                      </label>
+                                      </div>
                                     </div>
                                   </div>
-                                  <button
-                                    className="ml-2 inline-flex items-center rounded-lg bg-[color-mix(in_srgb,var(--gaia-negative)_16%,transparent)] px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--gaia-text-strong)] ring-1 ring-[color-mix(in_srgb,var(--gaia-negative)_45%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--gaia-negative)_22%,transparent)]"
-                                    onClick={() => deleteTask(t.id)}
-                                    title="Delete task"
-                                  >
-                                    Delete
-                                  </button>
                                 </div>
                               </TaskDraggable>
                             );
@@ -953,7 +991,7 @@ function StatusRow({ task, toneStyles, status }: StatusRowProps) {
           toneStyles[status.tone]
         }`}
       >
-        Status: {status.label}
+        {status.label}
       </span>
       <span className="inline-flex items-center gap-1 rounded-full bg-[var(--gaia-surface)] px-2 py-0.5 text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)]">
         Due: {formatShortDate(task.due_date ?? status.dateLabel)}
