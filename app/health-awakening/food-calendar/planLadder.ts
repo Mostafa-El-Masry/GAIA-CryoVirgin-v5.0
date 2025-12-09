@@ -8,20 +8,17 @@ export function isoFromDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function buildWeekPlan(): DayPlan[] {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+export function buildWeekPlan(startDate?: Date): DayPlan[] {
+  const base = startDate ? new Date(startDate) : new Date();
+  base.setHours(0, 0, 0, 0);
   const meals = SEED_FOOD_ITEMS;
   const length = meals.length || 1;
 
   return Array.from({ length: 7 }).map((_, idx) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() + idx);
+    const d = new Date(base);
+    d.setDate(base.getDate() + idx);
 
-    const rotation = [
-      meals[idx % length],
-      meals[(idx + 1) % length],
-    ].filter(Boolean) as FoodItem[];
+    const rotation: FoodItem[] = [];
 
     const totalsByCurrency: Partial<Record<FoodItem["currency"], number>> = {};
     let kcalTotal = 0;
@@ -34,8 +31,6 @@ export function buildWeekPlan(): DayPlan[] {
 
     const label = d.toLocaleDateString("en-US", {
       weekday: "long",
-      month: "short",
-      day: "numeric",
     });
 
     return {
