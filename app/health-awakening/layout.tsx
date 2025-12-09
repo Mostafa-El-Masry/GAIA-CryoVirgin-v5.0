@@ -11,6 +11,13 @@ export default function HealthAwakeningLayout({
 }: {
   children: ReactNode;
 }) {
+  // TEMP: bypass permission and lesson gates for review; set back to false after testing.
+  const forceUnlock = true;
+
+  if (forceUnlock) {
+    return <>{children}</>;
+  }
+
   return (
     <PermissionGate permission="health">
       <LessonGate featureLabel="Health">{children}</LessonGate>

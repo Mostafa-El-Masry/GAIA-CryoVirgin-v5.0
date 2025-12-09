@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import TodayView from "./components/TodayView";
 import HistoryList from "./components/HistoryList";
 import { getHealthNow, chooseSleepDayKey } from "./lib/clock";
@@ -610,6 +611,14 @@ export default function HealthAwakeningClientPage() {
                 <span className="inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-200 px-3 py-1 text-[11px] text-base-content/90">
                   Supabase sync
                 </span>
+              </div>
+              <div className="mt-3">
+                <Link
+                  href="/health-awakening/food-calendar"
+                  className="inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3 py-1 text-[11px] font-semibold text-base-content/90 hover:bg-base-200"
+                >
+                  Open Food Calendar (beta)
+                </Link>
               </div>
             </div>
             <div className="min-w-[230px] w-full sm:w-auto rounded-2xl border border-base-300 bg-base-200/70 p-4 text-right shadow-inner shadow-primary/10 space-y-2">

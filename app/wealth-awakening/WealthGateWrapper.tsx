@@ -8,7 +8,7 @@ export default function WealthGateWrapper() {
     useGaiaFeatureUnlocks();
 
   // TEMP: force-unlock Wealth for review; set back to false when done.
-  const forceUnlock = false;
+  const forceUnlock = true;
 
   if (!wealthUnlocked && !forceUnlock) {
     return (

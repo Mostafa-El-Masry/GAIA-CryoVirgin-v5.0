@@ -7,8 +7,10 @@ import HealthAwakeningClientPage from "./ClientPage";
 export default function HealthGateWrapper() {
   const { isFeatureUnlocked, totalLessonsCompleted } = useGaiaFeatureUnlocks();
   const unlocked = isFeatureUnlocked("health");
+  // TEMP: force-unlock Health for review; set back to false when done.
+  const forceUnlock = true;
 
-  if (!unlocked) {
+  if (!unlocked && !forceUnlock) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-8">
         <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">

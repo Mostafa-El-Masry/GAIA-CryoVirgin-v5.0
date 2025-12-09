@@ -622,6 +622,8 @@ function ImportCard({
 }
 
 function AccountsContent() {
+  const accountsIntroVideoId =
+    process.env.NEXT_PUBLIC_ACCOUNTS_INTRO_VIDEO_ID ?? "ziNwB3u1q1k";
   const [companies, setCompanies] = useState<Company[] | null>(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(
     null
@@ -993,6 +995,8 @@ function AccountsContent() {
 
         {/* Main content: modules for selected company */}
         <main className="flex-1 space-y-5">
+          <AccountsFirstLesson videoId={accountsIntroVideoId} />
+
           <header className="rounded-2xl border border-base-300 bg-base-100/80 p-4 sm:p-5">
             <h2 className="text-base font-semibold">
               {selectedCompany ? selectedCompany.name : "No company selected"} ·
@@ -1101,5 +1105,79 @@ function AccountsContent() {
         </main>
       </div>
     </div>
+  );
+}
+
+function AccountsFirstLesson({ videoId }: { videoId: string }) {
+  const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1`;
+
+  return (
+    <section className="rounded-2xl border border-base-300 bg-gradient-to-br from-base-100 via-base-100 to-primary/10 p-4 sm:p-6 shadow-lg space-y-4">
+      <header className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-base-content/60">
+          Lesson 1 · Accounts Launch
+        </p>
+        <h2 className="text-xl font-semibold text-base-content">
+          Wire your first company into Accounts
+        </h2>
+        <p className="text-sm text-base-content/70">
+          Start with one clean company, run the wiring check, then push a tiny sample of data
+          through Call Center and the Data Loaders so the rest of the suite can read it.
+        </p>
+      </header>
+
+      <div className="grid gap-4 lg:grid-cols-[1.05fr,1fr]">
+        <div className="space-y-3 rounded-2xl border border-base-300 bg-base-100/80 p-4">
+          <h3 className="text-sm font-semibold text-base-content">
+            The quick path (30-45 minutes)
+          </h3>
+          <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/80">
+            <li>Create your first company in the left rail and keep it selected.</li>
+            <li>
+              Run the wiring check once to ensure{" "}
+              <code className="rounded bg-base-200 px-1 py-0.5 text-[11px]">companies</code> and{" "}
+              <code className="rounded bg-base-200 px-1 py-0.5 text-[11px]">import_jobs</code> are reachable.
+            </li>
+            <li>
+              Use the Data Loaders to upload one tiny CSV for branches, staff, customers, and services
+              (templates are provided per tile).
+            </li>
+            <li>
+              In Call Center, generate the Python reports with a small pair of CSVs to prove the round-trip
+              works end-to-end.
+            </li>
+            <li>
+              Note anything that breaks in naming, columns, or formats and feed that back into your templates
+              so week two imports are smooth.
+            </li>
+          </ol>
+          <p className="text-xs text-base-content/60">
+            This first lesson is about wiring, not volume. Keep samples tiny so you can iterate fast.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-base-content/60">
+            Watch: Accounts setup walkthrough
+          </p>
+          <div className="relative aspect-video overflow-hidden rounded-xl border border-base-300 bg-black">
+            <iframe
+              src={embedUrl}
+              title="Accounts setup walkthrough"
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+          <p className="text-xs text-base-content/60">
+            Replace the video via{" "}
+            <code className="rounded bg-base-200 px-1 py-0.5 text-[11px]">NEXT_PUBLIC_ACCOUNTS_INTRO_VIDEO_ID</code>{" "}
+            if you prefer your own recording.
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }

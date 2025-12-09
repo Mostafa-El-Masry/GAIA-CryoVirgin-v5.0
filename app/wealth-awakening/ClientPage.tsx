@@ -20,6 +20,7 @@ import WealthMap from "./components/WealthMap";
 import QuickLinks from "./components/QuickLinks";
 import WealthAlerts from "./components/WealthAlerts";
 import BlendsStrip from "./components/BlendsStrip";
+import FoodSpendingCard from "./components/FoodSpendingCard";
 
 type FxInfo = {
   rate: number;
@@ -382,6 +383,10 @@ export default function WealthAwakeningClientPage() {
 
           <section>
             <WealthAlerts overview={overview} />
+          </section>
+
+          <section>
+            <FoodSpendingCard />
           </section>
         </>
       )}
