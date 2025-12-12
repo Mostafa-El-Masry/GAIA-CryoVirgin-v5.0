@@ -1,25 +1,18 @@
-﻿// app/Dashboard/components/TodoDaily.tsx
+// app/Dashboard/components/TodoDaily.tsx
 "use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useTodoDaily } from "../hooks/useTodoDaily";
-import {
-  snapshotStorage,
-  waitForUserStorage,
-  subscribe,
-  writeJSON,
-} from "@/lib/user-storage";
 import type { Category } from "../hooks/useTodoDaily";
-
-const DAILY_RITUAL_KEY = "gaia.gate.dailyRitual";
 import TodoSlot from "./TodoSlot";
 
 export default function TodoDaily() {
-  const [storageStatus, setStorageStatus] = useState({ synced: false, hasTasks: false });
+  const [storageStatus, setStorageStatus] = useState({ synced: true, hasTasks: false });
   const {
     today,
     slotInfo,
+    tasks,
     addQuickTask,
     markDone,
     skipTask,
@@ -29,33 +22,8 @@ export default function TodoDaily() {
   } = useTodoDaily();
 
   useEffect(() => {
-    let cancelled = false;
-    const update = () => {
-      const snapshot = snapshotStorage();
-      const hasSupabase = snapshot["gaia.todo.supabase.synced"] === "true";
-      const localRaw = snapshot["gaia.todo.v2.0.6"];
-      const hasTasks =
-        typeof localRaw === "string" && !localRaw.includes('"tasks":[]');
-      if (!cancelled) setStorageStatus({ synced: hasSupabase, hasTasks });
-    };
-    (async () => {
-      try {
-        await waitForUserStorage();
-        if (cancelled) return;
-        update();
-      } catch {
-        if (!cancelled) setStorageStatus({ synced: false, hasTasks: false });
-      }
-    })();
-    const unsub = subscribe(({ key }) => {
-      if (!key) return;
-      if (key.startsWith("gaia.todo")) update();
-    });
-    return () => {
-      cancelled = true;
-      unsub();
-    };
-  }, []);
+    setStorageStatus({ synced: true, hasTasks: tasks.length > 0 });
+  }, [tasks]);
 
   const [quickCategory, setQuickCategory] = useState<Category>("life");
   const [quickTitle, setQuickTitle] = useState("");
@@ -67,28 +35,6 @@ export default function TodoDaily() {
     [slotInfo]
   );
 
-  // Keep the daily ritual gate in sync with the three slots for today.
-  // If they are all done, mark the ritual as completed for today.
-  // If any is not done, clear the completion flag so the gate locks again.
-  useEffect(() => {
-    if (!today) return;
-    let frame = requestAnimationFrame(() => {
-      try {
-        if (allDone) {
-          writeJSON(DAILY_RITUAL_KEY, {
-            date: today,
-            completedAt: new Date().toISOString(),
-          });
-        } else {
-          writeJSON(DAILY_RITUAL_KEY, null);
-        }
-      } catch {
-        // ignore storage errors; gate will just stay in its previous state
-      }
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [allDone, today]);
-
   return (
     <section className="rounded-2xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-6 shadow-lg">
       <header className="mb-6 flex items-center justify-between border-b border-[var(--gaia-border)] pb-4">
@@ -97,7 +43,7 @@ export default function TodoDaily() {
             {formatShortDate(today)} · Asia/Kuwait
           </p>
           <p className="text-xs text-[var(--gaia-text-muted)]">
-            {storageStatus.synced ? "Synced with Supabase" : "Local only"} · {storageStatus.hasTasks ? "Backed up" : "No cloud copy"}
+            {storageStatus.synced ? "Synced with Supabase" : "Syncing..."} · {storageStatus.hasTasks ? "Cloud copy" : "No tasks yet"}
           </p>
         </div>
         <div className="flex flex-col items-end gap-2 text-right">
@@ -161,6 +107,7 @@ export default function TodoDaily() {
           task={slotInfo.life.task}
           state={slotInfo.life.state}
           completedTitle={slotInfo.life.completedTitle}
+          completedDueDate={slotInfo.life.completedDueDate}
           onDone={markDone}
           onSkip={skipTask}
           onQuickAdd={addQuickTask}
@@ -173,6 +120,7 @@ export default function TodoDaily() {
           task={slotInfo.work.task}
           state={slotInfo.work.state}
           completedTitle={slotInfo.work.completedTitle}
+          completedDueDate={slotInfo.work.completedDueDate}
           onDone={markDone}
           onSkip={skipTask}
           onQuickAdd={addQuickTask}
@@ -185,6 +133,7 @@ export default function TodoDaily() {
           task={slotInfo.distraction.task}
           state={slotInfo.distraction.state}
           completedTitle={slotInfo.distraction.completedTitle}
+          completedDueDate={slotInfo.distraction.completedDueDate}
           onDone={markDone}
           onSkip={skipTask}
           onQuickAdd={addQuickTask}

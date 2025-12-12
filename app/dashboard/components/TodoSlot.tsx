@@ -14,12 +14,14 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { Category, SlotState, Task } from "../hooks/useTodoDaily";
 import TodoQuickAdd from "./TodoQuickAdd";
+import { todayKey } from "@/utils/dates";
 
 type Props = {
   category: Category;
   task: Task | null;
   state: SlotState;
   completedTitle?: string;
+  completedDueDate?: string | null;
   today: string;
   onDone: (c: Category) => void;
   onSkip: (c: Category) => void;
@@ -45,9 +47,10 @@ type Props = {
 export default function TodoSlot(props: Props) {
   const {
     category,
-    task,
-    state,
+    task: rawTask,
+    state: rawState,
     completedTitle,
+    completedDueDate,
     today,
     onDone,
     onSkip,
@@ -56,9 +59,12 @@ export default function TodoSlot(props: Props) {
     onEdit,
   } = props;
   const [showAdd, setShowAdd] = useState(false);
-  const catStyle = useMemo(() => styleForCategory(category), [category]);
-  const dueLabel = formatShortDate(task?.due_date);
-  const relativeLabel = describeRelativeDay(task?.due_date, today);
+  const dueDate = rawTask?.due_date ?? completedDueDate ?? null;
+  const hasDate = !!dueDate || !!completedTitle;
+  const task = hasDate ? rawTask : null;
+  const state: SlotState = hasDate ? rawState : "idle";
+  const calendarToday = useMemo(() => todayKey(), []);
+  const dueLabel = dueDate ? formatDueBadge(dueDate, calendarToday) : null;
   const actionBtn = "btn btn-circle btn-sm sm:btn-md";
 
   return (
@@ -71,12 +77,11 @@ export default function TodoSlot(props: Props) {
           <span className={`font-bold text-lg text-[var(--gaia-text-strong)]`}>
             {labelOf(category)}
           </span>
-          <span className="rounded-md bg-[var(--gaia-border)] px-2 py-1 text-xs font-medium text-[var(--gaia-text-muted)]">
-            {relativeLabel}
-          </span>
-          <span className="text-xs font-medium text-[var(--gaia-text-muted)]">
-            {dueLabel}
-          </span>
+          {dueLabel && (
+            <span className="inline-flex items-center gap-1 rounded-md bg-[var(--gaia-border)] px-2 py-1 text-xs font-medium text-[var(--gaia-text-muted)]">
+              <HugeiconsIcon icon={Calendar02Icon} size={14} /> {dueLabel}
+            </span>
+          )}
         </div>
       </div>
 
@@ -85,12 +90,6 @@ export default function TodoSlot(props: Props) {
           <div className="mb-4 h-48">
             <div className="mb-3 line-clamp-2 text-lg font-bold text-[var(--gaia-text-strong)]">
               {task.title}
-            </div>
-
-            <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-md bg-[var(--gaia-border)] px-2 py-1 text-sm text-[var(--gaia-text-default)]">
-                  <HugeiconsIcon icon={Calendar02Icon} size={16} /> {dueLabel}
-                </span>
             </div>
           </div>
           <div className="flex flex-col gap-2">
@@ -171,25 +170,6 @@ function labelOf(c: Category) {
   return "Distraction";
 }
 
-function describeRelativeDay(dateStr: string | null | undefined, todayStr: string) {
-  const target = dateStr ?? todayStr;
-  const parse = (value: string) => {
-    const [y, m, d] = value.split("-").map(Number);
-    return Date.UTC(y, (m ?? 1) - 1, d ?? 1);
-  };
-  const todayMs = parse(todayStr);
-  const targetMs = parse(target);
-  const diff = Math.round((targetMs - todayMs) / 86400000);
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
-  if (diff === -1) return "Yesterday";
-  if (diff >= 2 && diff <= 6) return `In ${diff} days`;
-  if (diff >= 7 && diff <= 13) return "Next week";
-  if (diff <= -2 && diff >= -6) return `${Math.abs(diff)} days ago`;
-  if (diff <= -7 && diff >= -13) return "Last week";
-  return target;
-}
-
 function formatShortDate(dateStr?: string | null) {
   if (!dateStr) return "Unscheduled";
   try {
@@ -205,6 +185,22 @@ function formatShortDate(dateStr?: string | null) {
   }
 }
 
+function formatDueBadge(dateStr?: string | null, todayStr?: string) {
+  if (!dateStr) return "Unscheduled";
+  const today = todayStr ?? todayKey();
+  const parse = (value: string) => {
+    const [y, m, d] = value.split("-").map(Number);
+    return Date.UTC(y, (m ?? 1) - 1, d ?? 1);
+  };
+  const todayMs = parse(today);
+  const targetMs = parse(dateStr);
+  const diff = Math.round((targetMs - todayMs) / 86400000);
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  if (diff === -1) return "Yesterday";
+  return formatShortDate(dateStr);
+}
+
 function categoryIcon(c: Category) {
   if (c === "life")
     return <HugeiconsIcon icon={HeartAddIcon} size={20} color="#14b8a6" />;
@@ -215,8 +211,4 @@ function categoryIcon(c: Category) {
   return (
     <HugeiconsIcon icon={GameController02Icon} size={20} color="#f59e0b" />
   );
-}
-
-function styleForCategory(c: Category) {
-  return { bg: "", text: "" };
 }

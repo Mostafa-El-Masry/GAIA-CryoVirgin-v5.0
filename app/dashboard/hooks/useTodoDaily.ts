@@ -3,12 +3,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { shiftDate } from "@/utils/dates";
-import {
-  readJSON,
-  writeJSON,
-  subscribe,
-  waitForUserStorage,
-} from "@/lib/user-storage";
 
 export type Category = "life" | "work" | "distraction";
 
@@ -53,12 +47,6 @@ export interface DailySelection {
   date: string;
 }
 
-type StorageShape = { tasks: Task[] };
-
-const STORAGE_KEY = "gaia.todo.v2.0.6";
-const SUPABASE_SYNC_KEY = "gaia.todo.supabase.synced";
-const SELECTION_PREFIX = "gaia.todo.v2.0.6.selection.";
-const DELETED_KEY = "gaia.todo.v2.0.6.deleted";
 const KUWAIT_TZ = "Asia/Kuwait";
 function safeNowISO() { return new Date().toISOString(); }
 function uuid(): string {
@@ -90,34 +78,6 @@ function matchesRepeat(rule: RepeatRule, dateStr: string, tz: string = KUWAIT_TZ
   if (rule.startsWith("weekly:")) return wd === rule.split(":")[1];
   return false;
 }
-function loadStorage(): StorageShape {
-  const stored = readJSON<StorageShape>(STORAGE_KEY, { tasks: [] });
-  const tasks = Array.isArray(stored.tasks) ? stored.tasks : [];
-  return { tasks: tasks.map((t) => normalizeTask(t)) };
-}
-function saveStorage(data: StorageShape) {
-  writeJSON(STORAGE_KEY, data);
-}
-function loadSelection(date: string): DailySelection {
-  const fallback: DailySelection = { date, selected: {} };
-  const stored = readJSON<DailySelection>(SELECTION_PREFIX + date, fallback);
-  const selected =
-    stored && typeof stored === "object" && stored.selected
-      ? stored.selected
-      : {};
-  return { date, selected };
-}
-function saveSelection(sel: DailySelection) {
-  writeJSON(SELECTION_PREFIX + sel.date, sel);
-}
-function loadDeleted(): Set<string> {
-  const raw = readJSON<string[]>(DELETED_KEY, []);
-  if (!Array.isArray(raw)) return new Set();
-  return new Set(raw as string[]);
-}
-function saveDeleted(set: Set<string>) {
-  writeJSON(DELETED_KEY, Array.from(set));
-}
 function compareDates(a?: string | null, b?: string | null): number {
   if (!a && !b) return 0;
   if (!a) return 1;
@@ -137,7 +97,6 @@ function taskMatchesToday(t: Task, today: string): boolean {
   const dueToday = !!t.due_date && t.due_date === today;
   return hasRepeatToday || dueToday;
 }
-
 function earliestPendingDate(tasks: Task[], today: string): string {
   let focus = today;
   for (const t of tasks) {
@@ -158,6 +117,7 @@ export type SlotInfo = {
   candidatesCount: number;
   state: SlotState;
   completedTitle?: string;
+  completedDueDate?: string | null;
 };
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
@@ -168,106 +128,54 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 
 export function useTodoDaily() {
   const [today, setToday] = useState<string>(() => getTodayInTZ(KUWAIT_TZ));
-  const [storage, setStorage] = useState<StorageShape>(() => loadStorage());
-  const [selection, setSelection] = useState<DailySelection>(() => loadSelection(getTodayInTZ(KUWAIT_TZ)));
-  const tasks = useMemo(() => storage.tasks.slice(), [storage.tasks]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selection, setSelection] = useState<DailySelection>(() => ({
+    date: getTodayInTZ(KUWAIT_TZ),
+    selected: {},
+  }));
   const autoAdvanceRef = useRef<string | null>(null);
 
-  const advanceToNextDay = useCallback(() => {
-    const nextDay = shiftDate(today, 1);
-    setToday(nextDay);
-    setSelection(loadSelection(nextDay));
-  }, [today]);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function hydrateFromUserStorage() {
-      await waitForUserStorage();
-      if (cancelled) return;
+  const refresh = useCallback(async () => {
+    try {
+      const payload = await api<{tasks:any[]; statuses:any[]}>("/api/todo");
+      const byId: Record<string, Task> = {};
+      for (const t of payload.tasks) {
+        byId[t.id] = {
+          id: t.id,
+          category: t.category,
+          title: t.title,
+          note: t.note ?? undefined,
+          priority: t.priority,
+          pinned: !!t.pinned,
+          due_date: t.due_date ?? undefined,
+          repeat: normalizeRepeat(t.repeat),
+          created_at: t.created_at,
+          updated_at: t.updated_at,
+          status_by_date: {},
+        };
+      }
+      for (const s of payload.statuses) {
+        const task = byId[s.task_id];
+        if (task) task.status_by_date[s.date] = s.status;
+      }
+      const merged = Object.values(byId).map(normalizeTask);
+      setTasks(merged);
       const current = getTodayInTZ(KUWAIT_TZ);
-      const stored = loadStorage();
-      const focusDate = earliestPendingDate(stored.tasks, current);
-      setToday(focusDate);
-      setStorage(stored);
-      setSelection(loadSelection(focusDate));
-    }
-    void hydrateFromUserStorage();
-    const unsubscribe = subscribe(({ key }) => {
-      if (!key) return;
-      if (key === STORAGE_KEY) {
-        setStorage(loadStorage());
-        return;
-      }
-      if (key.startsWith(SELECTION_PREFIX)) {
-        setSelection((prev) => {
-          const targetDate = key.slice(SELECTION_PREFIX.length);
-          if (!targetDate || targetDate !== prev.date) return prev;
-          return loadSelection(targetDate);
-        });
-      }
-    });
-    return () => {
-      cancelled = true;
-      unsubscribe();
-    };
-  }, []);
-
-  // DB hydrate on mount
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const payload = await api<{tasks:any[]; statuses:any[]}>("/api/todo");
-        if (!mounted) return;
-        const deleted = loadDeleted();
-        // Merge: convert DB rows -> Task shape + status_by_date map
-        const byId: Record<string, Task> = {};
-        for (const t of payload.tasks) {
-          if (deleted.has(t.id)) continue;
-          byId[t.id] = {
-            id: t.id,
-            category: t.category,
-            title: t.title,
-            note: t.note ?? undefined,
-            priority: t.priority,
-            pinned: !!t.pinned,
-            due_date: t.due_date ?? undefined,
-            repeat: normalizeRepeat(t.repeat),
-            created_at: t.created_at,
-            updated_at: t.updated_at,
-            status_by_date: {},
-          };
-        }
-        for (const s of payload.statuses) {
-          const task = byId[s.task_id];
-          if (task) task.status_by_date[s.date] = s.status;
-        }
-        const merged = Object.values(byId);
-        setStorage(prev => {
-          const next = { ...prev, tasks: merged };
-          saveStorage(next);
-          return next;
-        });
-        writeJSON(SUPABASE_SYNC_KEY, "true");
-      } catch (e) {
-        // If API fails, remain local-only.
-        console.warn("TODO DB hydrate failed; staying local-first.", e);
-        writeJSON(SUPABASE_SYNC_KEY, "false");
-      }
-    })();
-
-    const onVis = () => {
-      const t = getTodayInTZ(KUWAIT_TZ);
-      const latest = loadStorage();
-      setStorage(latest);
-      const focus = earliestPendingDate(latest.tasks, t);
+      const focus = earliestPendingDate(merged, current);
       setToday(focus);
-      setSelection(loadSelection(focus));
-    };
-    document.addEventListener("visibilitychange", onVis);
-    const timer = setInterval(onVis, 60*60*1000);
-    return () => { mounted = false; document.removeEventListener("visibilitychange", onVis); clearInterval(timer); }
+      setSelection((prev) => (prev.date === focus ? prev : { date: focus, selected: {} }));
+    } catch (e) {
+      console.warn("TODO DB hydrate failed; staying with in-memory state.", e);
+    }
   }, []);
+
+  useEffect(() => {
+    void refresh();
+    const onVis = () => void refresh();
+    document.addEventListener("visibilitychange", onVis);
+    const timer = setInterval(onVis, 60 * 60 * 1000);
+    return () => { document.removeEventListener("visibilitychange", onVis); clearInterval(timer); };
+  }, [refresh]);
 
   const byCategory = useMemo(() => {
     const map: Record<Category, Task[]> = { life:[], work:[], distraction:[] };
@@ -316,37 +224,30 @@ export function useTodoDaily() {
         candidatesCount: cands.length,
         state,
         completedTitle: completed?.title,
+        completedDueDate: completed?.due_date,
       };
     });
     return info;
   }, [candidatesByCat, selection, completedByCat]);
 
-  const refresh = useCallback(()=>{
-    const current = getTodayInTZ(KUWAIT_TZ);
-    setToday(current);
-    setStorage(loadStorage());
-    setSelection(loadSelection(current));
-  }, []);
-
   const replaceTask = useCallback((t: Task) => {
-    setStorage(prev => {
-      const idx = prev.tasks.findIndex(x => x.id === t.id);
-      let tasks = prev.tasks.slice();
+    setTasks(prev => {
+      const idx = prev.findIndex(x => x.id === t.id);
+      let tasks = prev.slice();
       if (idx >= 0) tasks[idx] = t; else tasks.push(t);
-      const next = { ...prev, tasks };
-      saveStorage(next); return next;
+      return tasks;
     });
   }, []);
 
   const addQuickTask = useCallback(async (category: Category, title: string, note?: string, priority: 1|2|3 = 2, pinned=false, dueDate?: string | null) => {
-    const today = getTodayInTZ(KUWAIT_TZ);
+    const currentToday = getTodayInTZ(KUWAIT_TZ);
     const requestedDate = dueDate?.trim() || null;
-    let targetDate = requestedDate || today;
+    let targetDate = requestedDate || currentToday;
     if (!requestedDate) {
       // find the earliest date (today forward) with no pending task for this category
       for (let i = 0; i < 365; i += 1) {
-        const candidate = shiftDate(today, i);
-        const exists = storage.tasks.some((t) => {
+        const candidate = shiftDate(currentToday, i);
+        const exists = tasks.some((t) => {
           if (t.category !== category) return false;
           if (t.due_date !== candidate) return false;
           const status = t.status_by_date?.[candidate];
@@ -372,21 +273,12 @@ export function useTodoDaily() {
       updated_at: safeNowISO(),
       status_by_date: {},
     };
-    // optimistic local insert
-    setStorage((prev) => {
-      const next = { ...prev, tasks: [...prev.tasks, base] };
-      saveStorage(next);
-      return next;
-    });
-    setSelection((prev) => {
-      const s: DailySelection = {
-        date: targetDate,
-        selected: { ...prev.selected, [category]: base.id },
-      };
-      saveSelection(s);
-      return s;
-    });
-    // server insert
+    setTasks((prev) => [...prev, base]);
+    setSelection((prev) => ({
+      date: targetDate,
+      selected: { ...prev.selected, [category]: base.id },
+    }));
+
     try {
       const res = await api<{ task: any }>("/api/todo", {
         method: "POST",
@@ -406,33 +298,25 @@ export function useTodoDaily() {
         created_at: res.task.created_at,
         updated_at: res.task.updated_at,
       };
-      setStorage((prev) => {
-        const tasks = prev.tasks.slice();
+      setTasks((prev) => {
+        const tasks = prev.slice();
         const idx = tasks.findIndex((t) => t.id === base.id);
         if (idx >= 0) tasks[idx] = serverTask;
         else tasks.push(serverTask);
-        const next = { ...prev, tasks };
-        saveStorage(next);
-        return next;
+        return tasks;
       });
-      setSelection((prev) => {
-        const s: DailySelection = {
-          date: serverTask.due_date || prev.date,
-          selected: { ...prev.selected, [category]: serverTask.id },
-        };
-        saveSelection(s);
-        return s;
-      });
-      writeJSON(SUPABASE_SYNC_KEY, "true");
+      setSelection((prev) => ({
+        date: serverTask.due_date || prev.date,
+        selected: { ...prev.selected, [category]: serverTask.id },
+      }));
     } catch (e) {
-      console.warn("DB insert failed; staying local.", e);
-      writeJSON(SUPABASE_SYNC_KEY, "false");
+      console.warn("DB insert failed; reverting optimistic task.", e);
+      setTasks((prev) => prev.filter((t) => t.id !== base.id));
     }
-  }, [storage.tasks]);
+  }, [tasks]);
 
   const markDone = useCallback(async (category: Category) => {
     const t = slotInfo[category].task; if (!t) return;
-    // optimistic
     replaceTask({ ...t, status_by_date: { ...(t.status_by_date||{}), [today]: "done" }, updated_at: safeNowISO() });
     try { await api("/api/todo/status", { method:"POST", body: JSON.stringify({ task_id: t.id, date: today, status: "done" })}); }
     catch(e){ console.warn("DB status failed", e); }
@@ -449,32 +333,31 @@ export function useTodoDaily() {
     const cands = candidatesByCat[category];
     const curId = slotInfo[category].task?.id;
     const next = cands.find(t => t.id !== curId);
-    setSelection(prev => { const s: DailySelection = { date: today, selected: { ...prev.selected, [category]: next?.id ?? null } }; saveSelection(s); return s; });
+    setSelection(prev => ({ date: today, selected: { ...prev.selected, [category]: next?.id ?? null } }));
   }, [candidatesByCat, slotInfo, today]);
 
   const deleteTask = useCallback(async (taskId: string) => {
-    const deleted = loadDeleted();
-    if (!deleted.has(taskId)) {
-      deleted.add(taskId);
-      saveDeleted(deleted);
-    }
-    setStorage(prev => { const next = { ...prev, tasks: prev.tasks.filter(t => t.id !== taskId) }; saveStorage(next); return next; });
-    setSelection(prev => { const sel = { ...prev.selected }; (["life","work","distraction"] as Category[]).forEach(c => { if (sel[c] === taskId) sel[c] = null; }); const s: DailySelection = { date: prev.date, selected: sel }; saveSelection(s); return s; });
-    try { await api(`/api/todo?id=${encodeURIComponent(taskId)}`, { method: "DELETE" }); } catch(e){ console.warn("DB delete failed", e); }
-  }, []);
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    setSelection(prev => {
+      const sel = { ...prev.selected };
+      (["life","work","distraction"] as Category[]).forEach(c => { if (sel[c] === taskId) sel[c] = null; });
+      return { date: prev.date, selected: sel };
+    });
+    try { await api(`/api/todo?id=${encodeURIComponent(taskId)}`, { method: "DELETE" }); }
+    catch(e){ console.warn("DB delete failed", e); void refresh(); }
+  }, [refresh]);
 
   const editTask = useCallback(async (taskId: string, patch: Partial<Pick<Task,"title"|"note"|"priority"|"pinned"|"due_date"|"repeat">>) => {
-    // optimistic local mutate
-    setStorage(prev => {
-      const idx = prev.tasks.findIndex(t => t.id === taskId);
+    setTasks(prev => {
+      const idx = prev.findIndex(t => t.id === taskId);
       if (idx === -1) return prev;
-      const tasks = prev.tasks.slice();
+      const tasks = prev.slice();
       tasks[idx] = { ...tasks[idx], ...patch, updated_at: safeNowISO() };
-      const next = { ...prev, tasks }; saveStorage(next); return next;
+      return tasks;
     });
-    try { await api(`/api/todo?id=${encodeURIComponent(taskId)}`, { method:"PATCH", body: JSON.stringify(patch) }); writeJSON(SUPABASE_SYNC_KEY, "true"); }
-    catch(e){ console.warn("DB patch failed", e); writeJSON(SUPABASE_SYNC_KEY, "false"); }
-  }, []);
+    try { await api(`/api/todo?id=${encodeURIComponent(taskId)}`, { method:"PATCH", body: JSON.stringify(patch) }); }
+    catch(e){ console.warn("DB patch failed", e); void refresh(); }
+  }, [refresh]);
 
   const setTaskStatus = useCallback(
     async (
@@ -482,10 +365,10 @@ export function useTodoDaily() {
       date: string,
       nextStatus: "done" | "skipped" | "pending"
     ) => {
-      setStorage((prev) => {
-        const idx = prev.tasks.findIndex((t) => t.id === taskId);
+      setTasks((prev) => {
+        const idx = prev.findIndex((t) => t.id === taskId);
         if (idx === -1) return prev;
-        const tasks = prev.tasks.slice();
+        const tasks = prev.slice();
         const statuses = { ...(tasks[idx].status_by_date || {}) };
         if (nextStatus === "pending") {
           delete statuses[date];
@@ -497,9 +380,7 @@ export function useTodoDaily() {
           status_by_date: statuses,
           updated_at: safeNowISO(),
         };
-        const next = { ...prev, tasks };
-        saveStorage(next);
-        return next;
+        return tasks;
       });
       try {
         if (nextStatus === "pending") {
@@ -511,23 +392,22 @@ export function useTodoDaily() {
             body: JSON.stringify({ task_id: taskId, date, status: nextStatus }),
           });
         }
-        writeJSON(SUPABASE_SYNC_KEY, "true");
       } catch (e) {
         console.warn("DB status update failed", e);
-        writeJSON(SUPABASE_SYNC_KEY, "false");
+        void refresh();
       }
     },
-    []
+    [refresh]
   );
 
   useEffect(() => {
     const current = getTodayInTZ(KUWAIT_TZ);
-    const focus = earliestPendingDate(storage.tasks, current);
+    const focus = earliestPendingDate(tasks, current);
     if (focus !== today) {
       setToday(focus);
-      setSelection(loadSelection(focus));
+      setSelection({ date: focus, selected: {} });
     }
-  }, [storage.tasks, today]);
+  }, [tasks, today]);
 
   useEffect(() => {
     const cats: Category[] = ["life", "work", "distraction"];
@@ -541,10 +421,14 @@ export function useTodoDaily() {
     if (autoAdvanceRef.current === today) return;
     autoAdvanceRef.current = today;
     const timer = setTimeout(() => {
-      advanceToNextDay();
+      setToday((prev) => {
+        const nextDay = shiftDate(prev, 1);
+        setSelection({ date: nextDay, selected: {} });
+        return nextDay;
+      });
     }, 600);
     return () => clearTimeout(timer);
-  }, [slotInfo, today, advanceToNextDay]);
+  }, [slotInfo, today]);
 
   return {
     today,
@@ -559,6 +443,12 @@ export function useTodoDaily() {
     deleteTask,
     editTask,
     setTaskStatus,
-    advanceToNextDay,
+    advanceToNextDay: () => {
+      setToday((prev) => {
+        const next = shiftDate(prev, 1);
+        setSelection({ date: next, selected: {} });
+        return next;
+      });
+    },
   };
 }

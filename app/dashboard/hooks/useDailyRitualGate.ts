@@ -2,62 +2,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { readJSON, subscribe, waitForUserStorage } from "@/lib/user-storage";
 import { todayKey } from "@/utils/dates";
 
-const DAILY_RITUAL_KEY = "gaia.gate.dailyRitual";
-
-type DailyGateState = {
-  date?: string;
-  completedAt?: string;
-};
-
+// Simplified gate: no local storage, just mark ready immediately.
 export function useDailyRitualGate() {
   const [today, setToday] = useState<string>(() => todayKey());
-  const [completedToday, setCompletedToday] = useState<boolean | null>(null);
+  const [completedToday, setCompletedToday] = useState<boolean>(true);
   const [ready, setReady] = useState<boolean>(false);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const evaluate = () => {
-      try {
-        const stored = readJSON<DailyGateState | null>(DAILY_RITUAL_KEY, null);
-        if (cancelled) return;
-        const done = !!stored?.date && stored.date === today;
-        setCompletedToday(done);
-      } catch {
-        if (!cancelled) setCompletedToday(false);
-      } finally {
-        if (!cancelled) setReady(true);
-      }
-    };
-
-    (async () => {
-      try {
-        await waitForUserStorage();
-      } catch {
-        // ignore
-      } finally {
-        evaluate();
-      }
-    })();
-
-    const unsubscribe = subscribe((detail) => {
-      if (!detail.key || detail.key !== DAILY_RITUAL_KEY) return;
-      evaluate();
-    });
-
-    const interval = setInterval(() => {
-      setToday(todayKey());
-    }, 60 * 60 * 1000);
-
-    return () => {
-      cancelled = true;
-      unsubscribe();
-      clearInterval(interval);
-    };
-  }, [today]);
+    setToday(todayKey());
+    setCompletedToday(true);
+    setReady(true);
+  }, []);
 
   return { today, completedToday, ready };
 }

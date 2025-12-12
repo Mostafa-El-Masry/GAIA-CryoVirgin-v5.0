@@ -4,13 +4,7 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useTodoDaily } from "../dashboard/hooks/useTodoDaily";
 import type { Task, Category } from "../dashboard/hooks/useTodoDaily";
-import {
-  snapshotStorage,
-  waitForUserStorage,
-  subscribe,
-  setItem,
-  getItem,
-} from "@/lib/user-storage";
+import { setItem, getItem } from "@/lib/user-storage";
 import { shiftDate } from "@/utils/dates";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -241,42 +235,13 @@ export default function TODOPage() {
     },
   ];
   const [navActive, setNavActive] = useState<NavFilter>(() => {
-    const cached = snapshotStorage()[NAV_FILTER_KEY] ?? getItem(NAV_FILTER_KEY);
+    const cached = getItem(NAV_FILTER_KEY);
     return isNavFilter(cached) ? cached : "day";
   });
 
   useEffect(() => {
-    let cancelled = false;
-    const update = () => {
-      const snapshot = snapshotStorage();
-      const hasSupabase = snapshot["gaia.todo.supabase.synced"] === "true";
-      const localRaw = snapshot["gaia.todo.v2.0.6"];
-      const hasTasks =
-        typeof localRaw === "string" && !localRaw.includes('"tasks":[]');
-      const savedFilter = snapshot[NAV_FILTER_KEY] ?? null;
-      if (isNavFilter(savedFilter)) {
-        setNavActive(savedFilter);
-      }
-      setStorageStatus({ synced: hasSupabase, hasTasks });
-    };
-    (async () => {
-      try {
-        await waitForUserStorage();
-        if (cancelled) return;
-        update();
-      } catch {
-        if (!cancelled) setStorageStatus({ synced: false, hasTasks: false });
-      }
-    })();
-    const unsub = subscribe(({ key }) => {
-      if (!key) return;
-      if (key.startsWith("gaia.todo")) update();
-    });
-    return () => {
-      cancelled = true;
-      unsub();
-    };
-  }, []);
+    setStorageStatus({ synced: true, hasTasks: tasks.length > 0 });
+  }, [tasks]);
 
   const byCat = useMemo(() => {
     const map: Record<Category, Task[]> = {
