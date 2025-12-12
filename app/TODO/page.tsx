@@ -2,8 +2,6 @@
 "use client";
 
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
-import type { ReactNode } from "react";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useTodoDaily } from "../dashboard/hooks/useTodoDaily";
 import type { Task, Category } from "../dashboard/hooks/useTodoDaily";
 import {
@@ -21,16 +19,24 @@ import {
   Calendar02Icon,
   CheckListIcon,
   ShuffleIcon,
+  Delete02Icon,
 } from "@hugeicons/core-free-icons";
-
-type StatusTone = "pending" | "done" | "skipped";
-type StatusResolution = { label: string; tone: StatusTone; dateLabel: string };
-type DragState = { id: string; category: Category } | null;
-type DropTarget = {
-  category: Category;
-  id: string | null;
-  position: "before" | "after";
-} | null;
+import { DuePicker } from "./modules/DuePicker";
+import { TaskDraggable } from "./modules/TaskDraggable";
+import {
+  formatShortDate,
+  parseDate,
+  todayInput,
+  todayInTZ,
+  sortTasksByMode,
+} from "./modules/utils";
+import type {
+  StatusTone,
+  StatusResolution,
+  DragState,
+  DropTarget,
+  SortMode,
+} from "./modules/types";
 
 const LABELS: Record<Category, string> = {
   life: "Life",
@@ -39,7 +45,7 @@ const LABELS: Record<Category, string> = {
 };
 
 const HINTS: Record<Category, string> = {
-  life: "Use this for home, errands, relationships, errands, and anything that keeps your life moving.",
+  life: "Use this for home, errands, relationships, things that keeps your life moving.",
   work: "Tasks related to your job, GAIA building, study sessions, and deep work blocks.",
   distraction:
     "Things you want to deliberately enjoy or limit: games, scrolling, and time sinks.",
@@ -63,52 +69,6 @@ function isNavFilter(value: unknown): value is NavFilter {
     value === "all" ||
     value === "custom"
   );
-}
-
-function formatShortDate(value?: string | null) {
-  if (!value || value === "Unscheduled") return value ?? "Unscheduled";
-  try {
-    const date = new Date(value + "T00:00:00Z");
-    if (Number.isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }).format(date);
-  } catch {
-    return value;
-  }
-}
-
-function compareDueDate(a?: string | null, b?: string | null) {
-  if (!a && !b) return 0;
-  if (!a) return 1;
-  if (!b) return -1;
-  return b.localeCompare(a);
-}
-
-function parseDate(value?: string | null) {
-  if (!value) return null;
-  const d = new Date(`${value}T00:00:00`);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
-
-function todayInput(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-const KUWAIT_TZ = "Asia/Kuwait";
-function todayInTZ(tz: string = KUWAIT_TZ): string {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: tz,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-  const y = parts.find((p) => p.type === "year")?.value ?? "0000";
-  const m = parts.find((p) => p.type === "month")?.value ?? "01";
-  const d = parts.find((p) => p.type === "day")?.value ?? "01";
-  return `${y}-${m}-${d}`;
 }
 
 export default function TODOPage() {
@@ -136,6 +96,12 @@ export default function TODOPage() {
     work: [],
     distraction: [],
   });
+  const [sortModes, setSortModes] = useState<Record<Category, SortMode>>({
+    life: "latest",
+    work: "latest",
+    distraction: "latest",
+  });
+  const initialOrderApplied = useRef(false);
   const [hydrated, setHydrated] = useState(false);
   const [dragging, setDragging] = useState<DragState>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget>(null);
@@ -194,7 +160,10 @@ export default function TODOPage() {
   const calendarToday = useMemo(() => todayInTZ(), []);
   const [customDate, setCustomDate] = useState<string>(() => {
     const cached = getItem(NAV_CUSTOM_DATE_KEY);
-    if (typeof cached === "string" && cached.trim().match(/^\d{4}-\d{2}-\d{2}$/))
+    if (
+      typeof cached === "string" &&
+      cached.trim().match(/^\d{4}-\d{2}-\d{2}$/)
+    )
       return cached;
     return calendarToday;
   });
@@ -226,7 +195,13 @@ export default function TODOPage() {
         if (diffCustom === 0) customPending += 1;
       }
     });
-    return { todayPending, tomorrowPending, nextSeven, customPending, allPending };
+    return {
+      todayPending,
+      tomorrowPending,
+      nextSeven,
+      customPending,
+      allPending,
+    };
   }, [tasks, calendarToday, customDate]);
   const navItems = [
     {
@@ -313,6 +288,60 @@ export default function TODOPage() {
     return map;
   }, [tasks]);
 
+  const applySortForCategory = useCallback(
+    (category: Category, mode: SortMode) => {
+      setOrderMap((prev) => ({
+        ...prev,
+        [category]: sortTasksByMode(byCat[category], mode).map((t) => t.id),
+      }));
+    },
+    [byCat]
+  );
+
+  const handleSortChange = useCallback(
+    (category: Category, mode: SortMode) => {
+      setSortModes((prev) => ({ ...prev, [category]: mode }));
+      applySortForCategory(category, mode);
+    },
+    [applySortForCategory]
+  );
+
+  useEffect(() => {
+    if (initialOrderApplied.current) return;
+    if (!hydrated || tasks.length === 0) return;
+    setOrderMap((prev) => {
+      const next: Record<Category, string[]> = { ...prev };
+      (Object.keys(byCat) as Category[]).forEach((cat) => {
+        if ((prev[cat]?.length ?? 0) > 0) return;
+        const sorted = sortTasksByMode(byCat[cat], sortModes[cat]);
+        next[cat] = sorted.map((t) => t.id);
+      });
+      return next;
+    });
+    initialOrderApplied.current = true;
+  }, [byCat, hydrated, sortModes, tasks.length]);
+
+  useEffect(() => {
+    setOrderMap((prev) => {
+      let changed = false;
+      const next: Record<Category, string[]> = { ...prev };
+      (Object.keys(byCat) as Category[]).forEach((cat) => {
+        const ids = byCat[cat].map((t) => t.id);
+        const prevIds = prev[cat] ?? [];
+        const hasNew = ids.some((id) => !prevIds.includes(id));
+        const lengthChanged = prevIds.length !== ids.length;
+        if (ids.length === 0) return;
+        if (hasNew || lengthChanged) {
+          next[cat] = sortTasksByMode(byCat[cat], sortModes[cat]).map(
+            (t) => t.id
+          );
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [byCat, sortModes]);
+
   const orderedByCat = useMemo(() => {
     const map: Record<Category, Task[]> = {
       life: [],
@@ -321,16 +350,14 @@ export default function TODOPage() {
     };
     (Object.keys(byCat) as Category[]).forEach((cat) => {
       const order = orderMap[cat] ?? [];
-      map[cat] = byCat[cat]
-        .slice()
-        .sort((a, b) => {
-          const ia = order.indexOf(a.id);
-          const ib = order.indexOf(b.id);
-          if (ia !== -1 && ib !== -1) return ia - ib;
-          if (ia !== -1) return -1;
-          if (ib !== -1) return 1;
-          return b.created_at.localeCompare(a.created_at);
-        });
+      map[cat] = byCat[cat].slice().sort((a, b) => {
+        const ia = order.indexOf(a.id);
+        const ib = order.indexOf(b.id);
+        if (ia !== -1 && ib !== -1) return ia - ib;
+        if (ia !== -1) return -1;
+        if (ib !== -1) return 1;
+        return b.created_at.localeCompare(a.created_at);
+      });
     });
     return map;
   }, [byCat, orderMap]);
@@ -394,12 +421,10 @@ export default function TODOPage() {
     };
   }, []);
 
-  const toneStyles: Record<StatusTone, string> = {
-    pending:
-      "bg-[color-mix(in_srgb,var(--gaia-warning)_18%,transparent)] text-[var(--gaia-text-strong)] ring-1 ring-[color-mix(in_srgb,var(--gaia-warning)_45%,transparent)]",
-    done: "bg-[color-mix(in_srgb,var(--gaia-positive)_18%,transparent)] text-[var(--gaia-text-strong)] ring-1 ring-[color-mix(in_srgb,var(--gaia-positive)_45%,transparent)]",
-    skipped:
-      "bg-[color-mix(in_srgb,var(--gaia-text-muted)_22%,transparent)] text-[var(--gaia-text-strong)] ring-1 ring-[color-mix(in_srgb,var(--gaia-border)_70%,transparent)]",
+  const toneColors: Record<StatusTone, string> = {
+    pending: "var(--gaia-warning)",
+    done: "var(--gaia-positive)",
+    skipped: "var(--gaia-text-muted)",
   };
 
   const handleAdd = useCallback(
@@ -436,51 +461,32 @@ export default function TODOPage() {
     [setTaskStatus, today]
   );
 
-  const resequenceCategory = useCallback(
-    async (category: Category, prevOrder: Task[], nextOrder: Task[]) => {
-      if (prevOrder.length === 0 || nextOrder.length === 0) return;
-      const dueSlots = prevOrder.map((t) => t.due_date ?? null);
-      const updates: Promise<unknown>[] = [];
-      nextOrder.forEach((task, idx) => {
-        const desiredDate = dueSlots[idx] ?? null;
-        if (task.due_date !== desiredDate) {
-          updates.push(editTask(task.id, { due_date: desiredDate }));
-        }
-      });
-      await Promise.all(updates);
-    },
-    [editTask]
-  );
-
   const handleReorder = useCallback(
-    async (
+    (
       category: Category,
       sourceId: string,
       targetId: string | null,
       position: "before" | "after"
     ) => {
-      const list = filteredByCat[category];
-      const currentIdx = list.findIndex((t) => t.id === sourceId);
-      if (currentIdx === -1) return;
-      const next = list.slice();
-      const [item] = next.splice(currentIdx, 1);
-      let insertAt = next.length;
-      if (targetId) {
-        const targetIdx = next.findIndex((t) => t.id === targetId);
-        if (targetIdx !== -1) {
-          insertAt = position === "after" ? targetIdx + 1 : targetIdx;
-        }
-      }
-      next.splice(insertAt, 0, item);
-      await resequenceCategory(category, list, next);
-      setOrderMap((prev) => ({
-        ...prev,
-        [category]: next.map((t) => t.id),
-      }));
+      setOrderMap((prev) => {
+        const base =
+          prev[category]?.length > 0
+            ? prev[category]
+            : orderedByCat[category].map((t) => t.id);
+        const withoutSource = base.filter((id) => id !== sourceId);
+        let insertAt = targetId
+          ? withoutSource.indexOf(targetId)
+          : withoutSource.length;
+        if (insertAt === -1) insertAt = withoutSource.length;
+        if (position === "after") insertAt += 1;
+        const nextOrder = withoutSource.slice();
+        nextOrder.splice(insertAt, 0, sourceId);
+        return { ...prev, [category]: nextOrder };
+      });
       setDragging(null);
       setDropTarget(null);
     },
-    [filteredByCat, resequenceCategory]
+    [orderedByCat]
   );
 
   const dragIndicator = (taskId: string, category: Category) => {
@@ -524,7 +530,9 @@ export default function TODOPage() {
   );
 
   if (!hydrated) {
-    return <main className="relative w-[100vw] gaia-surface text-[var(--gaia-text-default)]" />;
+    return (
+      <main className="relative w-[100vw] gaia-surface text-[var(--gaia-text-default)]" />
+    );
   }
 
   return (
@@ -551,7 +559,9 @@ export default function TODOPage() {
                 <li key={item.key}>
                   <button
                     type="button"
-                    onClick={() => handleNavClick(item.key as "day" | "week" | "all")}
+                    onClick={() =>
+                      handleNavClick(item.key as "day" | "week" | "all")
+                    }
                     className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-sm font-semibold text-[var(--gaia-text-default)] shadow-sm transition hover:border-[var(--gaia-contrast-bg)] hover:shadow ${
                       navActive === item.key
                         ? "border-[var(--gaia-contrast-bg)] bg-[color-mix(in_srgb,var(--gaia-contrast-bg)_12%,transparent)]"
@@ -579,6 +589,7 @@ export default function TODOPage() {
                       <input
                         id="custom-date"
                         type="date"
+                        lang="en-GB"
                         className="w-full rounded-lg border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-2 text-sm text-[var(--gaia-text-default)]"
                         value={customDate}
                         onChange={(e) => {
@@ -624,8 +635,8 @@ export default function TODOPage() {
                   </p>
                   <p className="max-w-2xl text-sm text-[var(--gaia-text-muted)]">
                     Drag to reorder tasks inside each category. Dropping a task
-                    pushes its scheduled date forward or backward automatically
-                    so every category keeps one task per day.
+                    keeps its due date unchanged; edit the date inside a task
+                    when you want to reschedule it.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -692,7 +703,7 @@ export default function TODOPage() {
                       size={12}
                       color="var(--gaia-positive)"
                     />
-                    Auto reschedules dates
+                    Dates change only when edited
                   </span>
                 </div>
               </div>
@@ -714,10 +725,29 @@ export default function TODOPage() {
                           {HINTS[cat]}
                         </p>
                       </div>
+                      <div className="flex items-center gap-2 text-xs text-[var(--gaia-text-muted)]">
+                        <label
+                          htmlFor={`sort-${cat}`}
+                          className="font-semibold"
+                        >
+                          Sort
+                        </label>
+                        <select
+                          id={`sort-${cat}`}
+                          className="rounded-lg border gaia-border bg-[var(--gaia-surface)] px-2 py-1 text-[var(--gaia-text-default)]"
+                          value={sortModes[cat]}
+                          onChange={(e) =>
+                            handleSortChange(cat, e.target.value as SortMode)
+                          }
+                        >
+                          <option value="latest">Latest</option>
+                          <option value="oldest">Oldest</option>
+                        </select>
+                      </div>
                     </div>
 
                     <form
-                      className="flex flex-wrap items-center gap-2 border-b gaia-border bg-[var(--gaia-surface)] px-4 py-3 text-sm"
+                      className="flex flex-col gap-2 border-b gaia-border bg-[var(--gaia-surface)] px-4 py-3 text-sm"
                       onSubmit={(e) => {
                         e.preventDefault();
                         void handleAdd(cat);
@@ -728,7 +758,7 @@ export default function TODOPage() {
                       </label>
                       <input
                         id={`todo-add-${cat}`}
-                        className="flex-1 rounded-xl border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-2 text-sm text-[var(--gaia-text-default)] placeholder:text-[var(--gaia-text-muted)] shadow-inner shadow-black/10 focus:border-[var(--gaia-contrast-bg)] focus:outline-none"
+                        className="w-full rounded-xl border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-2 text-sm text-[var(--gaia-text-default)] placeholder:text-[var(--gaia-text-muted)] shadow-inner shadow-black/10 focus:border-[var(--gaia-contrast-bg)] focus:outline-none"
                         placeholder={`Add a ${LABELS[cat]} task...`}
                         value={drafts[cat]}
                         onChange={(e) =>
@@ -738,29 +768,26 @@ export default function TODOPage() {
                           }))
                         }
                       />
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="date"
-                          className="w-[140px] rounded-xl border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-2 text-sm text-[var(--gaia-text-default)]"
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <DuePicker
                           value={draftsDue[cat]}
-                          onChange={(e) =>
+                          min="2025-01-01"
+                          max="2030-12-31"
+                          onChange={(next) =>
                             setDraftsDue((prev) => ({
                               ...prev,
-                              [cat]: e.target.value || todayInput(),
+                              [cat]: next || todayInput(),
                             }))
                           }
                         />
-                        <span className="text-xs font-semibold text-[var(--gaia-text-muted)]">
-                          {formatShortDate(draftsDue[cat])}
-                        </span>
+                        <button
+                          type="submit"
+                          className="rounded-xl bg-[var(--gaia-contrast-bg)] px-4 py-2 text-sm font-semibold text-[var(--gaia-contrast-text)] shadow-lg shadow-black/10 transition hover:translate-y-px hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                          disabled={!drafts[cat].trim()}
+                        >
+                          Add
+                        </button>
                       </div>
-                      <button
-                        type="submit"
-                        className="rounded-xl bg-[var(--gaia-contrast-bg)] px-4 py-2 text-sm font-semibold text-[var(--gaia-contrast-text)] shadow-lg shadow-black/10 transition hover:translate-y-px hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                        disabled={!drafts[cat].trim()}
-                      >
-                        Add
-                      </button>
                     </form>
 
                     <div className="flex flex-1 flex-col">
@@ -778,9 +805,6 @@ export default function TODOPage() {
                         <ul className="divide-y divide-[var(--gaia-border)]/60">
                           {filteredByCat[cat].map((t) => {
                             const statusMeta = resolveStatus(t);
-                            const dueLabel = formatShortDate(
-                              t.due_date ?? statusMeta.dateLabel
-                            );
                             const clampStyle = {
                               display: "-webkit-box",
                               WebkitLineClamp: 2,
@@ -803,7 +827,11 @@ export default function TODOPage() {
                               >
                                 <div className="flex items-start gap-3">
                                   <span className="mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--gaia-surface)] text-[11px] font-bold uppercase text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)] cursor-grab active:cursor-grabbing flex-shrink-0">
-                                    ?
+                                    <HugeiconsIcon
+                                      icon={Calendar02Icon}
+                                      size={12}
+                                      color="var(--gaia-text-default)"
+                                    />
                                   </span>
                                   <div className="flex-1 space-y-3 overflow-hidden">
                                     <div className="flex items-start gap-3">
@@ -822,19 +850,29 @@ export default function TODOPage() {
                                         )}
                                       </div>
                                       <button
-                                        className="ml-2 inline-flex items-center self-start rounded-lg bg-[color-mix(in_srgb,var(--gaia-negative)_16%,transparent)] px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--gaia-text-strong)] ring-1 ring-[color-mix(in_srgb,var(--gaia-negative)_45%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--gaia-negative)_22%,transparent)]"
+                                        className="ml-2 inline-flex items-center self-start rounded-lg px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--gaia-text-strong)] transition-colors"
                                         onClick={() => deleteTask(t.id)}
                                         title="Delete task"
                                       >
-                                        Delete
+                                        <span className="sr-only">Delete</span>
+                                        <span className="text-[var(--gaia-text-strong)] transition-colors hover:text-[var(--gaia-negative)]">
+                                          <HugeiconsIcon
+                                            icon={Delete02Icon}
+                                            size={18}
+                                            color="currentColor"
+                                          />
+                                        </span>
                                       </button>
                                     </div>
                                     <div className="flex w-full flex-wrap items-center gap-2 rounded-xl bg-[var(--gaia-surface)] px-3 py-2 text-xs text-[var(--gaia-text-default)] shadow-inner shadow-black/5">
-                                      <label
-                                        className={`flex w-full items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 font-semibold shadow-sm sm:w-auto ${
-                                          toneStyles[statusMeta.tone]
-                                        }`}
-                                      >
+                                      <label className="flex w-full items-center gap-2 whitespace-nowrap rounded-lg px-1 py-1 font-semibold sm:w-auto">
+                                        <span
+                                          className="inline-flex h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                                          style={{
+                                            backgroundColor: toneColors[statusMeta.tone],
+                                          }}
+                                          aria-hidden
+                                        />
                                         <select
                                           aria-label="Task status"
                                           className="rounded border gaia-border bg-[var(--gaia-surface)] px-2 py-1 text-[var(--gaia-text-default)]"
@@ -857,17 +895,12 @@ export default function TODOPage() {
                                       </label>
                                       <div className="flex w-full flex-wrap items-center gap-2 rounded-lg bg-[var(--gaia-surface)] px-3 py-2 font-semibold text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)] sm:w-auto">
                                         <span>Due</span>
-                                        <input
-                                          type="date"
-                                          className="min-w-[140px] rounded border gaia-border bg-[var(--gaia-surface)] px-2 py-1 text-[var(--gaia-text-default)] sm:min-w-[0]"
+                                        <DuePicker
                                           value={t.due_date ?? ""}
                                           min="2025-01-01"
                                           max="2030-12-31"
-                                          onChange={(e) =>
-                                            handleDateChange(
-                                              t.id,
-                                              e.target.value
-                                            )
+                                          onChange={(next) =>
+                                            handleDateChange(t.id, next)
                                           }
                                         />
                                       </div>
@@ -889,113 +922,5 @@ export default function TODOPage() {
         </div>
       </div>
     </main>
-  );
-}
-
-type StatusRowProps = {
-  task: Task;
-  toneStyles: Record<StatusTone, string>;
-  status: StatusResolution;
-};
-
-type TaskDraggableProps = {
-  task: Task;
-  category: Category;
-  className?: string;
-  onReorder: (
-    category: Category,
-    sourceId: string,
-    targetId: string | null,
-    position: "before" | "after"
-  ) => void;
-  setDragging: (state: DragState) => void;
-  setDropTarget: (state: DropTarget) => void;
-  children: ReactNode;
-};
-
-function TaskDraggable({
-  task,
-  category,
-  className,
-  onReorder,
-  setDragging,
-  setDropTarget,
-  children,
-}: TaskDraggableProps) {
-  const ref = useRef<HTMLLIElement | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const cleanupDraggable = draggable({
-      element: el,
-      getInitialData: () => ({ taskId: task.id, category }),
-      onDragStart: () => setDragging({ id: task.id, category }),
-      onDrop: () => {
-        setDragging(null);
-        setDropTarget(null);
-      },
-    });
-
-    const cleanupDropTarget = dropTargetForElements({
-      element: el,
-      getData: ({ input }) => {
-        if (!ref.current) return {};
-        const { top, height } = ref.current.getBoundingClientRect();
-        const before = input.clientY < top + height / 2;
-        return {
-          taskId: task.id,
-          category,
-          position: before ? "before" : "after",
-        };
-      },
-      canDrop: ({ source }) =>
-        (source.data as any)?.category === category &&
-        (source.data as any)?.taskId !== task.id,
-      onDragEnter: ({ self }) => {
-        const pos =
-          (self.data as any)?.position === "before" ? "before" : "after";
-        setDropTarget({ id: task.id, category, position: pos });
-      },
-      onDragLeave: () => setDropTarget(null),
-      onDrop: ({ source, self }) => {
-        const sourceId = (source.data as any)?.taskId as string | undefined;
-        const pos =
-          (self.data as any)?.position === "before" ? "before" : "after";
-        if (sourceId) {
-          onReorder(category, sourceId, task.id, pos);
-        }
-        setDropTarget(null);
-      },
-    });
-
-    return () => {
-      cleanupDraggable();
-      cleanupDropTarget();
-    };
-  }, [task.id, category, onReorder, setDragging, setDropTarget]);
-
-  return (
-    <li ref={ref} className={className}>
-      {children}
-    </li>
-  );
-}
-
-function StatusRow({ task, toneStyles, status }: StatusRowProps) {
-  return (
-    <div className="mt-2 flex flex-wrap gap-2 text-xs">
-      <span
-        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${
-          toneStyles[status.tone]
-        }`}
-      >
-        {status.label}
-      </span>
-      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--gaia-surface)] px-2 py-0.5 text-[var(--gaia-text-default)] ring-1 ring-[var(--gaia-border)]">
-        Due: {formatShortDate(task.due_date ?? status.dateLabel)}
-      </span>
-    </div>
   );
 }
