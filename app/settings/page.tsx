@@ -22,6 +22,7 @@ import type { GalleryItem } from "@/components/gallery/types";
 import { deriveAutoTags, AUTO_TAG_VERSION } from "@/components/gallery/tagging";
 import PermissionGate from "@/components/permissions/PermissionGate";
 import ProfilesCard from "./sections/ProfilesCard";
+import FeatureUnlocksTab from "./sections/FeatureUnlocksTab";
 import {
   onUserStorageReady,
   readJSON,
@@ -48,7 +49,7 @@ type ManifestResponse = {
   items?: GalleryItem[];
 };
 
-type TabId = "appearance" | "gallery" | "user" | "permissions";
+type TabId = "appearance" | "gallery" | "user" | "permissions" | "unlocks";
 
 async function fetchGalleryManifest(): Promise<GalleryItem[]> {
   // Prefer the live API scan so freshly added media shows up immediately.
@@ -104,6 +105,7 @@ function SettingsContent() {
     const tabs: Array<{ id: TabId; label: string }> = [
       { id: "appearance", label: "Appearance" },
       { id: "user", label: "User" },
+      { id: "unlocks", label: "GAIA unlocks" },
       { id: "permissions", label: "Permissions" },
       { id: "gallery", label: "Gallery" },
       // Users tab removed to avoid server-side admin calls when proxy is not configured
@@ -473,6 +475,8 @@ function SettingsContent() {
             </div>
           </section>
         )}
+
+        {activeTab === "unlocks" && <FeatureUnlocksTab />}
 
         {activeTab === "permissions" && (
           <SettingsPermissionsTab />

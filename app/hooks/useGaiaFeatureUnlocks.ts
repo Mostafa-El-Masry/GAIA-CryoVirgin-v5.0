@@ -14,6 +14,8 @@ export type GaiaFeatureId =
   | "settings"
   | "gallery";
 
+const UNLOCK_ALL_FEATURES = true;
+
 export function useGaiaFeatureUnlocks() {
   const { state } = useAcademyProgress();
 
@@ -28,7 +30,7 @@ export function useGaiaFeatureUnlocks() {
         total += state.byTrack[id]?.completedLessonIds.length ?? 0;
       }
 
-      const featureUnlocks = {
+      const baseUnlocks: Record<GaiaFeatureId, boolean> = {
         wealth: total >= 1,
         health: total >= 2,
         timeline: total >= 3,
@@ -37,11 +39,34 @@ export function useGaiaFeatureUnlocks() {
         eleuthia: total >= 6,
         settings: total >= 7,
         gallery: total >= 11,
-      } as const;
+      };
 
-      const allowedGalleryMediaCount = total > 10 ? total - 10 : 0;
+      const baseAllowedGalleryMediaCount = total > 10 ? total - 10 : 0;
 
-      return { totalLessonsCompleted: total, featureUnlocks, allowedGalleryMediaCount };
+      if (UNLOCK_ALL_FEATURES) {
+        const unlockedAll: Record<GaiaFeatureId, boolean> = {
+          wealth: true,
+          health: true,
+          timeline: true,
+          accounts: true,
+          guardian: true,
+          eleuthia: true,
+          settings: true,
+          gallery: true,
+        };
+
+        return {
+          totalLessonsCompleted: Math.max(total, 12),
+          featureUnlocks: unlockedAll,
+          allowedGalleryMediaCount: Number.MAX_SAFE_INTEGER,
+        };
+      }
+
+      return {
+        totalLessonsCompleted: total,
+        featureUnlocks: baseUnlocks,
+        allowedGalleryMediaCount: baseAllowedGalleryMediaCount,
+      };
     }, [state.byTrack]);
 
   const isFeatureUnlocked = (id: GaiaFeatureId) => featureUnlocks[id];

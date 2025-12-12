@@ -17,6 +17,8 @@ export type WealthUnlockState = {
   unlocked: Record<WealthFeatureId, boolean>;
 };
 
+const UNLOCK_ALL_WEALTH = true;
+
 export function useWealthUnlocks(): WealthUnlockState & {
   canAccess: (id: WealthFeatureId) => boolean;
 } {
@@ -39,7 +41,7 @@ export function useWealthUnlocks(): WealthUnlockState & {
     if (total >= 4) stage = 4;
     if (total >= 5) stage = 5;
 
-    const unlocked: Record<WealthFeatureId, boolean> = {
+    const baseUnlocked: Record<WealthFeatureId, boolean> = {
       accounts: stage >= 1,
       instruments: stage >= 2,
       flows: stage >= 3,
@@ -47,7 +49,23 @@ export function useWealthUnlocks(): WealthUnlockState & {
       projections: stage >= 5,
     };
 
-    return { totalLessonsCompleted: total, stage, unlocked };
+    if (UNLOCK_ALL_WEALTH) {
+      const unlockedAll: Record<WealthFeatureId, boolean> = {
+        accounts: true,
+        instruments: true,
+        flows: true,
+        levels: true,
+        projections: true,
+      };
+
+      return {
+        totalLessonsCompleted: Math.max(total, 5),
+        stage: 5,
+        unlocked: unlockedAll,
+      };
+    }
+
+    return { totalLessonsCompleted: total, stage, unlocked: baseUnlocked };
   }, [state.byTrack]);
 
   const canAccess = (id: WealthFeatureId) => unlocked[id];
