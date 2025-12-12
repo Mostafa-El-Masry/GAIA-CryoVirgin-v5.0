@@ -40,6 +40,10 @@ export type PayoutFrequency =
 
 export interface WealthInstrument {
   id: string;
+  reference?: string | null;
+  accountNumber?: string | null;
+  bankName?: string | null;
+  revenueFrequency?: string | null;
   accountId: string;
   name: string;
   currency: string;

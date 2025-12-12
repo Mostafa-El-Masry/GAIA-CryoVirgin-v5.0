@@ -5,8 +5,14 @@ const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 let client: SupabaseClient | null = null;
 
-if (typeof window !== "undefined" && url && anonKey) {
+export function getSupabaseClient(): SupabaseClient | null {
+  if (client) return client;
+  if (typeof window === "undefined") return null;
+  if (!url || !anonKey) return null;
   client = createClient(url, anonKey);
+  return client;
 }
 
-export const supabase = client;
+export function hasSupabaseClient(): boolean {
+  return !!getSupabaseClient();
+}

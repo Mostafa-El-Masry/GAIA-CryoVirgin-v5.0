@@ -3,11 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWealthUnlocks } from "../hooks/useWealthUnlocks";
 import type { WealthAccount, WealthAccountType, WealthState } from "../lib/types";
-import {
-  loadWealthState,
-  saveWealthStateWithRemote,
-  resetWealthStateWithRemote,
-} from "../lib/wealthStore";
+import { loadWealthStateWithRemote, saveWealthStateWithRemote } from "../lib/wealthStore";
 
 type CurrencyTotals = Record<string, number>;
 
@@ -63,11 +59,23 @@ export default function WealthAccountsPage() {
   const [state, setState] = useState<WealthState | null>(null);
   const [editing, setEditing] = useState<WealthAccount | null>(null);
   const [isNew, setIsNew] = useState(false);
-  const [resetting, setResetting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const s = loadWealthState();
-    setState(s);
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const s = await loadWealthStateWithRemote();
+        setState(s);
+      } catch (err: any) {
+        setError(err?.message ?? "Failed to load accounts.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
   }, []);
 
   const currencyTotals = useMemo(() => {
@@ -87,15 +95,6 @@ export default function WealthAccountsPage() {
           .reduce((sum, a) => sum + a.currentBalance, 0)
       : 0;
 
-  async function handleReset() {
-    setResetting(true);
-    const fresh = await resetWealthStateWithRemote();
-    setState(fresh);
-    setEditing(null);
-    setIsNew(false);
-    setResetting(false);
-  }
-
   function startCreate() {
     setIsNew(true);
     setEditing({
@@ -105,6 +104,19 @@ export default function WealthAccountsPage() {
       type: "cash",
       currentBalance: 0,
       note: "",
+      isPrimary: false,
+    });
+  }
+
+  function startCreateSalary() {
+    setIsNew(true);
+    setEditing({
+      id: `acc-${Math.random().toString(36).slice(2, 8)}`,
+      name: "Cash income (salary) - monthly",
+      currency: primaryCurrency || "KWD",
+      type: "cash",
+      currentBalance: 0,
+      note: "Monthly salary income (cash).",
       isPrimary: false,
     });
   }
@@ -162,7 +174,7 @@ export default function WealthAccountsPage() {
     return (
       <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-[var(--gaia-text-default)]">
         <section className={`${surface} p-6 text-sm gaia-muted`}>
-          Loading your Wealth accounts from local cache...
+          Loading your Wealth accounts from Supabase...
         </section>
       </main>
     );
@@ -182,15 +194,12 @@ export default function WealthAccountsPage() {
             These are the places where your money currently lives - cash buffers, certificates,
             and future investment lanes.
           </p>
+          {error && (
+            <p className="mt-1 text-xs text-rose-300">
+              {error}
+            </p>
+          )}
         </div>
-        <button
-          type="button"
-          onClick={handleReset}
-          disabled={resetting}
-          className="mt-3 inline-flex items-center justify-center rounded-full border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-1.5 text-xs font-medium text-[var(--gaia-text-default)] shadow-sm transition hover:border-[var(--gaia-contrast-bg)] disabled:opacity-60 md:mt-0"
-        >
-          {resetting ? "Resetting..." : "Reset example data"}
-        </button>
       </header>
 
       <section className={`${surface} space-y-4 p-5 md:p-6`}>
@@ -217,6 +226,15 @@ export default function WealthAccountsPage() {
                 + Add account
               </button>
             </div>
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+              <button
+                type="button"
+                onClick={startCreateSalary}
+                className="inline-flex items-center rounded-full border border-[var(--gaia-contrast-bg)]/60 bg-[var(--gaia-contrast-bg)]/8 px-3 py-1.5 font-semibold text-[var(--gaia-text-default)] hover:border-[var(--gaia-contrast-bg)]"
+              >
+                + Cash income (salary) monthly
+              </button>
+            </div>
           </div>
           <div className="rounded-2xl border gaia-border bg-[var(--gaia-surface-soft)] p-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--gaia-text-muted)]">
@@ -234,7 +252,7 @@ export default function WealthAccountsPage() {
               )}
             </ul>
             <p className="mt-3 text-[11px] gaia-muted">
-              Editing and resets save locally and mirror to Supabase when configured.
+              Changes save directly to Supabase. No local cache or example data.
             </p>
           </div>
         </div>

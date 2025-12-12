@@ -1,8 +1,8 @@
-import { supabase } from "./supabaseClient";
+import { getSupabaseClient, hasSupabaseClient } from "./supabaseClient";
 import type { WealthAccount, WealthInstrument, WealthFlow, WealthState } from "./types";
 
 export function hasSupabaseConfig(): boolean {
-  return !!supabase;
+  return hasSupabaseClient();
 }
 
 function mapAccountFromRow(row: any): WealthAccount {
@@ -20,6 +20,10 @@ function mapAccountFromRow(row: any): WealthAccount {
 function mapInstrumentFromRow(row: any): WealthInstrument {
   return {
     id: String(row.id),
+    reference: row.reference ?? null,
+    accountNumber: row.account_number ?? null,
+    bankName: row.bank_name ?? null,
+    revenueFrequency: row.revenue_frequency ?? null,
     accountId: row.account_id ?? "",
     name: row.name ?? "",
     currency: row.currency ?? "KWD",
@@ -61,6 +65,10 @@ function mapAccountToRow(acc: WealthAccount) {
 function mapInstrumentToRow(inst: WealthInstrument) {
   return {
     id: inst.id,
+    reference: inst.reference ?? null,
+    account_number: inst.accountNumber ?? null,
+    bank_name: inst.bankName ?? null,
+    revenue_frequency: inst.revenueFrequency ?? null,
     account_id: inst.accountId,
     name: inst.name,
     currency: inst.currency,
@@ -88,6 +96,7 @@ function mapFlowToRow(flow: WealthFlow) {
 }
 
 export async function fetchRemoteWealthAll(): Promise<WealthState | null> {
+  const supabase = getSupabaseClient();
   if (!supabase) return null;
 
   try {
@@ -117,8 +126,9 @@ export async function fetchRemoteWealthAll(): Promise<WealthState | null> {
   }
 }
 
-export async function pushRemoteWealthAll(state: WealthState): Promise<void> {
-  if (!supabase) return;
+export async function pushRemoteWealthAll(state: WealthState): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return false;
 
   try {
     const accountsRows = state.accounts.map(mapAccountToRow);
@@ -126,9 +136,15 @@ export async function pushRemoteWealthAll(state: WealthState): Promise<void> {
     const flowsRows = state.flows.map(mapFlowToRow);
 
     const [accRes, instRes, flowRes] = await Promise.all([
-      supabase.from("wealth_accounts").upsert(accountsRows, { onConflict: "id" }),
-      supabase.from("wealth_instruments").upsert(instrumentsRows, { onConflict: "id" }),
-      supabase.from("wealth_flows").upsert(flowsRows, { onConflict: "id" }),
+      accountsRows.length
+        ? supabase.from("wealth_accounts").upsert(accountsRows, { onConflict: "id" })
+        : Promise.resolve({ error: null }),
+      instrumentsRows.length
+        ? supabase.from("wealth_instruments").upsert(instrumentsRows, { onConflict: "id" })
+        : Promise.resolve({ error: null }),
+      flowsRows.length
+        ? supabase.from("wealth_flows").upsert(flowsRows, { onConflict: "id" })
+        : Promise.resolve({ error: null }),
     ]);
 
     if (accRes.error || instRes.error || flowRes.error) {
@@ -137,8 +153,11 @@ export async function pushRemoteWealthAll(state: WealthState): Promise<void> {
         instError: instRes.error,
         flowError: flowRes.error,
       });
+      return false;
     }
+    return true;
   } catch (err) {
     console.warn("[Wealth] Supabase upsert exception", err);
+    return false;
   }
 }

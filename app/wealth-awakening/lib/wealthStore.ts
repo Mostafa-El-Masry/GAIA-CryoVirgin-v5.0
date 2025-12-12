@@ -1,72 +1,26 @@
-import type { WealthState, WealthAccount, WealthInstrument, WealthFlow } from "./types";
+import type { WealthState } from "./types";
 import { hasSupabaseConfig, fetchRemoteWealthAll, pushRemoteWealthAll } from "./remoteWealth";
 
-const LOCAL_KEY = "gaia_wealth_awakening_state_v1";
-
-const DEFAULT_ACCOUNTS: WealthAccount[] = [
-  {
-    id: "cash-main",
-    name: "Main cash buffer",
-    currency: "KWD",
-    type: "cash",
-    currentBalance: 600,
-    isPrimary: true,
-    note: "Day-to-day cash and bills in KWD.",
-  },
-  {
-    id: "cd-egp-long-term",
-    name: "EGP 3-year certificate",
-    currency: "EGP",
-    type: "certificate",
-    currentBalance: 250000,
-    note: "Long-term EGP certificate aimed at future income.",
-  },
-  {
-    id: "invest-future",
-    name: "Future investments",
-    currency: "EGP",
-    type: "investment",
-    currentBalance: 0,
-    note: "Reserved lane for future investment products.",
-  },
-];
-
-const DEFAULT_INSTRUMENTS: WealthInstrument[] = [];
-
-const DEFAULT_FLOWS: WealthFlow[] = [
-  {
-    id: "flow-salary-1",
-    date: "2026-01-05",
-    accountId: "cash-main",
-    instrumentId: null,
-    kind: "income",
-    amount: 400,
-    currency: "KWD",
-    description: "Base salary into main KWD buffer (editable).",
-  },
-  {
-    id: "flow-expense-1",
-    date: "2026-01-20",
-    accountId: "cash-main",
-    instrumentId: null,
-    kind: "expense",
-    amount: 400,
-    currency: "KWD",
-    description: "Grouped monthly expenses example from cash buffer (approx 400 KWD).",
-  },
-];
+const LOCAL_KEY = "gaia_wealth_awakening_state_v2";
 
 const DEFAULT_STATE: WealthState = {
-  accounts: DEFAULT_ACCOUNTS,
-  instruments: DEFAULT_INSTRUMENTS,
-  flows: DEFAULT_FLOWS,
+  accounts: [],
+  instruments: [],
+  flows: [],
 };
 
-export function loadWealthState(): WealthState {
-  if (typeof window === "undefined") {
-    return DEFAULT_STATE;
-  }
+const SAMPLE_ACCOUNT_IDS = ["cash-main", "cd-egp-long-term", "invest-future"];
+const SAMPLE_FLOW_IDS = ["flow-salary-1", "flow-expense-1"];
 
+function mergeById<T extends { id: string }>(primary: T[], secondary: T[]): T[] {
+  const map = new Map<string, T>();
+  secondary.forEach((item) => map.set(item.id, item));
+  primary.forEach((item) => map.set(item.id, item));
+  return Array.from(map.values());
+}
+
+function loadLocal(): WealthState {
+  if (typeof window === "undefined") return DEFAULT_STATE;
   try {
     const raw = window.localStorage.getItem(LOCAL_KEY);
     if (!raw) {
@@ -75,20 +29,16 @@ export function loadWealthState(): WealthState {
     }
     const parsed = JSON.parse(raw);
     return {
-      accounts: Array.isArray(parsed.accounts)
-        ? parsed.accounts
-        : DEFAULT_STATE.accounts,
-      instruments: Array.isArray(parsed.instruments)
-        ? parsed.instruments
-        : DEFAULT_STATE.instruments,
-      flows: Array.isArray(parsed.flows) ? parsed.flows : DEFAULT_STATE.flows,
+      accounts: Array.isArray(parsed.accounts) ? parsed.accounts : [],
+      instruments: Array.isArray(parsed.instruments) ? parsed.instruments : [],
+      flows: Array.isArray(parsed.flows) ? parsed.flows : [],
     };
   } catch {
     return DEFAULT_STATE;
   }
 }
 
-export function saveWealthState(state: WealthState): void {
+function saveLocal(state: WealthState) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
@@ -97,69 +47,81 @@ export function saveWealthState(state: WealthState): void {
   }
 }
 
+export function loadWealthState(): WealthState {
+  return loadLocal();
+}
+
+export function saveWealthState(state: WealthState): void {
+  saveLocal(state);
+}
+
 export function resetWealthState(): WealthState {
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(LOCAL_KEY, JSON.stringify(DEFAULT_STATE));
-  }
+  saveLocal(DEFAULT_STATE);
   return DEFAULT_STATE;
 }
 
-function mergeById<T extends { id: string }>(local: T[], remote: T[]): T[] {
-  const map = new Map<string, T>();
-  for (const item of local) {
-    map.set(item.id, item);
-  }
-  for (const item of remote) {
-    map.set(item.id, item);
-  }
-  return Array.from(map.values());
-}
-
 export async function loadWealthStateWithRemote(): Promise<WealthState> {
-  const local = loadWealthState();
-
-  if (typeof window === "undefined" || !hasSupabaseConfig()) {
-    return local;
+  if (!hasSupabaseConfig()) {
+    return loadLocal();
   }
 
+  const local = loadLocal();
   const remote = await fetchRemoteWealthAll();
-  if (!remote) {
-    return local;
-  }
+  if (!remote) return local;
 
-  const remoteIsEmpty =
-    remote.accounts.length === 0 &&
-    remote.instruments.length === 0 &&
-    remote.flows.length === 0;
-
-  if (remoteIsEmpty) {
-    // Seed Supabase with local state on first sync
-    await pushRemoteWealthAll(local);
-    return local;
-  }
-
-  const merged: WealthState = {
-    accounts: mergeById(local.accounts, remote.accounts),
-    instruments: mergeById(local.instruments, remote.instruments),
-    flows: mergeById(local.flows, remote.flows),
+  const cleaned: WealthState = {
+    accounts: remote.accounts.filter((a) => !SAMPLE_ACCOUNT_IDS.includes(a.id)),
+    instruments: remote.instruments,
+    flows: remote.flows.filter((f) => !SAMPLE_FLOW_IDS.includes(f.id)),
   };
 
-  saveWealthState(merged);
+  const remoteIsEmpty =
+    cleaned.accounts.length === 0 &&
+    cleaned.instruments.length === 0 &&
+    cleaned.flows.length === 0;
+
+  // If Supabase is empty but local has data, keep local and push up.
+  if (remoteIsEmpty && (local.accounts.length || local.instruments.length || local.flows.length)) {
+    await pushRemoteWealthAll(local);
+    saveLocal(local);
+    return local;
+  }
+
+  const wasCleaned =
+    cleaned.accounts.length !== remote.accounts.length ||
+    cleaned.flows.length !== remote.flows.length;
+
+  if (wasCleaned) {
+    await pushRemoteWealthAll(cleaned);
+  }
+
+  // Merge remote with any local additions to avoid accidental wipes.
+  const merged: WealthState = {
+    accounts: mergeById(cleaned.accounts, local.accounts),
+    instruments: mergeById(cleaned.instruments, local.instruments),
+    flows: mergeById(cleaned.flows, local.flows),
+  };
+
+  saveLocal(merged);
   return merged;
 }
 
-export async function saveWealthStateWithRemote(
-  state: WealthState,
-): Promise<void> {
-  saveWealthState(state);
-  if (!hasSupabaseConfig()) return;
-  await pushRemoteWealthAll(state);
+export async function saveWealthStateWithRemote(state: WealthState): Promise<void> {
+  if (hasSupabaseConfig()) {
+    const ok = await pushRemoteWealthAll(state);
+    if (!ok) {
+      // fall back to local so user data isn't lost if Supabase fails
+      saveLocal(state);
+    }
+  } else {
+    saveLocal(state);
+  }
 }
 
 export async function resetWealthStateWithRemote(): Promise<WealthState> {
-  const fresh = resetWealthState();
   if (hasSupabaseConfig()) {
-    await pushRemoteWealthAll(fresh);
+    await pushRemoteWealthAll(DEFAULT_STATE);
   }
-  return fresh;
+  saveLocal(DEFAULT_STATE);
+  return DEFAULT_STATE;
 }

@@ -403,7 +403,8 @@ export function useTodoDaily() {
   useEffect(() => {
     const current = getTodayInTZ(KUWAIT_TZ);
     const focus = earliestPendingDate(tasks, current);
-    if (focus !== today) {
+    const isAutoAdvancedFuture = today > current && focus === current;
+    if (focus !== today && !isAutoAdvancedFuture) {
       setToday(focus);
       setSelection({ date: focus, selected: {} });
     }
