@@ -88,7 +88,7 @@ export default function DashboardCalendarsPage() {
         </Link>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-[220px,1fr]">
+      <div className="grid gap-6 lg:grid-cols-[220px,1fr]">
         <nav className="rounded-2xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-4">
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gaia-text-muted)]">
             Calendars
@@ -144,12 +144,24 @@ export default function DashboardCalendarsPage() {
           </div>
 
           <div className="mt-4 overflow-hidden rounded-xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)]">
-            <div className="-m-4" key={current.id}>
+            <div
+              className="calendar-embed w-full max-w-full overflow-x-auto"
+              key={current.id}
+            >
               <CurrentComponent />
             </div>
           </div>
         </section>
       </div>
+
+      <style jsx global>{`
+        .calendar-embed [class*="w-[90vw]"] {
+          width: 100% !important;
+          max-width: 100% !important;
+          margin-left: auto;
+          margin-right: auto;
+        }
+      `}</style>
     </main>
   );
 }
