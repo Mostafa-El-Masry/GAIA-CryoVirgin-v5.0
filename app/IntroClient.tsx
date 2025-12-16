@@ -26,6 +26,19 @@ export default function Intro() {
     { href: "/media-tools", label: "Media Tools" },
     { href: "/settings", label: "Settings" },
   ];
+  const items = [...left, ...right, ...more];
+  const linkNotes: Record<string, string> = {
+    Gallery: "Stories and shared releases",
+    Apollo: "AI workspace and labs",
+    Timeline: "Track recent sessions",
+    Health: "Vitals and recovery",
+    Wealth: "Capital and flow",
+    Dashboard: "Control room overview",
+    "Core Brain": "System settings and memory",
+    Intro: "Orientation and basics",
+    "Media Tools": "Utilities and exports",
+    Settings: "Themes and preferences",
+  };
 
   const [radius, setRadius] = useState<number>(180);
 
@@ -42,77 +55,112 @@ export default function Intro() {
   }, []);
 
   return (
-    <main className="fixed inset-0 grid place-items-center px-4">
-      <div className="w-full max-w-5xl">
-        <div className="grid items-center">
-          {/* Circular layout: render the 8 main links around the central logo */}
-          <div className="relative mx-auto w-full max-w-3xl h-[380px] sm:h-[480px] lg:h-[min(720px,calc(100vh-80px))]">
-            {/* Center logo */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/gaia-intro-1.png"
-                onError={(e) => {
-                  const el = e.currentTarget as HTMLImageElement;
-                  el.src = "/gaia-intro3.png";
-                }}
-                alt="GAIA"
-                className="h-36 w-auto sm:h-48 md:h-56 lg:h-64"
-              />
-            </div>
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-black px-4 py-8 text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.18),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(52,211,153,0.16),transparent_38%),radial-gradient(circle_at_50%_85%,rgba(52,211,153,0.12),transparent_45%)]" />
 
-            {/* Links positioned around the circle */}
-            {(() => {
-              const items = [...left, ...right, ...more];
-              return items.map((l, i) => {
-                const angle = (i / items.length) * 360;
-                const transform = `translate(-50%,-50%) rotate(${angle}deg) translate(0,-${radius}px) rotate(-${angle}deg)`;
-                return (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    aria-label={l.label}
-                    title={l.label}
-                    className="gaia-glass gaia-border absolute left-1/2 top-1/2 flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-center backdrop-blur transition-transform transform-gpu hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gaia-accent active:scale-[.99] text-[var(--gaia-text-default)] no-underline"
-                    style={{ transform }}
-                  >
-                    {/* small inline icon to improve visual scanning */}
-                    <span className="inline-flex w-5 h-5 shrink-0 items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-[var(--gaia-text-muted)]"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden
-                      >
-                        <circle
-                          cx="12"
-                          cy="12"
-                          r="9"
-                          stroke="currentColor"
-                          strokeWidth="1.2"
-                          opacity="0.18"
-                        />
-                        <path
-                          d="M8 12h8"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                    <span className="text-sm sm:text-base font-medium leading-tight">
-                      {l.label}
-                    </span>
-                  </Link>
-                );
-              });
-            })()}
+      <div className="relative z-10 mx-auto w-full max-w-5xl">
+        {/* Mobile-first functions view */}
+        <section className="mx-auto w-full max-w-xl space-y-4 md:hidden">
+          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
+                <img src="/gaia-intro-1.png" alt="GAIA" className="h-9 w-auto" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">
+                  GAIA
+                </p>
+                <p className="text-lg font-semibold leading-5 text-white">
+                  Pick a function
+                </p>
+                <p className="text-sm text-white/70">
+                  Built to be thumb-friendly on phones.
+                </p>
+              </div>
+            </div>
+            <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-medium text-emerald-100 ring-1 ring-white/15">
+              Intro
+            </span>
           </div>
+
+          <div className="grid gap-3">
+            {items.map((item, idx) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="gaia-glass gaia-border group flex items-center justify-between rounded-2xl border border-white/10 px-4 py-3 shadow-sm shadow-black/25 backdrop-blur transition hover:-translate-y-0.5 hover:border-emerald-300/40 hover:shadow-md hover:shadow-emerald-500/20"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/10 text-sm font-semibold text-emerald-100 ring-1 ring-emerald-300/30">
+                    {idx + 1}
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-base font-semibold text-white">
+                      {item.label}
+                    </span>
+                    <span className="text-xs text-emerald-50/80">
+                      {linkNotes[item.label] ?? "Open module"}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.15em] text-emerald-100/90">
+                  Tap
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <div className="relative hidden h-[640px] sm:h-[720px] lg:h-[800px] md:block">
+          <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
+            <img src="/gaia-intro-1.png" alt="GAIA" className="h-96 w-auto" />
+          </div>
+
+          {items.map((l, i) => {
+            const angle = (i / items.length) * 360;
+            const transform = `translate(-50%,-50%) rotate(${angle}deg) translate(0,-${radius}px) rotate(-${angle}deg)`;
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-label={l.label}
+                title={l.label}
+                className="gaia-glass gaia-border absolute left-1/2 top-1/2 flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-center backdrop-blur transition-transform transform-gpu hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gaia-accent active:scale-[.99] text-[var(--gaia-text-default)] no-underline"
+                style={{ transform }}
+              >
+                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                  <svg
+                    className="h-4 w-4 text-[var(--gaia-text-muted)]"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      opacity="0.18"
+                    />
+                    <path
+                      d="M8 12h8"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <span className="text-sm font-medium leading-tight sm:text-base">
+                  {l.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </main>
   );
 }
-
