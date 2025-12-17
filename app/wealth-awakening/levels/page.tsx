@@ -31,6 +31,33 @@ function formatMonths(value: number | null) {
   return `${value.toFixed(0)} mo`;
 }
 
+function passiveTargetEgpForOrder(order: number | null): number {
+  if (order === null || !Number.isFinite(order)) return 1000;
+  if (order <= 2) return 1000;
+  if (order <= 4) return 3000;
+  if (order <= 6) return 5000;
+  return 10000;
+}
+
+const MONTHLY_STATUS_ROWS = [
+  { range: "Under 45,000 EGP", status: "Poor" },
+  { range: "45,000 – 90,000 EGP", status: "Low-income" },
+  { range: "90,000 – 135,000 EGP", status: "Stably paid" },
+  { range: "135,000 – 180,000 EGP", status: "Middle class" },
+  { range: "180,000 – 270,000 EGP", status: "Comfortable" },
+  { range: "270,000 – 360,000 EGP", status: "Upper-middle class" },
+  { range: "360,000 – 750,000 EGP", status: "Wealthy" },
+  { range: "750,000 – 2,400,000 EGP", status: "Rich" },
+];
+
+const ANNUAL_STATUS_ROWS = [
+  { range: "30M – 60M EGP / year", status: "Millionaire" },
+  { range: "60M – 900M EGP / year", status: "Multi-millionaire" },
+  { range: "900M – 30B EGP / year", status: "Ultra-rich" },
+  { range: "30B – 60B EGP / year", status: "Billionaire" },
+  { range: "More than 60B EGP / year", status: "Multi-billionaire" },
+];
+
 export default function WealthLevelsPage() {
   const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
   if (!canAccess("levels")) {
@@ -52,6 +79,7 @@ export default function WealthLevelsPage() {
 
   const [state, setState] = useState<WealthState | null>(null);
   const [snapshot, setSnapshot] = useState<WealthLevelsSnapshot | null>(null);
+  const [openStatusTable, setOpenStatusTable] = useState<"monthly" | "annual" | null>(null);
 
   useEffect(() => {
     const s = loadWealthState();
@@ -87,6 +115,35 @@ export default function WealthLevelsPage() {
   const totalPrimaryStash = state.accounts
     .filter((a) => a.currency === primaryCurrency)
     .reduce((sum, a) => sum + a.currentBalance, 0);
+  const monthlyPassive = snapshot.monthlyPassiveIncome ?? null;
+  const displayCurrency =
+    state.accounts.some((a) => a.currency === "EGP") ||
+    state.instruments.some((i) => i.currency === "EGP")
+      ? "EGP"
+      : primaryCurrency;
+  const certificatePrincipal = state.instruments.reduce(
+    (sum, inst) => sum + inst.principal,
+    0,
+  );
+  const investmentPrincipal = state.accounts
+    .filter((a) => a.type === "investment" && a.currency === primaryCurrency)
+    .reduce((sum, a) => sum + a.currentBalance, 0);
+  const savingsPrincipal = certificatePrincipal + investmentPrincipal;
+  const targetMonths = nextLevel?.minMonthsOfExpenses ?? null;
+  const targetSavings =
+    targetMonths && snapshot.estimatedMonthlyExpenses
+      ? targetMonths * snapshot.estimatedMonthlyExpenses
+      : null;
+  const targetPassive =
+    snapshot.estimatedMonthlyExpenses && nextLevel?.minInterestCoveragePercent
+      ? (snapshot.estimatedMonthlyExpenses * nextLevel.minInterestCoveragePercent) / 100
+      : null;
+  const planTargetEgp = passiveTargetEgpForOrder(currentLevel?.order ?? null);
+  const planTargetLabel = formatCurrency(planTargetEgp, "EGP");
+  const planComplete =
+    monthlyPassive != null && displayCurrency === "EGP" && monthlyPassive >= planTargetEgp;
+  const planRemaining =
+    monthlyPassive != null && displayCurrency === "EGP" ? planTargetEgp - monthlyPassive : null;
 
   let nextLevelHint: string | null = null;
   if (nextLevel && snapshot.estimatedMonthlyExpenses && snapshot.monthsOfExpensesSaved !== null) {
@@ -112,6 +169,177 @@ export default function WealthLevelsPage() {
           </p>
         </div>
       </header>
+
+      <section className={`${surface} p-4 md:p-5`}>
+        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Current wealth plan
+            </p>
+            <h3 className="text-lg font-semibold text-white">
+              {currentLevel?.shortLabel ?? "Need data to place you"}
+            </h3>
+            <p className="mt-1 text-xs text-slate-300">
+              {currentLevel?.description ?? "Log expenses and deposits so GAIA can place you on the ladder."}
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-right">
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">Next</p>
+            <p className="text-sm font-semibold text-white">
+              {nextLevel?.shortLabel ?? "TBD"}
+            </p>
+            <p className="mt-1 text-[10px] text-slate-400">Passive target: {planTargetLabel}</p>
+            <span
+              className={`mt-1 inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${
+                planComplete
+                  ? "border border-emerald-500/40 bg-emerald-500/15 text-emerald-200"
+                  : "border border-slate-700 bg-slate-900 text-slate-300"
+              }`}
+            >
+              {planComplete ? "Target reached" : "Target pending"}
+            </span>
+          </div>
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">Savings (certs + investments)</p>
+            <p className="text-sm font-semibold text-white">
+              {formatCurrency(savingsPrincipal, displayCurrency)}
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">Months saved</p>
+            <p className="text-sm font-semibold text-white">
+              {snapshot.monthsOfExpensesSaved != null && Number.isFinite(snapshot.monthsOfExpensesSaved)
+                ? `${snapshot.monthsOfExpensesSaved.toFixed(1)} months`
+                : "Need data"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">Passive / month</p>
+            <p className="text-sm font-semibold text-white">
+              {monthlyPassive != null ? formatCurrency(monthlyPassive, displayCurrency) : "Not logged"}
+            </p>
+            <p className="mt-1 text-[10px] text-slate-400">Includes estimated certificate yield (all currencies).</p>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">Target savings</p>
+            <p className="text-sm font-semibold text-white">
+              {targetSavings && Number.isFinite(targetSavings)
+                ? formatCurrency(targetSavings, displayCurrency)
+                : "Set expenses first"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">Target passive / month</p>
+            <p className="text-sm font-semibold text-white">
+              {targetPassive && Number.isFinite(targetPassive)
+                ? formatCurrency(targetPassive, displayCurrency)
+                : "Set expenses first"}
+            </p>
+            <p className="mt-1 text-[10px] text-slate-400">Plan target (hardcoded EGP): {planTargetLabel}</p>
+            {planComplete ? (
+              <p className="text-[10px] text-emerald-300">Target hit. Ready to move up.</p>
+            ) : displayCurrency === "EGP" && planRemaining != null ? (
+              <p className="text-[10px] text-slate-400">~{formatCurrency(planRemaining, "EGP")} to hit plan target.</p>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
+        <article className={`${surface} overflow-hidden`}>
+          <button
+            type="button"
+            onClick={() =>
+              setOpenStatusTable((prev) => (prev === "monthly" ? null : "monthly"))
+            }
+            aria-expanded={openStatusTable === "monthly"}
+            className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-slate-900"
+          >
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                Plans · Target saving ladder
+              </p>
+              <h3 className="text-base font-semibold text-white">Monthly target saving status (EGP)</h3>
+              <p className="text-xs text-slate-400">
+                Only one table stays open; click header to toggle.
+              </p>
+            </div>
+            <span className="text-sm text-slate-400">
+              {openStatusTable === "monthly" ? "▾" : "▸"}
+            </span>
+          </button>
+          {openStatusTable === "monthly" && (
+            <div className="border-t border-slate-800 px-5 py-4">
+              <table className="w-full text-left text-xs text-slate-200">
+                <thead>
+                  <tr className="text-[11px] uppercase tracking-wide text-slate-500">
+                    <th className="py-2 pr-3">Target saving</th>
+                    <th className="px-3 py-2">Financial status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {MONTHLY_STATUS_ROWS.map((row) => (
+                    <tr key={row.range} className="border-b border-slate-800 last:border-b-0">
+                      <td className="py-2 pr-3 text-[11px] font-semibold text-white">
+                        {row.range}
+                      </td>
+                      <td className="px-3 py-2 text-[11px] text-slate-200">{row.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </article>
+
+        <article className={`${surface} overflow-hidden`}>
+          <button
+            type="button"
+            onClick={() =>
+              setOpenStatusTable((prev) => (prev === "annual" ? null : "annual"))
+            }
+            aria-expanded={openStatusTable === "annual"}
+            className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-slate-900"
+          >
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                Plans · Target saving ladder
+              </p>
+              <h3 className="text-base font-semibold text-white">Annual target saving status (EGP)</h3>
+              <p className="text-xs text-slate-400">
+                Mirrors the monthly view but for yearly income.
+              </p>
+            </div>
+            <span className="text-sm text-slate-400">
+              {openStatusTable === "annual" ? "▾" : "▸"}
+            </span>
+          </button>
+          {openStatusTable === "annual" && (
+            <div className="border-t border-slate-800 px-5 py-4">
+              <table className="w-full text-left text-xs text-slate-200">
+                <thead>
+                  <tr className="text-[11px] uppercase tracking-wide text-slate-500">
+                    <th className="py-2 pr-3">Target saving</th>
+                    <th className="px-3 py-2">Financial status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ANNUAL_STATUS_ROWS.map((row) => (
+                    <tr key={row.range} className="border-b border-slate-800 last:border-b-0">
+                      <td className="py-2 pr-3 text-[11px] font-semibold text-white">
+                        {row.range}
+                      </td>
+                      <td className="px-3 py-2 text-[11px] text-slate-200">{row.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </article>
+      </section>
 
       <section className="grid gap-4 md:grid-cols-3">
         <article className={`${surface} p-4`}>
@@ -144,7 +372,7 @@ export default function WealthLevelsPage() {
             <div className="flex items-center justify-between gap-2">
               <dt>Monthly interest (passive)</dt>
               <dd className="font-semibold text-white">
-                {formatCurrency(snapshot.monthlyPassiveIncome ?? 0, primaryCurrency)}
+                {formatCurrency(snapshot.monthlyPassiveIncome ?? 0, displayCurrency)}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-2">

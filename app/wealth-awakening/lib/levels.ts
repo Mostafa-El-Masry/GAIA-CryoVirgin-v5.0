@@ -6,6 +6,7 @@ import type {
   MonthKey,
 } from "./types";
 import { getTodayInKuwait } from "./summary";
+import { estimateMonthlyInterest } from "./projections";
 
 const LEVELS: WealthLevelDefinition[] = [
   {
@@ -108,12 +109,21 @@ export function buildLevelsSnapshot(
     (f) => f.amount,
   );
 
-  const monthlyPassiveIncome = sumBy(
+  const monthlyPassiveIncomeFromFlows = sumBy(
     flowsThisMonth.filter(
       (f) => f.kind === "interest" && f.currency === overview.primaryCurrency,
     ),
     (f) => f.amount,
   );
+
+  // Include estimated passive return from certificates/instruments in primary currency.
+  const monthlyPassiveIncomeFromInstruments = sumBy(
+    overview.instruments,
+    (inst) => estimateMonthlyInterest(inst),
+  );
+
+  const monthlyPassiveIncome =
+    monthlyPassiveIncomeFromFlows + monthlyPassiveIncomeFromInstruments;
 
   const totalPrimaryCurrencyStash = sumBy(
     overview.accounts.filter(

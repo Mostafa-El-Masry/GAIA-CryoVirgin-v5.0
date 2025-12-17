@@ -6,12 +6,14 @@ import type { WealthFlow, WealthState } from "../lib/types";
 import { loadWealthState } from "../lib/wealthStore";
 import { buildWealthOverview, getTodayInKuwait } from "../lib/summary";
 import { saveWealthStateWithRemote } from "../lib/wealthStore";
+import { estimateMonthlyInterest } from "../lib/projections";
 
 type FormState = {
   date: string;
   kind: WealthFlow["kind"];
   amount: string;
   currency: string;
+  repeatMonthly: boolean;
   description: string;
 };
 
@@ -91,6 +93,7 @@ export default function WealthFlowsPage() {
     kind: "deposit",
     amount: "",
     currency: "",
+    repeatMonthly: false,
     description: "",
   });
   const [saving, setSaving] = useState(false);
@@ -143,9 +146,23 @@ export default function WealthFlowsPage() {
       kind: flow.kind,
       amount: String(flow.amount),
       currency: flow.currency,
+      repeatMonthly: false,
       description: flow.description ?? "",
     });
     setSelectedMonth(toMonthKey(flow.date));
+  }
+
+  function handleDeleteFlow(flowId: string) {
+    if (!state) return;
+    const nextState: WealthState = {
+      ...state,
+      flows: state.flows.filter((f) => f.id !== flowId),
+    };
+    setState(nextState);
+    void saveWealthStateWithRemote(nextState);
+    if (editingId === flowId) {
+      handleCancelEdit();
+    }
   }
 
   function handleCancelEdit() {
@@ -155,6 +172,7 @@ export default function WealthFlowsPage() {
       kind: "deposit",
       amount: "",
       currency: "",
+      repeatMonthly: false,
       description: "",
     });
   }
@@ -187,7 +205,7 @@ export default function WealthFlowsPage() {
       );
       updated = { ...state, flows: updatedFlows };
     } else {
-      const newFlow: WealthFlow = {
+      const baseFlow: WealthFlow = {
         id: generateId("flow"),
         date,
         accountId: null,
@@ -197,9 +215,24 @@ export default function WealthFlowsPage() {
         currency: form.currency || primaryCurrency,
         description: form.description || undefined,
       };
+
+      const flowsToAdd: WealthFlow[] = [];
+
+      if (form.repeatMonthly && form.kind === "expense") {
+        const start = new Date(`${date}T00:00:00`);
+        for (let i = 0; i < 6; i++) {
+          const d = new Date(start);
+          d.setUTCMonth(start.getUTCMonth() + i);
+          const iso = d.toISOString().slice(0, 10);
+          flowsToAdd.push({ ...baseFlow, id: generateId("flow"), date: iso });
+        }
+      } else {
+        flowsToAdd.push(baseFlow);
+      }
+
       updated = {
         ...state,
-        flows: [...state.flows, newFlow],
+        flows: [...state.flows, ...flowsToAdd],
       };
     }
 
@@ -216,6 +249,7 @@ export default function WealthFlowsPage() {
       kind: "deposit",
       amount: "",
       currency: "",
+      repeatMonthly: false,
       description: "",
     });
   }
@@ -231,6 +265,55 @@ export default function WealthFlowsPage() {
   }
 
   const story = overviewForMonth.monthStory;
+  const instrumentInterestByCurrency = new Map<string, number>();
+  const instrumentPrincipalByCurrency = new Map<string, number>();
+  if (overviewForMonth.instruments) {
+    for (const inst of overviewForMonth.instruments) {
+      const monthly = estimateMonthlyInterest(inst);
+      const prev = instrumentInterestByCurrency.get(inst.currency) ?? 0;
+      instrumentInterestByCurrency.set(inst.currency, prev + monthly);
+      const prevPrincipal = instrumentPrincipalByCurrency.get(inst.currency) ?? 0;
+      instrumentPrincipalByCurrency.set(inst.currency, prevPrincipal + inst.principal);
+    }
+  }
+  const plannedSalaryIncome =
+    state?.accounts
+      .filter((a) => /salary|income/i.test(`${a.name} ${a.note ?? ""}`))
+      .reduce((sum, a) => sum + a.currentBalance, 0) ?? 0;
+  const displayIncome =
+    story.totalIncome > 0 ? story.totalIncome : plannedSalaryIncome;
+  let displayInterest = story.totalInterest;
+  let displayInterestCurrency = primaryCurrency;
+  if (!(displayInterest > 0)) {
+    if (instrumentInterestByCurrency.has(primaryCurrency)) {
+      displayInterest = instrumentInterestByCurrency.get(primaryCurrency) ?? 0;
+      displayInterestCurrency = primaryCurrency;
+    } else {
+      const first = Array.from(instrumentInterestByCurrency.entries())[0];
+      if (first) {
+        displayInterest = first[1];
+        displayInterestCurrency = first[0];
+      } else {
+        displayInterest = 0;
+        displayInterestCurrency = primaryCurrency;
+      }
+    }
+  }
+
+  let displayDeposits = story.totalDeposits;
+  let displayDepositsCurrency = primaryCurrency;
+  if (!(displayDeposits > 0)) {
+    if (instrumentPrincipalByCurrency.has(primaryCurrency)) {
+      displayDeposits = instrumentPrincipalByCurrency.get(primaryCurrency) ?? 0;
+      displayDepositsCurrency = primaryCurrency;
+    } else {
+      const first = Array.from(instrumentPrincipalByCurrency.entries())[0];
+      if (first) {
+        displayDeposits = first[1];
+        displayDepositsCurrency = first[0];
+      }
+    }
+  }
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-[var(--gaia-text-default)]">
@@ -288,22 +371,26 @@ export default function WealthFlowsPage() {
             <div className="flex items-center justify-between gap-2">
               <dt>Income</dt>
               <dd className="font-semibold text-white">
-                {formatCurrency(story.totalIncome, primaryCurrency)}
+                {formatCurrency(displayIncome, primaryCurrency)}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-2">
               <dt>Deposits</dt>
               <dd className="font-semibold text-white">
-                {formatCurrency(story.totalDeposits, primaryCurrency)}
+                {formatCurrency(displayDeposits, displayDepositsCurrency)}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-2">
               <dt>Interest</dt>
               <dd className="font-semibold text-white">
-                {formatCurrency(story.totalInterest, primaryCurrency)}
+                {formatCurrency(displayInterest, displayInterestCurrency)}
               </dd>
             </div>
           </dl>
+          <p className="mt-3 text-[11px] text-slate-400">
+            Income falls back to salary accounts when no income flow is logged. Interest includes
+            estimated certificate yield when no interest flow is logged; shown in its currency. Deposits fall back to certificate principal when no deposit flow is logged.
+          </p>
         </article>
 
         <article className={`${surface} p-4`}>
@@ -346,7 +433,7 @@ export default function WealthFlowsPage() {
                   <th className="px-3 py-2 text-right">Amount</th>
                   <th className="px-3 py-2">Currency</th>
                   <th className="px-3 py-2">Notes</th>
-                  <th className="px-3 py-2 text-right">Edit</th>
+                  <th className="px-3 py-2 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -367,9 +454,16 @@ export default function WealthFlowsPage() {
                       <button
                         type="button"
                         onClick={() => handleEditFlow(flow)}
-                        className="rounded-full border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-medium text-slate-200 hover:border-emerald-400 hover:text-white"
+                        className="mr-2 rounded-full border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-medium text-slate-200 hover:border-emerald-400 hover:text-white"
                       >
                         Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFlow(flow.id)}
+                        className="rounded-full border border-rose-500/70 bg-slate-900 px-2 py-1 text-[11px] font-medium text-rose-300 hover:border-rose-400 hover:text-white"
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -454,6 +548,16 @@ export default function WealthFlowsPage() {
                 className="mt-1 h-16 w-full resize-none rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white shadow-inner shadow-black/30"
                 placeholder="Short note like 'Salary into main KWD buffer'"
               />
+            </label>
+
+            <label className="flex items-center gap-2 text-[11px] text-slate-300">
+              <input
+                type="checkbox"
+                checked={form.repeatMonthly}
+                onChange={(e) => handleFormChange("repeatMonthly", e.target.checked)}
+                className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-emerald-400 focus:ring-emerald-500"
+              />
+              Repeat this expense monthly (next 6 months)
             </label>
 
             <div className="mt-2 flex items-center gap-2">
