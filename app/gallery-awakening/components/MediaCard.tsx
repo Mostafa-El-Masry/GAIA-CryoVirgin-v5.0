@@ -47,6 +47,12 @@ export const MediaCard: React.FC<MediaCardProps> = ({
   const cycleTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const viewTimeLabel = formatViewDuration(viewEntry);
   const displayTitle = formatMediaTitle(item.title);
+  const isEmbed = item.type === "video" && Boolean(item.embedUrl);
+  const embedSrc = React.useMemo(() => {
+    if (!item.embedUrl) return "";
+    if (item.embedUrl.startsWith("/api/embed/proxy")) return item.embedUrl;
+    return `/api/embed/proxy?url=${encodeURIComponent(item.embedUrl)}`;
+  }, [item.embedUrl]);
 
   const baseVideoSrc = React.useMemo(() => {
     if (item.localPath) {
@@ -126,7 +132,8 @@ export const MediaCard: React.FC<MediaCardProps> = ({
   // Track video watch time in seconds (rounded down to the floor as required).
   React.useEffect(() => {
     const video = videoRef.current;
-    if (!video || item.type !== "video" || !shouldLoadVideo) return;
+    if (!video || item.type !== "video" || item.embedUrl || !shouldLoadVideo)
+      return;
 
     const handlePlay = () => setPlayStart(Date.now());
     const handlePauseOrEnd = () => {
@@ -261,6 +268,40 @@ export const MediaCard: React.FC<MediaCardProps> = ({
   const renderVideoPreviewStrip = () => null;
 
   const renderVideoBody = () => {
+    if (isEmbed && item.embedUrl) {
+      return (
+        <div className="relative w-full overflow-hidden rounded-xl bg-black aspect-video">
+          <iframe
+            src={embedSrc || item.embedUrl}
+            title={displayTitle}
+            className="h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+            allowFullScreen
+            loading="lazy"
+          />
+          {allowDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="absolute left-3 top-3 z-10 px-3 py-1 text-[10px] font-semibold text-white opacity-0 transition duration-200 group-hover:opacity-100"
+            >
+              Delete
+            </button>
+          )}
+          {onRename && (
+            <button
+              type="button"
+              onClick={() => setIsRenaming(true)}
+              className="absolute right-3 top-3 z-10 px-3 py-1 text-[10px] font-semibold text-white opacity-0 transition duration-200 group-hover:opacity-100"
+            >
+              Rename
+            </button>
+          )}
+          {renderRenameOverlay()}
+        </div>
+      );
+    }
+
     if (!baseVideoSrc) {
       return (
         <div className="flex min-h-[160px] w-full items-center justify-center rounded-xl border border-dashed border-base-300 text-[11px] text-base-content/60">
@@ -422,7 +463,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
           <div className="relative overflow-hidden rounded-xl bg-base-200">
             <div className="relative">
               {renderVideoBody()}
-              {shouldLoadVideo && !videoError && baseVideoSrc && (
+              {shouldLoadVideo && !videoError && baseVideoSrc && !isEmbed && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-between px-2 opacity-0 transition-opacity duration-200 hover:opacity-100">
                   <button
                     type="button"

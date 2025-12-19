@@ -26,16 +26,21 @@ type ManifestItem = {
   src: string;
   preview?: string[];
   addedAt?: string;
+  title?: string;
+  description?: string;
+  tags?: string[];
+  embedUrl?: string;
 };
 
 const normalizeKey = (key: string) => key.replace(/^\/+/, '');
 const isLocalKey = (key: string) => normalizeKey(key).startsWith('media/');
 
 const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
-  const normalized = normalizeKey(item.src);
+  const normalized = item.embedUrl ? item.embedUrl : normalizeKey(item.src);
   const createdAt = item.addedAt || new Date().toISOString();
-  const localPath = isLocalKey(normalized) ? `/${normalized}` : undefined;
-  const title = normalized.split('/').pop() || item.id;
+  const localPath =
+    !item.embedUrl && isLocalKey(normalized) ? `/${normalized}` : undefined;
+  const title = item.title || normalized.split('/').pop() || item.id;
 
   if (item.type === 'image') {
     return {
@@ -43,11 +48,30 @@ const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
       slug: item.id,
       type: 'image',
       title,
-      description: 'Gallery image',
-      tags: [],
+      description: item.description || 'Gallery image',
+      tags: item.tags ?? [],
       source: isLocalKey(normalized) ? 'local_image' : 'r2_image',
       r2Path: isLocalKey(normalized) ? undefined : normalized,
       localPath,
+      createdAt,
+      updatedAt: createdAt,
+    };
+  }
+
+  if (item.embedUrl) {
+    return {
+      id: item.id,
+      slug: item.id,
+      type: 'video',
+      title,
+      description: item.description || 'Embedded video',
+      tags: item.tags ?? [],
+      source: 'embed',
+      embedUrl: item.embedUrl,
+      thumbnails: (item.preview ?? []).map((p, idx) => ({
+        index: idx + 1,
+        r2Key: p,
+      })),
       createdAt,
       updatedAt: createdAt,
     };

@@ -14,6 +14,7 @@ import { VersionLog } from './components/VersionLog';
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import { getAutoBoxResult } from './featureLogic';
 import { hasR2PublicBase } from './r2';
+import { createEmbedMediaItem } from './embed';
 import { useCurrentPermissions, isCreatorAdmin } from '@/lib/permissions';
 import { useAuthSnapshot } from '@/lib/auth-client';
 
@@ -56,7 +57,16 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   const { profile, status } = useAuthSnapshot();
   const permissions = useCurrentPermissions();
 
-  const [localNewItems, setLocalNewItems] = useState<MediaItem[]>([]);
+  const [localNewItems, setLocalNewItems] = useState<MediaItem[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = window.localStorage.getItem('gaia_gallery_local_items_v1');
+      const parsed = raw ? (JSON.parse(raw) as MediaItem[]) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('image');
   const [page, setPage] = useState<number>(1);
@@ -82,6 +92,23 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
       return [];
     }
   });
+  const [embedUrl, setEmbedUrl] = useState('');
+  const [embedTitle, setEmbedTitle] = useState('');
+  const [embedError, setEmbedError] = useState<string | null>(null);
+  const [isSavingEmbed, setIsSavingEmbed] = useState(false);
+
+  // Persist locally added items (embeds/uploads) so they survive reloads even if Supabase is absent.
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(
+        'gaia_gallery_local_items_v1',
+        JSON.stringify(localNewItems)
+      );
+    } catch {
+      // ignore
+    }
+  }, [localNewItems]);
 
   const mergedItems = useMemo(() => {
     const merged = new Map<string, MediaItem>();
@@ -263,6 +290,71 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     }
   };
 
+  const handleAddEmbed = async () => {
+    if (!embedUrl.trim()) {
+      setEmbedError('Enter an embed URL or iframe.');
+      return;
+    }
+    setEmbedError(null);
+
+    // Optimistic local add so it shows up immediately even if API fails.
+    let optimistic: MediaItem | null = null;
+    try {
+      optimistic = createEmbedMediaItem(embedUrl.trim(), {
+        title: embedTitle.trim() || undefined,
+        createdAt: new Date().toISOString(),
+      });
+      setLocalNewItems((prev) => [optimistic!, ...prev.filter((i) => i.id !== optimistic!.id)]);
+    } catch {
+      // ignore optimistic failure; we'll still try API path.
+    }
+
+    setIsSavingEmbed(true);
+    try {
+      const res = await fetch('/api/gallery/embed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: embedUrl.trim(),
+          title: embedTitle.trim() || undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        item?: MediaItem;
+        error?: string;
+      };
+      if (res.ok && data.ok && data.item) {
+        const item = data.item;
+        setLocalNewItems((prev) => [item, ...prev.filter((i) => i.id !== item.id)]);
+        setEmbedUrl('');
+        setEmbedTitle('');
+        return;
+      }
+      throw new Error(data.error || 'Failed to save embed.');
+    } catch (error: any) {
+      if (!optimistic) {
+        try {
+          const item = createEmbedMediaItem(embedUrl.trim(), {
+            title: embedTitle.trim() || undefined,
+            createdAt: new Date().toISOString(),
+          });
+          setLocalNewItems((prev) => [item, ...prev.filter((i) => i.id !== item.id)]);
+        } catch {
+          // if this also fails, surface error below
+        }
+      }
+      setEmbedError(error?.message ?? 'Failed to add embed.');
+    } finally {
+      setIsSavingEmbed(false);
+      // clear inputs if we have an optimistic embed added
+      if (optimistic) {
+        setEmbedUrl('');
+        setEmbedTitle('');
+      }
+    }
+  };
+
   return (
     <main className="relative min-h-screen">
 
@@ -419,7 +511,7 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
                 activeTags={activeTags}
                 onToggleTag={handleToggleTag}
               />
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex w-full flex-col items-end gap-3">
                 <div className="flex items-center justify-end gap-2 rounded-2xl border border-base-300 bg-base-200 px-2 py-1 text-[11px] text-base-content">
                   <span className="px-2 text-base-content/70">Collection</span>
                   <button
@@ -445,25 +537,52 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
                     Videos
                   </button>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => handleFilesSelected(e.target.files)}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleClickUpload}
-                    disabled={isUploading}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-content shadow-md shadow-primary/40 transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isUploading ? 'Uploading…' : '+ Add image'}
-                  </button>
-                  {uploadError && (
-                    <span className="text-[11px] text-error">{uploadError}</span>
+                <div className="flex w-full flex-col items-end gap-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleFilesSelected(e.target.files)}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleClickUpload}
+                      disabled={isUploading}
+                      className="inline-flex items-center gap-2 rounded-2xl bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-content shadow-md shadow-primary/40 transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isUploading ? 'Uploading…' : '+ Add image'}
+                    </button>
+                    {uploadError && (
+                      <span className="text-[11px] text-error">{uploadError}</span>
+                    )}
+                  </div>
+                  <div className="flex w-full flex-wrap items-center justify-end gap-2">
+                    <input
+                      value={embedUrl}
+                      onChange={(e) => setEmbedUrl(e.target.value)}
+                      placeholder="Embed URL or iframe"
+                      className="min-w-[220px] flex-1 rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-[11px] text-base-content shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    />
+                    <input
+                      value={embedTitle}
+                      onChange={(e) => setEmbedTitle(e.target.value)}
+                      placeholder="Title (optional)"
+                      className="min-w-[140px] rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-[11px] text-base-content shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddEmbed}
+                      disabled={isSavingEmbed}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-base-300 bg-base-200 px-3 py-1.5 text-[11px] font-semibold text-base-content shadow-sm transition hover:bg-base-300 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isSavingEmbed ? 'Saving…' : '+ Add embed'}
+                    </button>
+                  </div>
+                  {embedError && (
+                    <span className="text-[11px] text-error">{embedError}</span>
                   )}
                 </div>
               </div>

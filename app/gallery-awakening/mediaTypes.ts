@@ -3,7 +3,8 @@ export type MediaSource =
   | 'local_image'
   | 'r2_image'
   | 'r2_thumb'
-  | 'r2_video';
+  | 'r2_video'
+  | 'embed';
 
 export type MediaType = 'image' | 'video';
 
@@ -63,6 +64,12 @@ export interface MediaItem {
    * Optional strip of preview thumbnails for videos, stored in R2.
    */
   thumbnails?: VideoThumbnail[];
+  /**
+   * Optional external embed (e.g., YouTube/Vimeo/other iframe providers).
+   * If set, this video item will render using an <iframe> instead of a <video>.
+   */
+  embedUrl?: string;
+  embedHtml?: string;
   /**
    * Week 2: flags to support "add more previews for this video".
    */

@@ -32,6 +32,7 @@ export interface GalleryMediaRow {
   r2_path: string | null;
   local_path: string | null;
   thumbnails: VideoThumbnail[] | null;
+  embed_url?: string | null;
   needs_more_thumbs: boolean | null;
   desired_thumb_cnt: number | null;
   is_favorite: boolean | null;
@@ -87,6 +88,7 @@ export function mapRowToMediaItem(row: GalleryMediaRow): MediaItem {
     source: row.source,
     r2Path: row.r2_path ?? undefined,
     localPath: row.local_path ?? undefined,
+    embedUrl: row.embed_url ?? undefined,
     thumbnails: row.thumbnails ?? undefined,
     needsMoreThumbs: row.needs_more_thumbs ?? undefined,
     desiredThumbnailCount: row.desired_thumb_cnt ?? undefined,

@@ -3,6 +3,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import type { Dirent } from "fs";
 import { ListObjectsCommand, S3Client } from "@aws-sdk/client-s3";
+import { gallerySupabase } from "@/lib/gallery/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ const IMG_EXTS = new Set([
 ]);
 const VID_EXTS = new Set([".mp4", ".webm", ".mov", ".mkv", ".avi"]);
 const PREVIEW_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+type PreviewMap = Map<string, string[]>;
 
 type ManifestItem = {
   id: string;
@@ -27,6 +29,10 @@ type ManifestItem = {
    * Preview frames for videos (thumbnails, sprite frames, etc.)
    */
   preview?: string[];
+  title?: string;
+  description?: string;
+  tags?: string[];
+  embedUrl?: string;
   addedAt: string;
 };
 
@@ -109,7 +115,30 @@ function buildPreviewMap(keys: { key: string }[]) {
   return map;
 }
 
-async function collectFromR2() {
+function mergePreviewMaps(base: PreviewMap, extra?: PreviewMap | null): PreviewMap {
+  const next = new Map(base);
+  if (!extra) return next;
+
+  extra.forEach((list, key) => {
+    const existing = next.get(key);
+    if (!existing?.length) {
+      next.set(key, list);
+      return;
+    }
+    const merged = [...existing];
+    list.forEach((entry) => {
+      if (!merged.includes(entry)) merged.push(entry);
+    });
+    next.set(key, merged);
+  });
+
+  return next;
+}
+
+async function collectFromR2(): Promise<{
+  items: ManifestItem[];
+  previewMap: PreviewMap;
+} | null> {
   const mediaCfg: R2Config = {
     endpoint: process.env.CLOUDFLARE_R2_S3_ENDPOINT,
     bucket: process.env.CLOUDFLARE_R2_BUCKET,
@@ -199,7 +228,7 @@ async function collectFromR2() {
     }
   }
 
-  return items;
+  return { items, previewMap: previewMap ?? new Map<string, string[]>() };
 }
 
 // ---------- Local FS fallback ----------
@@ -315,33 +344,105 @@ async function collectLocalPreviews(previewsDir: string, prefix: string) {
   return buildPreviewMap(keys.map((key) => ({ key })));
 }
 
+async function collectEmbedsFromSupabase(): Promise<ManifestItem[]> {
+  try {
+    const supabase = gallerySupabase();
+    const { data, error } = await supabase
+      .from("gallery_embeds")
+      .select(
+        "id, embed_url, title, description, tags, preview, created_at"
+      );
+
+    if (error) {
+      console.error("[gallery] failed to load embeds from Supabase", error);
+      return [];
+    }
+
+    return (data ?? []).map((row: any) => {
+      const embedUrl = row?.embed_url || "";
+      const addedAt =
+        typeof row?.created_at === "string"
+          ? row.created_at
+          : new Date().toISOString();
+
+      return {
+        id: row?.id || hashId(embedUrl || row?.title || addedAt),
+        type: "video",
+        src: embedUrl || "",
+        embedUrl,
+        title: row?.title ?? "Embedded video",
+        description: row?.description ?? undefined,
+        tags: Array.isArray(row?.tags)
+          ? row.tags.filter((t: any) => typeof t === "string" && t.trim())
+          : undefined,
+        preview: row?.preview ? [row.preview] : undefined,
+        addedAt,
+      };
+    });
+  } catch (err) {
+    console.warn("[gallery] embeds fetch skipped", err);
+    return [];
+  }
+}
+
 export async function GET() {
   const publicDir = path.join(process.cwd(), "public");
   const imageDir = path.join(publicDir, "media", "images");
   const videoDir = path.join(publicDir, "media", "videos");
   const previewDir = path.join(publicDir, "media", "previews");
 
-  const previewMap = await collectLocalPreviews(
+  const localPreviewMap = await collectLocalPreviews(
     previewDir,
     "media/previews"
   ).catch(() => new Map<string, string[]>());
 
   // Prefer live R2 listing when configured, but always merge local media so dev/local files still appear.
-  const [r2ItemsRaw, localImages = [], localVideos = []] = await Promise.all([
-    collectFromR2().catch(() => null),
+  const r2Data = await collectFromR2().catch(() => null);
+  const r2Items = r2Data?.items ?? [];
+  const mergedPreviewMap = mergePreviewMaps(
+    localPreviewMap,
+    r2Data?.previewMap ?? null
+  );
+
+  const [localImages = [], localVideos = [], embeds = []] = await Promise.all([
     collectMedia(imageDir, "media/images", "image", IMG_EXTS).catch(
       () => [] as ManifestItem[]
     ),
     collectMedia(videoDir, "media/videos", "video", VID_EXTS, {
-      previewMap,
+      previewMap: mergedPreviewMap,
     }).catch(() => [] as ManifestItem[]),
+    collectEmbedsFromSupabase().catch(() => [] as ManifestItem[]),
   ]);
-  const r2Items = r2ItemsRaw ?? [];
 
   const merged = new Map<string, ManifestItem>();
-  // Prefer R2 entries when keys collide
-  [...localImages, ...localVideos, ...r2Items].forEach((item) => {
-    merged.set(item.id, item);
+  // Start with R2 items (keeps cloud-only assets), then layer in locals so
+  // videos can stream from disk while still borrowing R2 previews.
+  r2Items.forEach((item) => merged.set(item.id, item));
+  embeds.forEach((item) => merged.set(item.id, item));
+
+  [...localImages, ...localVideos].forEach((item) => {
+    const existing = merged.get(item.id);
+    if (!existing) {
+      merged.set(item.id, item);
+      return;
+    }
+
+    if (item.type === "video") {
+      merged.set(item.id, {
+        ...existing,
+        ...item,
+        preview:
+          (item as ManifestItem).preview?.length
+            ? item.preview
+            : existing.preview,
+      });
+      return;
+    }
+
+    // For images, keep the cloud copy when it already exists; otherwise use local.
+    if (existing.type !== "image") {
+      merged.set(item.id, item);
+    }
   });
 
   const items = Array.from(merged.values()).sort((a, b) =>
