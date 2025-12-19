@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { href: "/wealth-awakening", label: "Overview" },
   { href: "/wealth-awakening/accounts", label: "Accounts" },
   { href: "/wealth-awakening/flows", label: "Flows" },
+  { href: "/wealth-awakening/purchases", label: "Purchases" },
   { href: "/wealth-awakening/instruments", label: "Instruments" },
   { href: "/wealth-awakening/levels", label: "Levels" },
   { href: "/wealth-awakening/projections", label: "Projections" },
