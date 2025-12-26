@@ -16,7 +16,7 @@ const DAY_HEADERS: { label: string; jsDay: number }[] = [
   { label: "SAT", jsDay: 6 },
 ];
 
-const SCHEDULE_START_ISO = "2025-12-01";
+const SCHEDULE_START_ISO = "2026-01-01";
 const BASE_MINUTES_PER_STUDY_DAY = 30;
 const TRACK_CYCLE: TrackId[] = ["programming", "accounting", "self-repair"];
 
@@ -409,7 +409,7 @@ export default function AcademyMonthlyCalendarPage() {
                 with a rest-day mix that grows monthly.
               </p>
               <p className="text-slate-500">
-                Starts Dec 1, 2025. Study cards stay pastel and light to keep
+                Starts Jan 1, 2026. Study cards stay pastel and light to keep
                 focus clear.
               </p>
             </div>

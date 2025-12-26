@@ -14,7 +14,7 @@ type TrackSummaryView = {
 };
 
 const LAST_VISIT_KEY = "gaia_academy_last_visit_v1";
-const ROTATION_ANCHOR_ISO = "2025-01-01";
+const ROTATION_ANCHOR_ISO = "2026-01-01";
 const ROTATION_MINUTES = [30, 45, 60] as const;
 const ROTATION_PATTERNS: TrackId[][] = [
   ["programming", "accounting", "programming"],

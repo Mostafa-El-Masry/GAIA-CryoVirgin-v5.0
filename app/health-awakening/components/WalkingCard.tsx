@@ -33,7 +33,7 @@ const WalkingCard: FC<WalkingCardProps> = ({
         <button
           type="button"
           onClick={handleClick}
-          className="btn btn-sm md:btn-md w-full md:w-auto rounded-full px-5 font-semibold normal-case btn-info shadow-xl shadow-info/40 hover:-translate-y-0.5 active:translate-y-0 transition-transform bg-base-300 text-base-content border-base-300 dark:bg-base-200 dark:border-base-200"
+          className="health-button w-full md:w-auto px-5 py-2 text-xs font-semibold md:text-sm"
         >
           {isWalking ? "Stop walking" : "Start walking"}
         </button>

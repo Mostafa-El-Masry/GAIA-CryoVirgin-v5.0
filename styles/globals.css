@@ -186,7 +186,8 @@ html[data-theme="dark"] body {
   color: color-mix(in srgb, var(--gaia-foreground) 35%, transparent) !important;
 }
 
-.wealth-theme {
+.wealth-theme,
+.health-theme {
   --gaia-font-sans: "Manrope", "Sora", "SF Pro Display", "Segoe UI",
     "Helvetica Neue", Arial, sans-serif;
   --gaia-surface: #ffffff;
@@ -245,18 +246,21 @@ html[data-theme="dark"] body {
   font-family: var(--gaia-font-sans);
 }
 
-.wealth-shell {
+.wealth-shell,
+.health-shell {
   background: linear-gradient(180deg, #f9fafb 0%, #eef1f4 100%);
 }
 
-.wealth-theme .wealth-surface {
+.wealth-theme .wealth-surface,
+.health-theme .health-surface {
   border-radius: 1.5rem;
   border: 1px solid var(--gaia-border);
   background: var(--gaia-surface);
   box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
 }
 
-.wealth-theme .wealth-surface-soft {
+.wealth-theme .wealth-surface-soft,
+.health-theme .health-surface-soft {
   border-radius: 1.5rem;
   border: 1px solid var(--gaia-border);
   background: var(--gaia-surface-soft);
@@ -265,14 +269,19 @@ html[data-theme="dark"] body {
 
 .wealth-theme input,
 .wealth-theme select,
-.wealth-theme textarea {
+.wealth-theme textarea,
+.health-theme input,
+.health-theme select,
+.health-theme textarea {
   background-color: var(--gaia-surface);
   color: var(--gaia-text-default);
   border-color: var(--gaia-border);
 }
 
 .wealth-theme input::placeholder,
-.wealth-theme textarea::placeholder {
+.wealth-theme textarea::placeholder,
+.health-theme input::placeholder,
+.health-theme textarea::placeholder {
   color: color-mix(
     in srgb,
     var(--gaia-text-muted) 75%,
@@ -281,39 +290,56 @@ html[data-theme="dark"] body {
 }
 
 .wealth-theme .text-slate-100,
-.wealth-theme .text-slate-200 {
+.wealth-theme .text-slate-200,
+.health-theme .text-slate-100,
+.health-theme .text-slate-200 {
   color: var(--gaia-text-default) !important;
 }
 
 .wealth-theme .text-slate-300,
 .wealth-theme .text-slate-400,
-.wealth-theme .text-slate-500 {
+.wealth-theme .text-slate-500,
+.health-theme .text-slate-300,
+.health-theme .text-slate-400,
+.health-theme .text-slate-500 {
   color: var(--gaia-text-muted) !important;
 }
 
-.wealth-theme .text-white {
+.wealth-theme .text-white,
+.health-theme .text-white {
   color: var(--gaia-text-strong) !important;
 }
 
 .wealth-theme .bg-slate-900,
 .wealth-theme .bg-slate-900\/80,
 .wealth-theme .bg-slate-900\/70,
-.wealth-theme .bg-slate-950 {
+.wealth-theme .bg-slate-950,
+.health-theme .bg-slate-900,
+.health-theme .bg-slate-900\/80,
+.health-theme .bg-slate-900\/70,
+.health-theme .bg-slate-950 {
   background-color: var(--gaia-surface) !important;
 }
 
 .wealth-theme .bg-slate-800,
-.wealth-theme .bg-slate-800\/80 {
+.wealth-theme .bg-slate-800\/80,
+.health-theme .bg-slate-800,
+.health-theme .bg-slate-800\/80 {
   background-color: var(--gaia-surface-soft) !important;
 }
 
 .wealth-theme .border-slate-800,
-.wealth-theme .border-slate-700 {
+.wealth-theme .border-slate-700,
+.health-theme .border-slate-800,
+.health-theme .border-slate-700 {
   border-color: var(--gaia-border) !important;
 }
 
 .wealth-theme button,
-.wealth-theme .wealth-button {
+.wealth-theme .wealth-button,
+.health-theme button,
+.health-theme .health-button,
+.health-theme .wealth-button {
   border-radius: 9999px;
   border: 1px solid var(--gaia-border);
   background: linear-gradient(180deg, #fafbfc 0%, #eef2f6 100%);
@@ -323,20 +349,29 @@ html[data-theme="dark"] body {
 }
 
 .wealth-theme button:hover,
-.wealth-theme .wealth-button:hover {
+.wealth-theme .wealth-button:hover,
+.health-theme button:hover,
+.health-theme .health-button:hover,
+.health-theme .wealth-button:hover {
   background: linear-gradient(180deg, #f5f7fa 0%, #e9eef4 100%);
   border-color: color-mix(in srgb, var(--gaia-border) 80%, transparent);
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
 }
 
 .wealth-theme button:disabled,
-.wealth-theme .wealth-button:disabled {
+.wealth-theme .wealth-button:disabled,
+.health-theme button:disabled,
+.health-theme .health-button:disabled,
+.health-theme .wealth-button:disabled {
   opacity: 0.6;
   box-shadow: none;
 }
 
 .wealth-theme button:focus-visible,
-.wealth-theme .wealth-button:focus-visible {
+.wealth-theme .wealth-button:focus-visible,
+.health-theme button:focus-visible,
+.health-theme .health-button:focus-visible,
+.health-theme .wealth-button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.45),
     0 10px 22px rgba(15, 23, 42, 0.08);

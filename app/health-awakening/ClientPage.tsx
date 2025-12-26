@@ -360,25 +360,6 @@ export default function HealthAwakeningClientPage() {
   const moodLabel =
     todayMoodRating != null ? `Mood ${todayMoodRating}/5` : "Log mood";
 
-  const shellBg = {
-    background:
-      "radial-gradient(circle at 18% 15%, color-mix(in srgb, var(--gaia-surface-soft) 92%, transparent) 0%, transparent 38%), radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--gaia-overlay) 22%, transparent) 0%, transparent 48%), linear-gradient(180deg, color-mix(in srgb, var(--gaia-surface) 90%, var(--gaia-surface-soft) 10%), color-mix(in srgb, var(--gaia-surface-soft) 82%, transparent 18%))",
-  };
-
-  const heroGlass = {
-    background: "color-mix(in srgb, var(--gaia-surface) 82%, transparent)",
-    borderColor: "color-mix(in srgb, var(--gaia-border) 68%, transparent)",
-    boxShadow:
-      "0 26px 70px color-mix(in srgb, var(--gaia-overlay) 28%, transparent)",
-  };
-
-  const panelGlass = {
-    background: "color-mix(in srgb, var(--gaia-surface) 78%, transparent)",
-    borderColor: "color-mix(in srgb, var(--gaia-border) 65%, transparent)",
-    boxShadow:
-      "0 20px 70px color-mix(in srgb, var(--gaia-overlay) 24%, transparent)",
-  };
-
   const syncOutAll = (
     nextSleep: SleepSession[],
     nextWater: WaterEntry[],
@@ -632,179 +613,172 @@ export default function HealthAwakeningClientPage() {
   };
 
   return (
-    <main className="min-h-screen text-base-content" style={shellBg}>
-      <div className="mx-auto w-[90vw]  px-4 pb-12 pt-8 md:px-6 space-y-6">
-        <header
-          className="relative overflow-hidden rounded-3xl border p-6 md:p-8 backdrop-blur-2xl"
-          style={heroGlass}
-        >
-          <div className="absolute right-4 top-4 h-28 w-28 rounded-full bg-white/50 blur-3xl" />
-          <div className="absolute -left-6 bottom-6 h-24 w-24 rounded-full bg-[#d8b899]/40 blur-3xl" />
-          <div className="absolute right-24 bottom-2 h-16 w-16 rounded-full bg-white/40 blur-2xl" />
-          <div className="relative grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="space-y-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5c3b1d]">
-                <span className="h-2 w-2 rounded-full bg-[#e67a2e]" />
-                Gaia Health Core
-              </div>
-              <div className="space-y-3">
-                <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-[#24170d] drop-shadow-sm">
-                  Calmer health, one glassy dashboard.
-                </h1>
-                <p className="text-sm sm:text-base text-[#3a2b20] max-w-2xl">
-                  Sleep, water, walking, training, and mood sit on warm glass
-                  panels. GAIA keeps them synced while you move through the day.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <Link
-                  href="#today"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#e67a2e] px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_12px_32px_rgba(230,122,46,0.35)] transition hover:-translate-y-[1px] hover:shadow-[0_16px_40px_rgba(230,122,46,0.4)]"
-                >
-                  Check today view
-                </Link>
-                <Link
-                  href="/health-awakening/food-calendar"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#5c3b1d] shadow-[0_10px_26px_rgba(110,78,52,0.15)] transition hover:-translate-y-[1px]"
-                >
-                  Food calendar
-                </Link>
-              </div>
-              <div className="flex flex-wrap gap-2 text-[11px] text-[#3a2b20]">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1 font-semibold">
-                  <span className="h-2 w-2 rounded-full bg-[#e67a2e] animate-pulse" />
-                  Live data
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/50 px-3 py-1 font-semibold">
-                  Offline cache ready
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/50 px-3 py-1 font-semibold">
-                  Supabase sync
-                </span>
-              </div>
+    <div className="space-y-6 text-[var(--gaia-text-default)]">
+      <section className="health-surface relative overflow-hidden p-6 md:p-8">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -left-8 top-6 h-28 w-28 rounded-full bg-[var(--gaia-contrast-bg)]/12 blur-3xl" />
+          <div className="absolute right-6 bottom-4 h-28 w-28 rounded-full bg-[var(--gaia-info)]/10 blur-3xl" />
+        </div>
+        <div className="relative grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="space-y-5">
+            <div className="inline-flex items-center gap-2 rounded-full border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gaia-text-muted)]">
+              <span className="h-2 w-2 rounded-full bg-[var(--gaia-contrast-bg)]" />
+              Gaia Health Core
             </div>
-            <div className="relative flex justify-end">
-              <div className="absolute -right-6 top-2 h-28 w-28 rounded-full bg-white/40 blur-3xl" />
-              <div className="absolute -left-10 bottom-0 h-24 w-24 rounded-full bg-[#d8b899]/50 blur-2xl" />
-              <div
-                className="relative w-full max-w-[440px] rounded-[26px] border p-5 backdrop-blur-2xl"
-                style={panelGlass}
+            <div className="space-y-3">
+              <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-[var(--gaia-text-strong)]">
+                Calmer health, one glassy dashboard.
+              </h1>
+              <p className="max-w-2xl text-sm sm:text-base gaia-muted">
+                Sleep, water, walking, training, and mood sit on warm glass
+                panels. GAIA keeps them synced while you move through the day.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="#today"
+                className="health-button inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em]"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold text-[#5c3b1d]">
-                      Today focus
-                    </p>
-                    <p className="text-sm font-semibold text-[#24170d]">
-                      {heroDateLabel}
-                    </p>
-                    <p className="text-[11px] text-[#3a2b20]">
-                      GAIA is watching hydration and walks right now.
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-white/60 bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-[#5c3b1d]">
-                    Live
-                  </span>
+                Check today view
+              </Link>
+              <Link
+                href="/health-awakening/food-calendar"
+                className="inline-flex items-center gap-2 rounded-full border gaia-border bg-[var(--gaia-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--gaia-text-strong)] transition hover:bg-[var(--gaia-surface-soft)]"
+              >
+                Food calendar
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-2 text-[11px] text-[var(--gaia-text-default)]">
+              <span className="gaia-chip inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                <span className="h-2 w-2 rounded-full bg-[var(--gaia-contrast-bg)] animate-pulse" />
+                Live data
+              </span>
+              <span className="gaia-chip inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                Offline cache ready
+              </span>
+              <span className="gaia-chip inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                {storageStatus}
+              </span>
+            </div>
+          </div>
+          <div className="relative flex justify-end">
+            <div className="absolute -right-6 top-2 h-28 w-28 rounded-full bg-[var(--gaia-contrast-bg)]/10 blur-3xl" />
+            <div className="absolute -left-10 bottom-0 h-24 w-24 rounded-full bg-[var(--gaia-info)]/10 blur-2xl" />
+            <div className="health-surface-soft relative w-full max-w-[440px] p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold text-[var(--gaia-text-muted)]">
+                    Today focus
+                  </p>
+                  <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
+                    {heroDateLabel}
+                  </p>
+                  <p className="text-[11px] gaia-muted">
+                    GAIA is watching hydration and walks right now.
+                  </p>
                 </div>
+                <span className="inline-flex items-center gap-1 rounded-full border gaia-border bg-[var(--gaia-surface)] px-2 py-0.5 text-[10px] font-semibold text-[var(--gaia-text-muted)]">
+                  Live
+                </span>
+              </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl border border-white/60 bg-white/60 p-3 shadow-[0_8px_22px_rgba(110,78,52,0.16)]">
-                    <p className="text-[11px] font-semibold text-[#5c3b1d]">
-                      Water
-                    </p>
-                    <p className="text-lg font-semibold text-[#24170d]">
-                      {waterLabel}
-                    </p>
-                    <p className="text-[11px] text-[#3a2b20]">
-                      {todayWaterMl > 0
-                        ? "Keep sipping across the day."
-                        : "Add your first glass."}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-white/60 bg-white/75 p-3 shadow-[0_8px_22px_rgba(110,78,52,0.16)]">
-                    <p className="text-[11px] font-semibold text-[#5c3b1d]">
-                      Sleep
-                    </p>
-                    <p className="text-lg font-semibold text-[#24170d]">
-                      {sleepLabel}
-                    </p>
-                    <p className="text-[11px] text-[#3a2b20]">
-                      {todaySleepMinutes > 0
-                        ? "Great job keeping rest steady."
-                        : "Log last night's sleep."}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-white/60 bg-white/60 p-3 shadow-[0_8px_22px_rgba(110,78,52,0.16)]">
-                    <p className="text-[11px] font-semibold text-[#5c3b1d]">
-                      Walking
-                    </p>
-                    <p className="text-lg font-semibold text-[#24170d]">
-                      {walkLabel}
-                    </p>
-                    <p className="text-[11px] text-[#3a2b20]">
-                      {todayWalkMinutes > 0
-                        ? "Light steps keep energy balanced."
-                        : "Start a 10 min loop."}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-white/60 bg-white/60 p-3 shadow-[0_8px_22px_rgba(110,78,52,0.16)]">
-                    <p className="text-[11px] font-semibold text-[#5c3b1d]">
-                      Training
-                    </p>
-                    <p className="text-lg font-semibold text-[#24170d]">
-                      {trainingLabel}
-                    </p>
-                    <p className="text-[11px] text-[#3a2b20]">
-                      {todayTrainingPercent != null
-                        ? "Close the plan with one more block."
-                        : "Set a plan and let GAIA track it."}
-                    </p>
-                  </div>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border gaia-border bg-[var(--gaia-surface)] p-3">
+                  <p className="text-[11px] font-semibold text-[var(--gaia-text-muted)]">
+                    Water
+                  </p>
+                  <p className="text-lg font-semibold text-[var(--gaia-text-strong)]">
+                    {waterLabel}
+                  </p>
+                  <p className="text-[11px] gaia-muted">
+                    {todayWaterMl > 0
+                      ? "Keep sipping across the day."
+                      : "Add your first glass."}
+                  </p>
                 </div>
+                <div className="rounded-2xl border gaia-border bg-[var(--gaia-surface)] p-3">
+                  <p className="text-[11px] font-semibold text-[var(--gaia-text-muted)]">
+                    Sleep
+                  </p>
+                  <p className="text-lg font-semibold text-[var(--gaia-text-strong)]">
+                    {sleepLabel}
+                  </p>
+                  <p className="text-[11px] gaia-muted">
+                    {todaySleepMinutes > 0
+                      ? "Great job keeping rest steady."
+                      : "Log last night's sleep."}
+                  </p>
+                </div>
+                <div className="rounded-2xl border gaia-border bg-[var(--gaia-surface)] p-3">
+                  <p className="text-[11px] font-semibold text-[var(--gaia-text-muted)]">
+                    Walking
+                  </p>
+                  <p className="text-lg font-semibold text-[var(--gaia-text-strong)]">
+                    {walkLabel}
+                  </p>
+                  <p className="text-[11px] gaia-muted">
+                    {todayWalkMinutes > 0
+                      ? "Light steps keep energy balanced."
+                      : "Start a 10 min loop."}
+                  </p>
+                </div>
+                <div className="rounded-2xl border gaia-border bg-[var(--gaia-surface)] p-3">
+                  <p className="text-[11px] font-semibold text-[var(--gaia-text-muted)]">
+                    Training
+                  </p>
+                  <p className="text-lg font-semibold text-[var(--gaia-text-strong)]">
+                    {trainingLabel}
+                  </p>
+                  <p className="text-[11px] gaia-muted">
+                    {todayTrainingPercent != null
+                      ? "Close the plan with one more block."
+                      : "Set a plan and let GAIA track it."}
+                  </p>
+                </div>
+              </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-[#24170d]">
-                  <div className="rounded-xl border border-white/60 bg-white/60 px-3 py-2">
-                    Mood check: {moodLabel}
-                  </div>
-                  <div className="rounded-xl border border-white/60 bg-white/60 px-3 py-2">
-                    Clock: {nowDisplay || "Loading..."}
-                  </div>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-[var(--gaia-text-default)]">
+                <div className="rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2">
+                  Mood check: {moodLabel}
+                </div>
+                <div className="rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2">
+                  Clock: {nowDisplay || "Loading..."}
                 </div>
               </div>
             </div>
           </div>
-        </header>
+        </div>
+      </section>
 
-        {today ? (
-          <div
-            className="grid gap-4 lg:gap-6 lg:grid-cols-[1.35fr_0.9fr]"
-            id="today"
-          >
-            <TodayView
-              today={today}
-              isSleeping={isSleeping}
-              onSleepStart={handleSleepStart}
-              onWake={handleWake}
-              waterContainers={waterContainers}
-              onAddWaterByContainer={handleAddWaterByContainer}
-              onAddWaterMl={handleAddWaterMl}
-              onAddCustomWaterContainer={handleAddCustomContainer}
-              isWalking={isWalking}
-              onWalkStart={handleWalkStart}
-              onWalkStop={handleWalkStop}
-              todayTrainingPlanned={todayTraining.planned}
-              todayTrainingActual={todayTraining.actual}
-              onSaveTraining={handleSaveTraining}
-              onSaveMood={handleSaveMood}
-            />
-            <HistoryList days={history} todayKey={todayKey} />
-          </div>
-        ) : (
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Preparing Health Day model...
-          </p>
-        )}
-      </div>
-    </main>
+      {today ? (
+        <div
+          className="grid gap-4 lg:gap-6 lg:grid-cols-[1.35fr_0.9fr]"
+          id="today"
+        >
+          <TodayView
+            today={today}
+            isSleeping={isSleeping}
+            onSleepStart={handleSleepStart}
+            onWake={handleWake}
+            waterContainers={waterContainers}
+            onAddWaterByContainer={handleAddWaterByContainer}
+            onAddWaterMl={handleAddWaterMl}
+            onAddCustomWaterContainer={handleAddCustomContainer}
+            isWalking={isWalking}
+            onWalkStart={handleWalkStart}
+            onWalkStop={handleWalkStop}
+            todayTrainingPlanned={todayTraining.planned}
+            todayTrainingActual={todayTraining.actual}
+            onSaveTraining={handleSaveTraining}
+            onSaveMood={handleSaveMood}
+          />
+          <HistoryList days={history} todayKey={todayKey} />
+        </div>
+      ) : (
+        <p className="text-xs md:text-sm gaia-muted">
+          Preparing Health Day model...
+        </p>
+      )}
+    </div>
   );
 }

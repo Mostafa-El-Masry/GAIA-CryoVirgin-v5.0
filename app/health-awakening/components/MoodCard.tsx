@@ -41,10 +41,10 @@ const MoodCard: FC<MoodCardProps> = ({ rating, note, onSave }) => {
                 key={n}
                 type="button"
                 onClick={() => setSelected(n)}
-                className={`h-9 w-9 rounded-full text-sm flex items-center justify-center border transition-colors ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors ${
                   selected === n
-                    ? "border-primary bg-primary/15 text-primary-content"
-                    : "border-base-300 bg-base-200 text-base-content"
+                    ? "border-[var(--gaia-contrast-bg)] bg-[var(--gaia-contrast-bg)]/15 text-[var(--gaia-text-strong)]"
+                    : "gaia-border bg-[var(--gaia-surface-soft)] text-[var(--gaia-text-default)]"
                 }`}
               >
                 {n}
@@ -56,11 +56,11 @@ const MoodCard: FC<MoodCardProps> = ({ rating, note, onSave }) => {
             value={draftNote}
             onChange={(e) => setDraftNote(e.target.value)}
             placeholder="Short mood note"
-            className="input input-sm w-full rounded-lg border-base-300 bg-base-200/70 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40"
+            className="gaia-input gaia-focus w-full rounded-lg px-3 py-2 text-sm"
           />
           <button
             type="submit"
-            className="btn btn-sm md:btn-md w-full md:w-auto btn-primary rounded-full px-5 font-semibold normal-case shadow-xl shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-transform bg-base-300 text-base-content border-base-300 dark:bg-base-200 dark:border-base-200"
+            className="health-button w-full md:w-auto px-5 py-2 text-xs font-semibold md:text-sm"
           >
             Save mood
           </button>

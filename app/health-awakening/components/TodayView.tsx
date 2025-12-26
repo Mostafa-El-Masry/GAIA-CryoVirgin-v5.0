@@ -51,26 +51,26 @@ const TodayView: FC<TodayViewProps> = ({
   onSaveMood,
 }) => {
   return (
-    <section className="rounded-3xl border border-base-300 bg-base-100/90 p-5 md:p-7 shadow-xl shadow-primary/5 space-y-5">
+    <section className="health-surface space-y-5 p-5 md:p-7">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
-          <p className="text-xs md:text-sm uppercase tracking-[0.18em] text-primary/80">
+          <p className="text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--gaia-text-muted)]">
             Today
           </p>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-base-content">
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-[var(--gaia-text-strong)]">
               Health Pulse
             </h1>
-            <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary-content border border-primary/40">
+            <span className="rounded-full border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-1 text-xs font-semibold text-[var(--gaia-text-strong)]">
               Live snapshot
             </span>
           </div>
-          <p className="text-sm md:text-base text-muted-foreground max-w-2xl">
+          <p className="max-w-2xl text-sm md:text-base gaia-muted">
             Lightweight controls for sleep, water, walking, training, and mood. Everything stays synced and remains offline-first.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-          <span className="rounded-full border border-base-300 bg-base-200/80 px-3 py-1 text-base-content min-w-[96px] text-center text-sm font-semibold">
+        <div className="flex items-center gap-2 text-xs md:text-sm gaia-muted">
+          <span className="min-w-[96px] rounded-full border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-1 text-center text-sm font-semibold text-[var(--gaia-text-default)]">
             {formatDayLabel(today.day)}
           </span>
         </div>

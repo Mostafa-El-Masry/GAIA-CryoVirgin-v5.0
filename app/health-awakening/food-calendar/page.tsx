@@ -36,7 +36,7 @@ export default function FoodCalendarPage() {
   >({});
 
   const startOfWeek = useMemo(() => {
-    const d = new Date(2026, 0, 3); // Jan 3, 2026 is a Saturday
+    const d = new Date(2026, 0, 1); // Jan 1, 2026 anchor
     d.setHours(0, 0, 0, 0);
     return d;
   }, []);
@@ -48,18 +48,6 @@ export default function FoodCalendarPage() {
   }, [startOfWeek, weekOffset]);
 
   const plan = useMemo(() => buildWeekPlan(baseDate), [baseDate]);
-  const shellBg = {
-    background:
-      "radial-gradient(circle at 18% 15%, color-mix(in srgb, var(--gaia-surface-soft) 92%, transparent) 0%, transparent 38%), radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--gaia-overlay) 22%, transparent) 0%, transparent 48%), linear-gradient(180deg, color-mix(in srgb, var(--gaia-surface) 90%, var(--gaia-surface-soft) 10%), color-mix(in srgb, var(--gaia-surface-soft) 82%, transparent 18%))",
-  };
-
-  const glassHeader = {
-    background: "color-mix(in srgb, var(--gaia-surface) 82%, transparent)",
-    borderColor: "color-mix(in srgb, var(--gaia-border) 68%, transparent)",
-    boxShadow:
-      "0 24px 70px color-mix(in srgb, var(--gaia-overlay) 24%, transparent)",
-  };
-
   const weekStartLabel = plan[0]
     ? new Date(`${plan[0].iso}T00:00:00`).toLocaleDateString("en-US", {
         month: "short",
@@ -202,33 +190,30 @@ export default function FoodCalendarPage() {
   );
 
   return (
-    <main className="min-h-screen text-base-content" style={shellBg}>
-      <div className="mx-auto w-[90vw] px-4 pb-12 pt-8 md:px-6 space-y-8">
-        <header
-          className="rounded-3xl border p-5 md:p-7 relative overflow-hidden backdrop-blur-2xl"
-          style={glassHeader}
-        >
-          <div className="absolute right-8 top-0 h-36 w-36 rounded-full bg-white/50 blur-3xl" />
-          <div className="absolute -left-10 bottom-0 h-24 w-24 rounded-full bg-[#d8b899]/40 blur-3xl" />
+    <div className="space-y-8 text-[var(--gaia-text-default)]">
+      <div className="space-y-8">
+        <section className="health-surface relative overflow-hidden p-5 md:p-7">
+          <div className="absolute right-8 top-0 h-36 w-36 rounded-full bg-[var(--gaia-contrast-bg)]/10 blur-3xl" />
+          <div className="absolute -left-10 bottom-0 h-24 w-24 rounded-full bg-[var(--gaia-info)]/10 blur-3xl" />
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-3">
-              <p className="text-[11px] uppercase tracking-[0.28em] text-[#5c3b1d]">
+              <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--gaia-text-muted)]">
                 Health Awakening
               </p>
-              <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#24170d]">
+              <h1 className="text-3xl font-semibold tracking-tight text-[var(--gaia-text-strong)] md:text-4xl">
                 Food Calendar (beta)
               </h1>
-              <p className="text-sm text-[#3a2b20] max-w-2xl">
+              <p className="max-w-2xl text-sm gaia-muted">
                 Seven-day rotation seeded with real meals you already reach for.
                 Calories and cost stay visible so you can keep the Health core
                 in sync with what you actually eat.
               </p>
               <div className="flex flex-wrap gap-2 text-[11px]">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1 font-semibold text-[#5c3b1d] shadow-[0_10px_26px_rgba(110,78,52,0.14)]">
-                  <span className="h-2 w-2 rounded-full bg-[#e67a2e] animate-pulse" />
+                <span className="gaia-chip inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                  <span className="h-2 w-2 rounded-full bg-[var(--gaia-contrast-bg)] animate-pulse" />
                   Local-first draft
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/60 px-3 py-1 text-[#3a2b20]">
+                <span className="gaia-chip inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
                   Food library: {SEED_FOOD_ITEMS.length} items
                 </span>
               </div>
@@ -239,25 +224,25 @@ export default function FoodCalendarPage() {
               focusSubtitle="Use this as a starter; swap meals as you log real intake."
             />
           </div>
-        </header>
+        </section>
 
         <section className="space-y-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5c3b1d]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gaia-text-muted)]">
                 {weekOffset === 0 ? "This week" : `Week of ${weekStartLabel}`}
               </p>
-              <p className="text-sm text-[#3a2b20]">
+              <p className="text-sm gaia-muted">
                 {weekStartLabel && weekEndLabel
                   ? `${weekStartLabel} — ${weekEndLabel}`
                   : "Seven-day rotation"}
               </p>
             </div>
-            <div className="flex items-center gap-3 text-[11px] text-[#3a2b20]">
-              <div className="inline-flex rounded-full border border-white/60 bg-white/60 shadow-[0_8px_20px_rgba(110,78,52,0.12)]">
+            <div className="flex items-center gap-3 text-[11px] text-[var(--gaia-text-default)]">
+              <div className="inline-flex rounded-full border gaia-border bg-[var(--gaia-surface-soft)]">
                 <button
                   type="button"
-                  className="px-3 py-1.5 font-semibold hover:bg-white/80 transition rounded-l-full"
+                  className="rounded-l-full px-3 py-1.5 font-semibold transition hover:bg-[var(--gaia-surface)]"
                   onClick={() => setWeekOffsetSafe(weekOffset - 1)}
                   disabled={weekOffset <= minWeekOffset}
                   style={{
@@ -269,7 +254,7 @@ export default function FoodCalendarPage() {
                 </button>
                 <button
                   type="button"
-                  className="px-3 py-1.5 font-semibold hover:bg-white/80 transition border-l border-white/60"
+                  className="border-l gaia-border px-3 py-1.5 font-semibold transition hover:bg-[var(--gaia-surface)]"
                   onClick={() => setWeekOffsetSafe(0)}
                   title="Jump to current week"
                 >
@@ -277,14 +262,14 @@ export default function FoodCalendarPage() {
                 </button>
                 <button
                   type="button"
-                  className="px-3 py-1.5 font-semibold hover:bg-white/80 transition rounded-r-full border-l border-white/60"
+                  className="rounded-r-full border-l gaia-border px-3 py-1.5 font-semibold transition hover:bg-[var(--gaia-surface)]"
                   onClick={() => setWeekOffsetSafe(weekOffset + 1)}
                 >
                   Next
                 </button>
               </div>
               <div className="hidden sm:flex items-center gap-2">
-                <span className="inline-flex h-3 w-3 rounded-full bg-[#e67a2e]" />
+                <span className="inline-flex h-3 w-3 rounded-full bg-[var(--gaia-contrast-bg)]" />
                 Planned meal slot
               </div>
             </div>
@@ -305,23 +290,23 @@ export default function FoodCalendarPage() {
           />
         </section>
 
-        <section className="rounded-3xl border border-white/45 bg-white/65 shadow-[0_22px_60px_rgba(110,78,52,0.2)] p-5 md:p-7 space-y-6 backdrop-blur-2xl">
+        <section className="health-surface space-y-6 p-5 md:p-7">
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5c3b1d]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gaia-text-muted)]">
                     Food library
                   </p>
-                  <h2 className="text-xl font-semibold text-[#24170d]">
+                  <h2 className="text-xl font-semibold text-[var(--gaia-text-strong)]">
                     Your current meals
                   </h2>
-                  <p className="text-sm text-[#3a2b20]">
+                  <p className="text-sm gaia-muted">
                     These seed meals feed the calendar. Add more later and the
                     rotation adapts.
                   </p>
                 </div>
-                <div className="rounded-full bg-white/70 px-3 py-1 text-[11px] font-semibold text-[#3a2b20] border border-white/60 shadow-[0_8px_22px_rgba(110,78,52,0.12)]">
+                <div className="rounded-full border gaia-border bg-[var(--gaia-surface-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--gaia-text-default)]">
                   {SEED_FOOD_ITEMS.length} items saved
                 </div>
               </div>
@@ -330,20 +315,20 @@ export default function FoodCalendarPage() {
                 {SEED_FOOD_ITEMS.map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-2xl border border-white/60 bg-white/60 p-4 shadow-[0_14px_36px_rgba(110,78,52,0.14)] backdrop-blur-xl"
+                    className="health-surface-soft p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-[#24170d]">
+                        <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
                           {item.label}
                         </p>
                         {item.nameAr && (
-                          <p className="text-[11px] text-[#3a2b20]">
+                          <p className="text-[11px] gaia-muted">
                             {item.nameAr}
                           </p>
                         )}
                       </div>
-                      <span className="rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-[#3a2b20] border border-white/60">
+                      <span className="rounded-full border gaia-border bg-[var(--gaia-surface)] px-2 py-0.5 text-[11px] font-semibold text-[var(--gaia-text-default)]">
                         {item.sourceType === "outside"
                           ? "Outside"
                           : item.sourceType === "home"
@@ -351,14 +336,14 @@ export default function FoodCalendarPage() {
                           : "Flexible"}
                       </span>
                     </div>
-                    <p className="mt-2 text-[12px] text-[#3a2b20]">
+                    <p className="mt-2 text-[12px] gaia-muted">
                       {item.defaultServingDescription}
                     </p>
-                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[#3a2b20]">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/60 bg-white/70 px-2 py-0.5 font-semibold">
+                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[var(--gaia-text-default)]">
+                      <span className="inline-flex items-center gap-1 rounded-full border gaia-border bg-[var(--gaia-surface)] px-2 py-0.5 font-semibold">
                         {item.kcal} kcal
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/60 bg-white/70 px-2 py-0.5 font-semibold">
+                      <span className="inline-flex items-center gap-1 rounded-full border gaia-border bg-[var(--gaia-surface)] px-2 py-0.5 font-semibold">
                         {formatCurrency(item.price, item.currency)}
                       </span>
                     </div>
@@ -367,14 +352,14 @@ export default function FoodCalendarPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/60 bg-white/60 p-5 shadow-[0_14px_36px_rgba(110,78,52,0.14)] backdrop-blur-xl space-y-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5c3b1d]">
+            <div className="health-surface-soft space-y-3 p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gaia-text-muted)]">
                 Training list
               </p>
-              <h3 className="text-lg font-semibold text-[#24170d]">
+              <h3 className="text-lg font-semibold text-[var(--gaia-text-strong)]">
                 Suggested workouts by type
               </h3>
-              <div className="grid gap-2 text-sm text-[#3a2b20]">
+              <div className="grid gap-2 text-sm text-[var(--gaia-text-default)]">
                 {workoutsByTag.map(([tag, w]) => {
                   const sampleMoves = (w.exercises ?? []).slice(0, 2);
                   const tagLabel =
@@ -383,20 +368,20 @@ export default function FoodCalendarPage() {
                   return (
                     <div
                       key={tag}
-                      className="rounded-xl border border-white/60 bg-white/70 px-3 py-2 shadow-[0_8px_20px_rgba(110,78,52,0.12)]"
+                      className="rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-semibold text-[#24170d]">
+                        <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
                           {tagLabel}
                         </p>
-                        <span className="text-[10px] font-semibold text-[#5c3b1d]">
+                        <span className="text-[10px] font-semibold text-[var(--gaia-text-muted)]">
                           {w.level}
                         </span>
                       </div>
-                      <p className="text-[11px] font-semibold text-[#3a2b20]">
+                      <p className="text-[11px] font-semibold text-[var(--gaia-text-default)]">
                         {w.label}
                       </p>
-                      <div className="mt-1 text-[11px] text-[#3a2b20] space-y-0.5">
+                      <div className="mt-1 space-y-0.5 text-[11px] gaia-muted">
                         {sampleMoves.map((ex) => (
                           <div key={ex.id}>• {ex.name}</div>
                         ))}
@@ -405,13 +390,13 @@ export default function FoodCalendarPage() {
                   );
                 })}
               </div>
-              <p className="text-[11px] text-[#3a2b20]">
+              <p className="text-[11px] gaia-muted">
                 Full details live in the Health core. Pair one workout with any meal day to balance energy and recovery.
               </p>
             </div>
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

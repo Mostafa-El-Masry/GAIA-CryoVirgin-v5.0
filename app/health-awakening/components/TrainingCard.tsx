@@ -47,30 +47,30 @@ const TrainingCard: FC<TrainingCardProps> = ({
       footer={
         <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3">
           <div className="flex items-center gap-2">
-            <label className="text-xs text-muted-foreground">Plan</label>
+            <label className="text-xs gaia-muted">Plan</label>
             <input
               type="number"
               min={0}
               value={planned}
               onChange={(e) => setPlanned(e.target.value)}
-              className="input input-xs w-24 rounded-lg border-base-300 bg-base-200/70 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="gaia-input gaia-focus w-24 rounded-lg px-2 py-1 text-xs"
             />
-            <span className="text-xs text-muted-foreground">units</span>
+            <span className="text-xs gaia-muted">units</span>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-xs text-muted-foreground">Actual</label>
+            <label className="text-xs gaia-muted">Actual</label>
             <input
               type="number"
               min={0}
               value={actual}
               onChange={(e) => setActual(e.target.value)}
-              className="input input-xs w-24 rounded-lg border-base-300 bg-base-200/70 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="gaia-input gaia-focus w-24 rounded-lg px-2 py-1 text-xs"
             />
-            <span className="text-xs text-muted-foreground">units</span>
+            <span className="text-xs gaia-muted">units</span>
           </div>
           <button
             type="submit"
-            className="btn btn-sm md:btn-md w-full md:w-auto btn-primary rounded-full px-5 font-semibold normal-case shadow-xl shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-transform bg-base-300 text-base-content border-base-300 dark:bg-base-200 dark:border-base-200"
+            className="health-button w-full md:w-auto px-5 py-2 text-xs font-semibold md:text-sm"
           >
             Save training
           </button>

@@ -129,7 +129,7 @@ function computePlanSummary(
 const LAST_VISIT_KEY = "gaia_academy_last_visit_v1";
 
 // New stepped schedule configuration
-const SCHEDULE_START_ISO = "2025-12-01";
+const SCHEDULE_START_ISO = "2026-01-01";
 const BASE_MINUTES_PER_STUDY_DAY = 30;
 
 function createDateFromIso(iso: string): Date {
@@ -167,7 +167,7 @@ function monthsSinceScheduleStart(date: Date): number {
 
 function computeDaysPerWeekForWeek(weekStart: Date): number {
   const months = monthsSinceScheduleStart(weekStart);
-  const daysPerWeek = 1 + months; // Dec 2025 = 1, Jan 2026 = 2, ... up to 7
+  const daysPerWeek = 1 + months; // Jan 2026 = 1, Feb 2026 = 2, ... up to 7
   if (daysPerWeek < 1) return 1;
   if (daysPerWeek > 7) return 7;
   return daysPerWeek;
@@ -490,7 +490,7 @@ const aheadDaysTotal = Math.max(
                     No scheduled study today
                   </p>
                   <p className="mt-1 text-xs sm:text-[13px] text-white/80 max-w-xl">
-                    According to your stepped plan (starting Dec 2025), today
+                    According to your stepped plan (starting Jan 2026), today
                     is a rest day. You won&apos;t accumulate backlog for
                     skipping this day. You can still study{" "}
                     {trackLabel(todayTrackId)} if you feel like it.

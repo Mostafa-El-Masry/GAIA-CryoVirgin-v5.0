@@ -28,7 +28,7 @@ export type AcademyCalendarRow = {
  *   import { buildCalendarRowsForMonth } from "./supabaseCalendar";
  *   import { getScheduleForDate } from "../schedule"; // your logic
  *
- *   const rows = buildCalendarRowsForMonth(2025, 11, getScheduleForDate);
+ *   const rows = buildCalendarRowsForMonth(2026, 0, getScheduleForDate);
  */
 export function buildCalendarRowsForMonth(
   year: number,

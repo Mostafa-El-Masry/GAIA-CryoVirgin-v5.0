@@ -71,27 +71,27 @@ export function CalendarGrid({
         return (
           <div
             key={day.iso}
-            className="rounded-2xl border border-white/60 bg-white/70 p-4 space-y-3 shadow-[0_18px_50px_rgba(110,78,52,0.2)] backdrop-blur-xl"
+            className="health-surface-soft space-y-3 p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5c3b1d]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gaia-text-muted)]">
                   {day.iso}
                 </p>
-                <h2 className="text-lg font-semibold text-[#24170d]">
+                <h2 className="text-lg font-semibold text-[var(--gaia-text-strong)]">
                   {day.label}
                 </h2>
-                <p className="text-[11px] text-[#3a2b20]">
+                <p className="text-[11px] gaia-muted">
                   {(day.kcalTotal + mealKcal + pepsiKcal).toLocaleString()} kcal
                 </p>
               </div>
               <div className="text-right space-y-1">
-                <p className="text-[11px] text-[#3a2b20]">Estimated</p>
-                <div className="flex flex-wrap justify-end gap-1 text-[11px] text-[#3a2b20]">
+                <p className="text-[11px] gaia-muted">Estimated</p>
+                <div className="flex flex-wrap justify-end gap-1 text-[11px] text-[var(--gaia-text-default)]">
                   {costBadges.map((cost) => (
                     <span
                       key={cost.currency}
-                      className="inline-flex items-center gap-1 rounded-full border border-white/60 bg-white/60 px-2 py-0.5 font-semibold shadow-[0_6px_16px_rgba(110,78,52,0.12)]"
+                      className="inline-flex items-center gap-1 rounded-full border gaia-border bg-[var(--gaia-surface)] px-2 py-0.5 font-semibold"
                     >
                       {formatCurrency(cost.amount, cost.currency ?? "KWD")}
                     </span>
@@ -101,13 +101,13 @@ export function CalendarGrid({
               </div>
 
             <div className="space-y-2">
-              <div className="rounded-xl border border-white/60 bg-white/70 p-3 shadow-[0_8px_20px_rgba(110,78,52,0.12)] space-y-2">
+              <div className="rounded-xl border gaia-border bg-[var(--gaia-surface)] p-3 space-y-2">
                 <div className="space-y-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5c3b1d]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--gaia-text-muted)]">
                     Choose lunch
                   </p>
                   <select
-                    className="w-full rounded-lg border border-white/60 bg-white/80 px-2 py-2 text-[12px] text-[#24170d] shadow-[0_6px_14px_rgba(110,78,52,0.12)]"
+                    className="gaia-input gaia-focus w-full rounded-lg px-2 py-2 text-[12px]"
                     value={selectedMealId ?? ""}
                     onChange={(e) => onMealChange(day.iso, e.target.value)}
                   >
@@ -119,7 +119,7 @@ export function CalendarGrid({
                     ))}
                   </select>
                   {selectedMeal && (
-                    <p className="text-[11px] text-[#3a2b20]">
+                    <p className="text-[11px] gaia-muted">
                       {formatCurrency(selectedMeal.price, selectedMeal.currency)} ·{" "}
                       {selectedMeal.kcal} kcal
                     </p>
@@ -127,31 +127,31 @@ export function CalendarGrid({
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5c3b1d]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--gaia-text-muted)]">
                     Choose exercise
                   </p>
                   <select
-                    className="w-full rounded-lg border border-white/60 bg-white/80 px-2 py-2 text-[12px] text-[#24170d] shadow-[0_6px_14px_rgba(110,78,52,0.12)]"
-                  value={selectedExerciseId ?? ""}
-                  onChange={(e) => onExerciseChange(day.iso, e.target.value)}
-                >
-                  <option value="">Select exercise</option>
-                  {exerciseOptions.map((ex) => (
-                    <option key={ex.id} value={ex.id}>
-                      {ex.name}
-                    </option>
-                  ))}
-                </select>
+                    className="gaia-input gaia-focus w-full rounded-lg px-2 py-2 text-[12px]"
+                    value={selectedExerciseId ?? ""}
+                    onChange={(e) => onExerciseChange(day.iso, e.target.value)}
+                  >
+                    <option value="">Select exercise</option>
+                    {exerciseOptions.map((ex) => (
+                      <option key={ex.id} value={ex.id}>
+                        {ex.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5c3b1d]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--gaia-text-muted)]">
                     Training count
                   </p>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      className="h-8 w-8 rounded-full border border-white/60 bg-white/80 font-semibold shadow-[0_4px_12px_rgba(110,78,52,0.12)]"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border gaia-border bg-[var(--gaia-surface-soft)] text-sm font-semibold text-[var(--gaia-text-strong)] hover:bg-[var(--gaia-surface)]"
                       onClick={() => onTrainingCountChange(day.iso, trainingCount - 1)}
                     >
                       -
@@ -164,11 +164,11 @@ export function CalendarGrid({
                       onChange={(e) =>
                         onTrainingCountChange(day.iso, Number(e.target.value || 0))
                       }
-                      className="w-16 rounded-lg border border-white/60 bg-white/80 px-2 py-1 text-center text-[12px] text-[#24170d] shadow-[0_6px_14px_rgba(110,78,52,0.12)]"
+                      className="gaia-input gaia-focus w-16 rounded-lg px-2 py-1 text-center text-[12px]"
                     />
                     <button
                       type="button"
-                      className="h-8 w-8 rounded-full border border-white/60 bg-white/80 font-semibold shadow-[0_4px_12px_rgba(110,78,52,0.12)]"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border gaia-border bg-[var(--gaia-surface-soft)] text-sm font-semibold text-[var(--gaia-text-strong)] hover:bg-[var(--gaia-surface)]"
                       onClick={() => onTrainingCountChange(day.iso, trainingCount + 1)}
                     >
                       +
@@ -177,15 +177,15 @@ export function CalendarGrid({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-[#24170d]">Pepsi</p>
-                  <span className="text-[11px] text-[#3a2b20]">
+                  <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">Pepsi</p>
+                  <span className="text-[11px] gaia-muted">
                     +{PEPSI_KCAL} kcal / {formatCurrency(PEPSI_PRICE, PEPSI_CURRENCY || "KWD")}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-[#3a2b20]">
+                <div className="flex items-center gap-2 text-[11px] text-[var(--gaia-text-default)]">
                   <button
                     type="button"
-                    className="h-8 w-8 rounded-full border border-white/60 bg-white/80 font-semibold shadow-[0_4px_12px_rgba(110,78,52,0.12)]"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border gaia-border bg-[var(--gaia-surface-soft)] text-sm font-semibold text-[var(--gaia-text-strong)] hover:bg-[var(--gaia-surface)]"
                     onClick={() => onPepsiChange(day.iso, pepsiCount - 1)}
                   >
                     -
@@ -193,7 +193,7 @@ export function CalendarGrid({
                   <span className="w-10 text-center font-semibold">{pepsiCount}</span>
                   <button
                     type="button"
-                    className="h-8 w-8 rounded-full border border-white/60 bg-white/80 font-semibold shadow-[0_4px_12px_rgba(110,78,52,0.12)]"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border gaia-border bg-[var(--gaia-surface-soft)] text-sm font-semibold text-[var(--gaia-text-strong)] hover:bg-[var(--gaia-surface)]"
                     onClick={() => onPepsiChange(day.iso, pepsiCount + 1)}
                   >
                     +

@@ -13,14 +13,14 @@ export default function HealthGateWrapper() {
   if (!unlocked && !forceUnlock) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-8">
-        <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">
-          <h1 className="text-2xl font-semibold text-[var(--gaia-text-strong)] mb-2">
+        <section className="health-surface p-8">
+          <h1 className="mb-2 text-2xl font-semibold text-[var(--gaia-text-strong)]">
             Health locked · keep learning
           </h1>
-          <p className="text-sm text-[var(--gaia-text-muted)] mb-3">
+          <p className="mb-3 text-sm gaia-muted">
             Finish more Academy lessons in Apollo to unlock GAIA&apos;s Health Core.
           </p>
-          <p className="text-xs text-[var(--gaia-text-muted)]">
+          <p className="text-xs gaia-muted">
             Lessons completed so far:{" "}
             <span className="font-semibold">{totalLessonsCompleted}</span>
           </p>
