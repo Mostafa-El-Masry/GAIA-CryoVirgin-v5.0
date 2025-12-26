@@ -19,6 +19,8 @@ import { getExchangeRate } from "../lib/exchangeRate";
 
 const surface = "wealth-surface text-[var(--gaia-text-default)]";
 const BIRTH_DATE_UTC = new Date(Date.UTC(1991, 7, 10));
+const BANK_RATE_BASE_YEAR = 2025;
+const BANK_RATE_BASE_PERCENT = 17;
 const MIN_ANNUAL_RATE = 10;
 const REINVEST_STEP = 1000;
 
@@ -66,6 +68,16 @@ type PlanProjectionRow = {
   }[];
 };
 
+type RateInstrument = {
+  startDate: string;
+  termMonths: number;
+  annualRatePercent: number;
+};
+
+type ProjectionInstrument = RateInstrument & {
+  principal: number;
+};
+
 type ProjectionColumnKey =
   | "year"
   | "age"
@@ -93,8 +105,8 @@ const PLAN_PROJECTION_COLUMN_LABELS: Record<ProjectionColumnKey, string> = {
   year: "Year",
   age: "Age",
   startBalance: "Starting balance",
-  deposit: "Deposit",
-  depositYear: "Deposit per year",
+  deposit: "Invested",
+  depositYear: "Invested per year",
   revenue: "Revenue",
   endBalance: "Ending balance",
   rate: "Rate",
@@ -144,30 +156,6 @@ function toIsoDate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function eligiblePrincipalForMonth(
-  instruments: WealthInstrument[],
-  planCurrency: string,
-  fxRate: number | null,
-  monthKey: string,
-): number {
-  let total = 0;
-  for (const inst of instruments) {
-    const principalRaw = Number(inst.principal) || 0;
-    if (principalRaw <= 0) continue;
-    const termMonths = Math.max(0, Number(inst.termMonths) || 0);
-    if (!inst.startDate || termMonths <= 0) continue;
-    const elapsed = monthsBetween(inst.startDate, monthKey);
-    if (elapsed < 1 || elapsed > termMonths) continue;
-    total += convertToPlanCurrency(
-      principalRaw,
-      inst.currency,
-      planCurrency,
-      fxRate,
-    );
-  }
-  return total;
-}
-
 function convertToPlanCurrency(
   amount: number,
   currency: string,
@@ -184,6 +172,33 @@ function convertToPlanCurrency(
   return amount;
 }
 
+function bankRateForYear(year: number): number {
+  const drop = Math.max(0, year - BANK_RATE_BASE_YEAR);
+  return Math.max(MIN_ANNUAL_RATE, BANK_RATE_BASE_PERCENT - drop);
+}
+
+function initialRateForInstrument(inst: WealthInstrument): number {
+  const storedRate = Number(inst.annualRatePercent) || 0;
+  if (storedRate > 0) return storedRate;
+  const startYear = parseDayKey(inst.startDate).year;
+  return bankRateForYear(startYear);
+}
+
+function effectiveRateForMonth(inst: RateInstrument, monthKey: string): number {
+  const baseRate = Number(inst.annualRatePercent) || 0;
+  const termMonths = Math.max(0, Number(inst.termMonths) || 0);
+  if (!inst.startDate || termMonths <= 0) return baseRate;
+  const elapsed = monthsBetween(inst.startDate, monthKey);
+  if (elapsed < 0) return baseRate;
+  const renewalIndex = Math.floor(elapsed / termMonths);
+  if (renewalIndex <= 0) return baseRate;
+  const start = parseDayKey(inst.startDate);
+  const renewalMonths = termMonths * renewalIndex;
+  const totalMonths = start.year * 12 + (start.month - 1) + renewalMonths;
+  const renewalYear = Math.floor(totalMonths / 12);
+  return bankRateForYear(renewalYear);
+}
+
 function buildPlanProjectionRows(
   plan: WealthLevelDefinition,
   instruments: WealthInstrument[],
@@ -192,24 +207,36 @@ function buildPlanProjectionRows(
   todayKey: string,
 ): PlanProjectionRow[] {
   const todayDate = new Date(`${todayKey}T00:00:00Z`);
-  let baseRateWeighted = 0;
-  let totalPrincipal = 0;
-  for (const inst of instruments) {
-    const principalRaw = Number(inst.principal) || 0;
-    if (principalRaw <= 0) continue;
-    const principal = convertToPlanCurrency(
-      principalRaw,
-      inst.currency,
-      planCurrency,
-      fxRate,
-    );
-    totalPrincipal += principal;
-    baseRateWeighted += principal * (Number(inst.annualRatePercent) || 0);
-  }
+  const projectionInstruments: ProjectionInstrument[] = instruments
+    .map((inst) => {
+      const principalRaw = Number(inst.principal) || 0;
+      if (principalRaw <= 0) return null;
+      const termMonths = Math.max(0, Number(inst.termMonths) || 0);
+      if (!inst.startDate || termMonths <= 0) return null;
+      return {
+        principal: convertToPlanCurrency(
+          principalRaw,
+          inst.currency,
+          planCurrency,
+          fxRate,
+        ),
+        startDate: inst.startDate,
+        termMonths,
+        annualRatePercent: initialRateForInstrument(inst),
+      };
+    })
+    .filter((inst): inst is ProjectionInstrument => inst !== null);
 
+  const totalPrincipal = projectionInstruments.reduce(
+    (sum, inst) => sum + inst.principal,
+    0,
+  );
   if (totalPrincipal <= 0) return [];
-  const baseRate = baseRateWeighted / totalPrincipal;
-  let principal = totalPrincipal;
+  const baseRate =
+    projectionInstruments.reduce(
+      (sum, inst) => sum + inst.principal * inst.annualRatePercent,
+      0,
+    ) / totalPrincipal;
   let reinvestBucket = 0;
 
   const targetSavings = plan.minSavings ?? 0;
@@ -218,49 +245,55 @@ function buildPlanProjectionRows(
   const rows: PlanProjectionRow[] = [];
   let currentYear = todayDate.getUTCFullYear();
   let yearRow: PlanProjectionRow | null = null;
-  let monthsInYear = 0;
   let reached = false;
 
   const maxMonths = 720;
-  const firstMonthKey = toIsoDate(
-    new Date(Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1)),
-  );
-  const eligiblePrincipalFirstMonth = eligiblePrincipalForMonth(
-    instruments,
-    planCurrency,
-    fxRate,
-    firstMonthKey,
-  );
-
   for (let i = 0; i < maxMonths; i += 1) {
     const cursor = new Date(
       Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth() + i, 1),
     );
     const year = cursor.getUTCFullYear();
-    const yearOffset = year - todayDate.getUTCFullYear();
-    const effectiveRate = Math.max(MIN_ANNUAL_RATE, baseRate - yearOffset);
+    const monthKey = toIsoDate(cursor);
 
     if (year !== currentYear) {
       if (yearRow) {
-        yearRow.revenue = monthsInYear ? yearRow.revenue / monthsInYear : 0;
         rows.push(yearRow);
       }
       currentYear = year;
-      monthsInYear = 0;
       yearRow = null;
     }
 
-    const startBalance = principal + reinvestBucket;
-    const principalForInterest = i === 0 ? eligiblePrincipalFirstMonth : principal;
-    const monthlyRevenue =
-      principalForInterest > 0
-        ? (principalForInterest * effectiveRate) / 100 / 12
-        : 0;
+    const startPrincipal = projectionInstruments.reduce(
+      (sum, inst) => sum + inst.principal,
+      0,
+    );
+    const startBalance = startPrincipal + reinvestBucket;
+    let eligiblePrincipal = 0;
+    let monthlyRevenue = 0;
+    for (const inst of projectionInstruments) {
+      const elapsed = monthsBetween(inst.startDate, monthKey);
+      if (elapsed < 1) continue;
+      const rate = effectiveRateForMonth(inst, monthKey);
+      eligiblePrincipal += inst.principal;
+      monthlyRevenue += (inst.principal * rate) / 100 / 12;
+    }
+    const effectiveRate =
+      eligiblePrincipal > 0
+        ? (monthlyRevenue / eligiblePrincipal) * 12 * 100
+        : baseRate;
     const bucketTotal = reinvestBucket + monthlyRevenue;
     const investable = Math.floor(bucketTotal / REINVEST_STEP) * REINVEST_STEP;
     reinvestBucket = bucketTotal - investable;
-    principal += investable;
-    const endBalance = principal + reinvestBucket;
+    if (investable > 0) {
+      projectionInstruments.push({
+        principal: investable,
+        startDate: monthKey,
+        termMonths: 36,
+        annualRatePercent: bankRateForYear(year),
+      });
+    }
+    const endPrincipal = startPrincipal + investable;
+    const endBalance = endPrincipal + reinvestBucket;
     const monthLabel = cursor.toLocaleDateString("en-US", { month: "short" });
 
     if (!yearRow) {
@@ -268,7 +301,7 @@ function buildPlanProjectionRows(
         year,
         age: calculateAge(new Date(Date.UTC(year, 11, 31)), BIRTH_DATE_UTC),
         startBalance,
-        deposit: principal,
+        deposit: endPrincipal,
         depositYear: investable,
         revenue: monthlyRevenue,
         endBalance,
@@ -279,7 +312,7 @@ function buildPlanProjectionRows(
             month: monthLabel,
             age: calculateAge(cursor, BIRTH_DATE_UTC),
             startBalance,
-            deposit: principal,
+            deposit: endPrincipal,
             depositYear: investable,
             revenue: monthlyRevenue,
             endBalance,
@@ -289,7 +322,7 @@ function buildPlanProjectionRows(
         ],
       };
     } else {
-      yearRow.deposit = principal;
+      yearRow.deposit = endPrincipal;
       yearRow.depositYear += investable;
       yearRow.revenue += monthlyRevenue;
       yearRow.endBalance = endBalance;
@@ -299,7 +332,7 @@ function buildPlanProjectionRows(
         month: monthLabel,
         age: calculateAge(cursor, BIRTH_DATE_UTC),
         startBalance,
-        deposit: principal,
+        deposit: endPrincipal,
         depositYear: investable,
         revenue: monthlyRevenue,
         endBalance,
@@ -308,7 +341,6 @@ function buildPlanProjectionRows(
       });
     }
 
-    monthsInYear += 1;
     if (endBalance >= targetSavings && monthlyRevenue >= targetRevenue) {
       reached = true;
       break;
@@ -316,7 +348,6 @@ function buildPlanProjectionRows(
   }
 
   if (yearRow) {
-    yearRow.revenue = monthsInYear ? yearRow.revenue / monthsInYear : 0;
     rows.push(yearRow);
   }
 
@@ -843,30 +874,19 @@ export default function WealthLevelsPage() {
                                 </p>
                               </div>
                               <div className="text-xs text-slate-400">
-                                Reinvests every {REINVEST_STEP}. Rate drops 1% per year to a 10% floor.
+                                Reinvests every {REINVEST_STEP}. Certificates lock for their term and renew
+                                at the bank rate (17% in 2025, -1% per year to a 10% floor).
                               </div>
                             </div>
                             <div className="mt-3 border-t border-slate-800 pt-3">
                               <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                                <div>
-                                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                    {currentPlan?.shortLabel ?? "Current plan"}
-                                  </p>
-                                  <p className="mt-1 text-xs text-slate-300">
+                                <div className="text-lg font-bold leading-snug text-white md:text-xl">
+                                  <p>{currentPlan?.shortLabel ?? "Current plan"}</p>
+                                  <p className="mt-2">
                                     {currentPlan?.description ?? "No plan available yet."}
                                   </p>
-                                </div>
-                                <div className="text-xs text-slate-300">
-                                  Target savings:{" "}
-                                  <span className="font-semibold text-white">
-                                    {targetSavingsLabel}
-                                  </span>
-                                  <span className="ml-3">
-                                    Target revenue:{" "}
-                                    <span className="font-semibold text-white">
-                                      {targetRevenueLabel}
-                                    </span>
-                                  </span>
+                                  <p className="mt-2">Target savings: {targetSavingsLabel}</p>
+                                  <p>Target Monthly revenue: {targetRevenueLabel}</p>
                                 </div>
                               </div>
                               <div className="mt-3 overflow-x-hidden">

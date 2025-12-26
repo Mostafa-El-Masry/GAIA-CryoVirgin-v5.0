@@ -14,6 +14,8 @@ import { getTodayInKuwait } from "../lib/summary";
 
 const HORIZON_OPTIONS = [12, 24, 36] as const;
 const BIRTH_DATE_UTC = new Date(Date.UTC(1991, 7, 10));
+const BANK_RATE_BASE_YEAR = 2025;
+const BANK_RATE_BASE_PERCENT = 17;
 const MIN_ANNUAL_RATE = 10;
 const REINVEST_STEP = 1000;
 
@@ -52,21 +54,31 @@ function monthsBetween(start: string, end: string): number {
   return (e.year - s.year) * 12 + (e.month - s.month);
 }
 
-function eligiblePrincipalForMonth(
-  instruments: WealthInstrument[],
-  monthKey: string,
-): number {
-  let total = 0;
-  for (const inst of instruments) {
-    const principal = Number(inst.principal) || 0;
-    if (principal <= 0) continue;
-    const termMonths = Math.max(0, Number(inst.termMonths) || 0);
-    if (!inst.startDate || termMonths <= 0) continue;
-    const elapsed = monthsBetween(inst.startDate, monthKey);
-    if (elapsed < 1 || elapsed > termMonths) continue;
-    total += principal;
-  }
-  return total;
+function bankRateForYear(year: number): number {
+  const drop = Math.max(0, year - BANK_RATE_BASE_YEAR);
+  return Math.max(MIN_ANNUAL_RATE, BANK_RATE_BASE_PERCENT - drop);
+}
+
+function initialRateForInstrument(inst: WealthInstrument): number {
+  const storedRate = Number(inst.annualRatePercent) || 0;
+  if (storedRate > 0) return storedRate;
+  const startYear = parseDayKey(inst.startDate).year;
+  return bankRateForYear(startYear);
+}
+
+function effectiveRateForMonth(inst: RateInstrument, monthKey: string): number {
+  const baseRate = Number(inst.annualRatePercent) || 0;
+  const termMonths = Math.max(0, Number(inst.termMonths) || 0);
+  if (!inst.startDate || termMonths <= 0) return baseRate;
+  const elapsed = monthsBetween(inst.startDate, monthKey);
+  if (elapsed < 0) return baseRate;
+  const renewalIndex = Math.floor(elapsed / termMonths);
+  if (renewalIndex <= 0) return baseRate;
+  const start = parseDayKey(inst.startDate);
+  const renewalMonths = termMonths * renewalIndex;
+  const totalMonths = start.year * 12 + (start.month - 1) + renewalMonths;
+  const renewalYear = Math.floor(totalMonths / 12);
+  return bankRateForYear(renewalYear);
 }
 
 function calculateAge(today: Date, birthDate: Date): number {
@@ -102,6 +114,16 @@ type AgeProjectionRow = {
     rate: number;
     uninvested: number;
   }[];
+};
+
+type RateInstrument = {
+  startDate: string;
+  termMonths: number;
+  annualRatePercent: number;
+};
+
+type ProjectionInstrument = RateInstrument & {
+  principal: number;
 };
 
 type ProjectionColumnKey =
@@ -211,18 +233,30 @@ export default function WealthProjectionsPage() {
     const currentAge = calculateAge(todayDate, BIRTH_DATE_UTC);
     if (currentAge >= 60) return [] as AgeProjectionRow[];
 
-    let baseRateWeighted = 0;
-    let totalPrincipal = 0;
-    for (const inst of instruments) {
-      const principal = Number(inst.principal) || 0;
-      const baseRate = Number(inst.annualRatePercent) || 0;
-      if (principal <= 0) continue;
-      totalPrincipal += principal;
-      baseRateWeighted += principal * baseRate;
-    }
+    const projectionInstruments: ProjectionInstrument[] = instruments
+      .map((inst) => {
+        const principal = Number(inst.principal) || 0;
+        const termMonths = Math.max(0, Number(inst.termMonths) || 0);
+        if (principal <= 0 || !inst.startDate || termMonths <= 0) return null;
+        return {
+          principal,
+          startDate: inst.startDate,
+          termMonths,
+          annualRatePercent: initialRateForInstrument(inst),
+        };
+      })
+      .filter((inst): inst is ProjectionInstrument => inst !== null);
+
+    const totalPrincipal = projectionInstruments.reduce(
+      (sum, inst) => sum + inst.principal,
+      0,
+    );
     if (totalPrincipal <= 0) return [] as AgeProjectionRow[];
-    const baseRate = baseRateWeighted / totalPrincipal;
-    let principal = totalPrincipal;
+    const baseRate =
+      projectionInstruments.reduce(
+        (sum, inst) => sum + inst.principal * inst.annualRatePercent,
+        0,
+      ) / totalPrincipal;
     let reinvestBucket = 0;
 
     const startDate = new Date(
@@ -232,35 +266,47 @@ export default function WealthProjectionsPage() {
       Date.UTC(BIRTH_DATE_UTC.getUTCFullYear() + 60, BIRTH_DATE_UTC.getUTCMonth(), 1),
     );
     const rowsByYear = new Map<number, AgeProjectionRow>();
-    const startMonthKey = startDate.toISOString().slice(0, 10);
-    const eligiblePrincipalFirstMonth = eligiblePrincipalForMonth(
-      instruments,
-      startMonthKey,
-    );
 
     for (
-      let cursor = new Date(startDate), monthIndex = 0;
+      let cursor = new Date(startDate);
       cursor <= endDate;
-      cursor = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1)),
-        monthIndex += 1
+      cursor = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1))
     ) {
       const year = cursor.getUTCFullYear();
-      const yearOffset = year - todayDate.getUTCFullYear();
-      const effectiveRate = Math.max(MIN_ANNUAL_RATE, baseRate - yearOffset);
+      const monthKey = cursor.toISOString().slice(0, 10);
+      let eligiblePrincipal = 0;
+      let monthlyRevenue = 0;
+      for (const inst of projectionInstruments) {
+        const elapsed = monthsBetween(inst.startDate, monthKey);
+        if (elapsed < 1) continue;
+        const rate = effectiveRateForMonth(inst, monthKey);
+        eligiblePrincipal += inst.principal;
+        monthlyRevenue += (inst.principal * rate) / 100 / 12;
+      }
+      const effectiveRate =
+        eligiblePrincipal > 0
+          ? (monthlyRevenue / eligiblePrincipal) * 12 * 100
+          : baseRate;
       const monthLabel = cursor.toLocaleDateString("en-US", { month: "short" });
       const monthAge = calculateAge(cursor, BIRTH_DATE_UTC);
-      const startBalance = principal + reinvestBucket;
-      const principalForInterest =
-        monthIndex === 0 ? eligiblePrincipalFirstMonth : principal;
-      const monthlyRevenue =
-        principalForInterest > 0
-          ? (principalForInterest * effectiveRate) / 100 / 12
-          : 0;
+      const startPrincipal = projectionInstruments.reduce(
+        (sum, inst) => sum + inst.principal,
+        0,
+      );
+      const startBalance = startPrincipal + reinvestBucket;
       const bucketTotal = reinvestBucket + monthlyRevenue;
       const investable = Math.floor(bucketTotal / REINVEST_STEP) * REINVEST_STEP;
       reinvestBucket = bucketTotal - investable;
-      principal += investable;
-      const endBalance = principal + reinvestBucket;
+      if (investable > 0) {
+        projectionInstruments.push({
+          principal: investable,
+          startDate: monthKey,
+          termMonths: 36,
+          annualRatePercent: bankRateForYear(year),
+        });
+      }
+      const endPrincipal = startPrincipal + investable;
+      const endBalance = endPrincipal + reinvestBucket;
 
       const existing = rowsByYear.get(year);
       if (!existing) {
@@ -268,7 +314,7 @@ export default function WealthProjectionsPage() {
           year,
           age: calculateAge(new Date(Date.UTC(year, 11, 31)), BIRTH_DATE_UTC),
           startBalance,
-          deposit: principal,
+          deposit: endPrincipal,
           depositYear: investable,
           revenue: monthlyRevenue,
           endBalance,
@@ -279,7 +325,7 @@ export default function WealthProjectionsPage() {
               month: monthLabel,
               age: monthAge,
               startBalance,
-              deposit: principal,
+              deposit: endPrincipal,
               depositYear: investable,
               revenue: monthlyRevenue,
               endBalance,
@@ -289,7 +335,7 @@ export default function WealthProjectionsPage() {
           ],
         });
       } else {
-        existing.deposit = principal;
+        existing.deposit = endPrincipal;
         existing.depositYear += investable;
         existing.revenue += monthlyRevenue;
         existing.endBalance = endBalance;
@@ -299,7 +345,7 @@ export default function WealthProjectionsPage() {
           month: monthLabel,
           age: monthAge,
           startBalance,
-          deposit: principal,
+          deposit: endPrincipal,
           depositYear: investable,
           revenue: monthlyRevenue,
           endBalance,
@@ -309,10 +355,7 @@ export default function WealthProjectionsPage() {
       }
     }
 
-    return Array.from(rowsByYear.values()).map((row) => ({
-      ...row,
-      revenue: row.months.length ? row.revenue / row.months.length : 0,
-    }));
+    return Array.from(rowsByYear.values());
   }, [instruments, today]);
 
   const byCurrency = useMemo(() => {
@@ -611,9 +654,8 @@ export default function WealthProjectionsPage() {
       <section className={`${surface} p-5 md:p-6`}>
         <h2 className="text-sm font-semibold text-white">Age projection to 60</h2>
         <p className="mt-1 text-xs text-slate-400">
-          Assumes certificates renew every 3 years, principal stays constant, and the annual rate
-          drops 1% per year until it floors at 10%. Revenue is reinvested in chunks of{" "}
-          {REINVEST_STEP}.
+          Assumes certificates lock for their term and renew at the bank rate (17% in 2025, -1% per
+          year to a 10% floor). Revenue is reinvested in chunks of {REINVEST_STEP}.
         </p>
         <div className="mt-4 overflow-x-hidden">
           <table className="min-w-full table-fixed border-separate border-spacing-y-2 text-left text-xs text-white">
