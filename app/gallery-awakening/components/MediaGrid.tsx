@@ -7,7 +7,7 @@ import { MediaCard } from './MediaCard';
 interface MediaGridProps {
   title: string;
   items: MediaItem[];
-  typeFilter: MediaType;
+  typeFilter?: MediaType;
   page?: number;
   perPage?: number;
   onPageChange?: (page: number) => void;
@@ -29,16 +29,14 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
   onDeleteItem,
   onRenameItem,
 }) => {
-  const filtered = useMemo(
-    () => items.filter((item) => item.type === typeFilter),
-    [items, typeFilter]
-  );
+  const filtered = useMemo(() => {
+    if (!typeFilter) return items;
+    return items.filter((item) => item.type === typeFilter);
+  }, [items, typeFilter]);
 
   if (filtered.length === 0) {
     return null;
   }
-
-  const imageItems = filtered.filter((i) => i.type === 'image');
 
   const effective =
     typeof maxVisibleItems === "number" && maxVisibleItems >= 0
@@ -53,24 +51,29 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
   const paged = effective.slice(start, end);
 
   return (
-    <section className="space-y-4 rounded-3xl bg-base-100/80 p-4">
-      <header className="flex items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold text-base-content">{title}</h2>
+    <section className="space-y-5">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-base-content/60">
+            Feed
+          </p>
+          <h2 className="text-2xl font-semibold text-base-content">{title}</h2>
+        </div>
         <p className="text-xs text-base-content/70">
-          {filtered.length} {typeFilter === 'image' ? 'images' : 'videos'}
+          {filtered.length} {typeFilter ? (typeFilter === "image" ? "images" : "videos") : "items"}
         </p>
       </header>
 
-      <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
+      <div className="mx-auto flex max-w-3xl flex-col gap-6 lg:max-w-4xl">
         {paged.map((item) => (
-          <div key={item.id} className="mb-4 break-inside-avoid">
-            <MediaCard
-              item={item}
-              allowDelete={allowDelete}
-              onDelete={() => onDeleteItem?.(item.id)}
-              onRename={(nextTitle) => onRenameItem?.(item.id, nextTitle)}
-            />
-          </div>
+          <MediaCard
+            key={item.id}
+            item={item}
+            variant="feed"
+            allowDelete={allowDelete}
+            onDelete={() => onDeleteItem?.(item.id)}
+            onRename={(nextTitle) => onRenameItem?.(item.id, nextTitle)}
+          />
         ))}
       </div>
 
