@@ -22,6 +22,30 @@ function hostname(url?: string) {
   try { return url ? new URL(url).hostname : ""; } catch { return ""; }
 }
 
+function normalizeValue(value?: string, lower = false): string {
+  const trimmed = value?.trim() ?? "";
+  return lower ? trimmed.toLowerCase() : trimmed;
+}
+
+function normalizeUrl(value?: string): string {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    return `${url.protocol}//${url.hostname}${url.pathname}`.toLowerCase();
+  } catch {
+    return normalizeValue(value, true);
+  }
+}
+
+function entryKey(entry: EleuEntry): string {
+  return [
+    normalizeUrl(entry.url),
+    normalizeValue(entry.username, true),
+    normalizeValue(entry.password),
+    normalizeValue(entry.title, true),
+  ].join("|");
+}
+
 export default function Vault({ cryptoKey, initial, onLock }: Props) {
   const [vault, setVault] = useState<EleuVault>(initial);
   const [q, setQ] = useState("");
@@ -71,11 +95,29 @@ export default function Vault({ cryptoKey, initial, onLock }: Props) {
   }
 
   async function importEntries(entries: EleuEntry[]) {
-    if (!entries.length) return;
-    const list = [...entries, ...vault.entries];
-    const next = { entries: list, updatedAt: Date.now() };
+    if (!entries.length) return { added: 0, skipped: 0 };
+    const existingKeys = new Set(vault.entries.map(entryKey));
+    const unique: EleuEntry[] = [];
+    let skipped = 0;
+
+    for (const entry of entries) {
+      const key = entryKey(entry);
+      if (existingKeys.has(key)) {
+        skipped += 1;
+        continue;
+      }
+      existingKeys.add(key);
+      unique.push(entry);
+    }
+
+    if (!unique.length) {
+      return { added: 0, skipped };
+    }
+
+    const next = { entries: [...unique, ...vault.entries], updatedAt: Date.now() };
     setVault(next);
     await persist(next);
+    return { added: unique.length, skipped };
   }
 
   function onExport() {
@@ -209,4 +251,3 @@ export default function Vault({ cryptoKey, initial, onLock }: Props) {
     </div>
   );
 }
-

@@ -5,7 +5,7 @@ import type { EleuEntry, EleuVault } from "../types";
 import { uid } from "../lib/uid";
 
 type Props = {
-  onImport: (entries: EleuEntry[]) => Promise<void>;
+  onImport: (entries: EleuEntry[]) => Promise<{ added: number; skipped: number }>;
 };
 
 function parseCSV(text: string): string[][] {
@@ -77,8 +77,14 @@ export default function ImportChrome({ onImport }: Props) {
     const text = await file.text();
     const rows = parseCSV(text);
     const entries = toEntries(rows);
-    await onImport(entries);
-    alert(`Imported ${entries.length} entries.`);
+    const result = await onImport(entries);
+    const added = result?.added ?? entries.length;
+    const skipped = result?.skipped ?? 0;
+    alert(
+      skipped > 0
+        ? `Imported ${added} entries. Skipped ${skipped} duplicates.`
+        : `Imported ${added} entries.`
+    );
   }
 
   return (

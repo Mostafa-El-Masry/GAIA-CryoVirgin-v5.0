@@ -45,21 +45,6 @@ export default function HealthShell({ children }: { children: ReactNode }) {
             </div>
           </div>
 
-          <div className="mb-6 rounded-xl border gaia-border bg-[var(--gaia-surface-soft)] p-3">
-            <div className="flex items-center justify-between text-xs gaia-muted">
-              <span>Baseline completeness</span>
-              <span className="text-[var(--gaia-contrast-bg)]">20%</span>
-            </div>
-            <div className="mt-2 h-2 w-full rounded-full bg-[var(--gaia-border)]">
-              <div className="h-full w-1/5 rounded-full bg-[var(--gaia-contrast-bg)]" />
-            </div>
-            <Link
-              href="/settings"
-              className="health-button mt-3 inline-flex w-full items-center justify-center px-3 py-2 text-[12px] font-semibold text-[var(--gaia-text-strong)]"
-            >
-              Complete profile
-            </Link>
-          </div>
 
           <nav className="space-y-1">
             {navItems.map((item) => {
