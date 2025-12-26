@@ -125,6 +125,49 @@ function calculateAge(today: Date, birthDate: Date): number {
   return Math.max(0, age);
 }
 
+function parseDayKey(day: string): { year: number; month: number; day: number } {
+  const [y, m, d] = day.split("-").map((v) => parseInt(v, 10));
+  return {
+    year: Number.isFinite(y) ? y : 1970,
+    month: Number.isFinite(m) ? m : 1,
+    day: Number.isFinite(d) ? d : 1,
+  };
+}
+
+function monthsBetween(start: string, end: string): number {
+  const s = parseDayKey(start);
+  const e = parseDayKey(end);
+  return (e.year - s.year) * 12 + (e.month - s.month);
+}
+
+function toIsoDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function eligiblePrincipalForMonth(
+  instruments: WealthInstrument[],
+  planCurrency: string,
+  fxRate: number | null,
+  monthKey: string,
+): number {
+  let total = 0;
+  for (const inst of instruments) {
+    const principalRaw = Number(inst.principal) || 0;
+    if (principalRaw <= 0) continue;
+    const termMonths = Math.max(0, Number(inst.termMonths) || 0);
+    if (!inst.startDate || termMonths <= 0) continue;
+    const elapsed = monthsBetween(inst.startDate, monthKey);
+    if (elapsed < 1 || elapsed > termMonths) continue;
+    total += convertToPlanCurrency(
+      principalRaw,
+      inst.currency,
+      planCurrency,
+      fxRate,
+    );
+  }
+  return total;
+}
+
 function convertToPlanCurrency(
   amount: number,
   currency: string,
@@ -179,6 +222,16 @@ function buildPlanProjectionRows(
   let reached = false;
 
   const maxMonths = 720;
+  const firstMonthKey = toIsoDate(
+    new Date(Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1)),
+  );
+  const eligiblePrincipalFirstMonth = eligiblePrincipalForMonth(
+    instruments,
+    planCurrency,
+    fxRate,
+    firstMonthKey,
+  );
+
   for (let i = 0; i < maxMonths; i += 1) {
     const cursor = new Date(
       Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth() + i, 1),
@@ -198,7 +251,11 @@ function buildPlanProjectionRows(
     }
 
     const startBalance = principal + reinvestBucket;
-    const monthlyRevenue = i === 0 ? 0 : (principal * effectiveRate) / 100 / 12;
+    const principalForInterest = i === 0 ? eligiblePrincipalFirstMonth : principal;
+    const monthlyRevenue =
+      principalForInterest > 0
+        ? (principalForInterest * effectiveRate) / 100 / 12
+        : 0;
     const bucketTotal = reinvestBucket + monthlyRevenue;
     const investable = Math.floor(bucketTotal / REINVEST_STEP) * REINVEST_STEP;
     reinvestBucket = bucketTotal - investable;
@@ -807,7 +864,7 @@ export default function WealthLevelsPage() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
           <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
@@ -829,6 +886,37 @@ export default function WealthLevelsPage() {
                 </span>
               </span>
             </div>
+          </div>
+          <div className="mt-3 border-t border-slate-800 pt-3">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Coverage
+            </h3>
+            <dl className="mt-2 space-y-1 text-xs text-slate-200">
+              <div className="flex items-center justify-between gap-2">
+                <dt>Estimated monthly expenses</dt>
+                <dd className="font-semibold text-white">
+                  {snapshot.estimatedMonthlyExpenses
+                    ? formatCurrency(snapshot.estimatedMonthlyExpenses, planCurrency)
+                    : "-"}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <dt>Monthly interest (passive)</dt>
+                <dd className="font-semibold text-white">
+                  {formatCurrency(snapshot.monthlyPassiveIncome ?? 0, planCurrency)}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <dt>Interest coverage</dt>
+                <dd className="font-semibold text-white">
+                  {formatPercent(snapshot.coveragePercent)}
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-2 text-[11px] text-slate-400">
+              Coverage is how much of your estimated monthly expenses could be paid by interest alone,
+              in EGP.
+            </p>
           </div>
 
           {currentPlanRows.length > 0 ? (
@@ -887,7 +975,7 @@ export default function WealthLevelsPage() {
                   {currentPlanRows.map((row) => (
                     <Fragment key={row.year}>
                       <tr
-                        className="group cursor-pointer text-black transition"
+                        className="group cursor-pointer text-white transition"
                         onClick={() =>
                           setExpandedYear((prev) => {
                             if (prev === row.year) {
@@ -926,7 +1014,7 @@ export default function WealthLevelsPage() {
                                   : "max-h-0 opacity-0"
                               }`}
                             >
-                              <table className="w-full table-fixed border-separate border-spacing-y-1 text-left text-xs text-black">
+                              <table className="w-full table-fixed border-separate border-spacing-y-1 text-left text-xs text-white">
                                 <colgroup>
                                   {planProjectionColumns.map((key) => (
                                     <col
@@ -976,77 +1064,6 @@ export default function WealthLevelsPage() {
             </p>
           )}
         </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-3">
-        <article className={`${surface} p-4`}>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Current plan
-          </h2>
-          <p className="mt-2 text-sm font-semibold text-white">
-            {currentPlan ? currentPlan.shortLabel : "Not enough data yet"}
-          </p>
-          <p className="mt-1 text-xs text-slate-400">
-            {currentPlan
-              ? currentPlan.description
-              : "Once GAIA sees balances and investments, it will place you on the ladder."}
-          </p>
-        </article>
-
-        <article className={`${surface} p-4`}>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Coverage
-          </h2>
-          <dl className="mt-2 space-y-1 text-xs text-slate-200">
-            <div className="flex items-center justify-between gap-2">
-              <dt>Estimated monthly expenses</dt>
-              <dd className="font-semibold text-white">
-                {snapshot.estimatedMonthlyExpenses
-                  ? formatCurrency(snapshot.estimatedMonthlyExpenses, planCurrency)
-                  : "-"}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <dt>Monthly interest (passive)</dt>
-              <dd className="font-semibold text-white">
-                {formatCurrency(snapshot.monthlyPassiveIncome ?? 0, planCurrency)}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <dt>Interest coverage</dt>
-              <dd className="font-semibold text-white">
-                {formatPercent(snapshot.coveragePercent)}
-              </dd>
-            </div>
-          </dl>
-          <p className="mt-2 text-[11px] text-slate-400">
-            Coverage is how much of your estimated monthly expenses could be paid by interest alone,
-            in EGP.
-          </p>
-        </article>
-
-        <article className={`${surface} p-4`}>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Runway
-          </h2>
-          <dl className="mt-2 space-y-1 text-xs text-slate-200">
-            <div className="flex items-center justify-between gap-2">
-              <dt>Investment savings (EGP)</dt>
-              <dd className="font-semibold text-white">
-                {formatCurrency(totalSavings, planCurrency)}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <dt>Months of expenses saved</dt>
-              <dd className="font-semibold text-white">
-                {formatMonths(snapshot.monthsOfExpensesSaved)}
-              </dd>
-            </div>
-          </dl>
-          <p className="mt-2 text-[11px] text-slate-400">
-            This is an approximate runway in EGP. Other currencies and assets add extra safety on top.
-          </p>
-        </article>
       </section>
 
     </main>

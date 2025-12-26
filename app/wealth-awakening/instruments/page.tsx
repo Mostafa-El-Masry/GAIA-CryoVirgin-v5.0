@@ -162,7 +162,7 @@ function WealthInstrumentsContent() {
                   currency: "EGP",
                   principal: 0,
                   startDate: today,
-                  termMonths: 12,
+                  termMonths: 36,
                   annualRatePercent: 0,
                   payoutFrequency: "monthly-interest" as PayoutFrequency,
                   autoRenew: false,
@@ -535,7 +535,7 @@ function WealthInstrumentsContent() {
                                   editing.currency.trim().toUpperCase() ||
                                   "EGP",
                                 principal: Number(editing.principal) || 0,
-                                termMonths: Number(editing.termMonths) || 0,
+                                termMonths: Number(editing.termMonths) || 36,
                                 annualRatePercent:
                                   Number(editing.annualRatePercent) || 0,
                                 payoutFrequency:

@@ -28,6 +28,47 @@ function formatCurrency(value: number, currency: string) {
   }).format(value);
 }
 
+function computeEndDate(startDate: string, termMonths: number): string {
+  if (!startDate) return "-";
+  const d = new Date(`${startDate}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return "-";
+  d.setUTCMonth(d.getUTCMonth() + (termMonths || 0));
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function parseDayKey(day: string): { year: number; month: number; day: number } {
+  const [y, m, d] = day.split("-").map((v) => parseInt(v, 10));
+  return {
+    year: Number.isFinite(y) ? y : 1970,
+    month: Number.isFinite(m) ? m : 1,
+    day: Number.isFinite(d) ? d : 1,
+  };
+}
+
+function monthsBetween(start: string, end: string): number {
+  const s = parseDayKey(start);
+  const e = parseDayKey(end);
+  return (e.year - s.year) * 12 + (e.month - s.month);
+}
+
+function eligiblePrincipalForMonth(
+  instruments: WealthInstrument[],
+  monthKey: string,
+): number {
+  let total = 0;
+  for (const inst of instruments) {
+    const principal = Number(inst.principal) || 0;
+    if (principal <= 0) continue;
+    const termMonths = Math.max(0, Number(inst.termMonths) || 0);
+    if (!inst.startDate || termMonths <= 0) continue;
+    const elapsed = monthsBetween(inst.startDate, monthKey);
+    if (elapsed < 1 || elapsed > termMonths) continue;
+    total += principal;
+  }
+  return total;
+}
+
 function calculateAge(today: Date, birthDate: Date): number {
   let age = today.getUTCFullYear() - birthDate.getUTCFullYear();
   const hasBirthdayPassed =
@@ -191,6 +232,11 @@ export default function WealthProjectionsPage() {
       Date.UTC(BIRTH_DATE_UTC.getUTCFullYear() + 60, BIRTH_DATE_UTC.getUTCMonth(), 1),
     );
     const rowsByYear = new Map<number, AgeProjectionRow>();
+    const startMonthKey = startDate.toISOString().slice(0, 10);
+    const eligiblePrincipalFirstMonth = eligiblePrincipalForMonth(
+      instruments,
+      startMonthKey,
+    );
 
     for (
       let cursor = new Date(startDate), monthIndex = 0;
@@ -204,8 +250,12 @@ export default function WealthProjectionsPage() {
       const monthLabel = cursor.toLocaleDateString("en-US", { month: "short" });
       const monthAge = calculateAge(cursor, BIRTH_DATE_UTC);
       const startBalance = principal + reinvestBucket;
+      const principalForInterest =
+        monthIndex === 0 ? eligiblePrincipalFirstMonth : principal;
       const monthlyRevenue =
-        monthIndex === 0 ? 0 : (principal * effectiveRate) / 100 / 12;
+        principalForInterest > 0
+          ? (principalForInterest * effectiveRate) / 100 / 12
+          : 0;
       const bucketTotal = reinvestBucket + monthlyRevenue;
       const investable = Math.floor(bucketTotal / REINVEST_STEP) * REINVEST_STEP;
       reinvestBucket = bucketTotal - investable;
@@ -306,28 +356,28 @@ export default function WealthProjectionsPage() {
     if (isMonth) {
       const monthBg = "bg-blue-600/10";
       if (key === "year") {
-        return `${base} pr-2 pl-4 text-[11px] text-black ${monthBg} ${align}`.trim();
+        return `${base} pr-2 pl-4 text-[11px] text-white ${monthBg} ${align}`.trim();
       }
       if (key === "age") {
-        return `${base} px-2 text-[11px] text-black ${monthBg} ${align}`.trim();
+        return `${base} px-2 text-[11px] text-white ${monthBg} ${align}`.trim();
       }
       if (key === "deposit" || key === "revenue" || key === "endBalance") {
-        return `${base} px-2 text-[11px] font-semibold text-black ${monthBg} ${align}`.trim();
+        return `${base} px-2 text-[11px] font-semibold text-white ${monthBg} ${align}`.trim();
       }
-      return `${base} px-2 text-[11px] text-black ${monthBg} ${align}`.trim();
+      return `${base} px-2 text-[11px] text-white ${monthBg} ${align}`.trim();
     }
 
     const hoverBg = "group-hover:bg-blue-600/12";
     if (key === "year") {
-      return `${base} pr-2 text-[11px] text-black ${hoverBg}`.trim();
+      return `${base} pr-2 text-[11px] text-white ${hoverBg}`.trim();
     }
     if (key === "age") {
-      return `${base} px-2 text-[11px] text-black ${hoverBg}`.trim();
+      return `${base} px-2 text-[11px] text-white ${hoverBg}`.trim();
     }
     if (key === "deposit" || key === "revenue" || key === "endBalance") {
-      return `${base} px-2 text-[11px] font-semibold text-black ${hoverBg} ${align}`.trim();
+      return `${base} px-2 text-[11px] font-semibold text-white ${hoverBg} ${align}`.trim();
     }
-    return `${base} px-2 text-[11px] text-black ${hoverBg} ${align}`.trim();
+    return `${base} px-2 text-[11px] text-white ${hoverBg} ${align}`.trim();
   };
 
   const renderYearCell = (key: ProjectionColumnKey, row: AgeProjectionRow) => {
@@ -492,6 +542,8 @@ export default function WealthProjectionsPage() {
                 <th className="px-3 py-2 text-right">Principal</th>
                 <th className="px-3 py-2 text-right">Annual rate</th>
                 <th className="px-3 py-2 text-right">Term</th>
+                <th className="px-3 py-2 text-right">Start date</th>
+                <th className="px-3 py-2 text-right">End date</th>
                 <th className="px-3 py-2 text-right">Monthly interest</th>
                 <th className="px-3 py-2 text-right">Interest over horizon</th>
               </tr>
@@ -501,6 +553,7 @@ export default function WealthProjectionsPage() {
                 const monthly = estimateMonthlyInterest(inst);
                 const total = estimateTotalInterestOverHorizon(inst, horizon, today);
                 const endMonth = instrumentEndMonth(inst);
+                const endDate = computeEndDate(inst.startDate, inst.termMonths);
                 return (
                   <tr key={inst.id} className="border-b border-slate-800 last:border-b-0">
                     <td className="py-2 pr-3 align-top">
@@ -523,6 +576,12 @@ export default function WealthProjectionsPage() {
                     <td className="px-3 py-2 align-top text-right text-[11px] text-slate-300">
                       {inst.termMonths} m
                     </td>
+                    <td className="px-3 py-2 align-top text-right text-[11px] text-slate-300">
+                      {inst.startDate}
+                    </td>
+                    <td className="px-3 py-2 align-top text-right text-[11px] text-slate-300">
+                      {endDate}
+                    </td>
                     <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-white">
                       {formatCurrency(monthly, inst.currency)}
                     </td>
@@ -534,7 +593,7 @@ export default function WealthProjectionsPage() {
               })}
               {instruments.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-4 text-center text-xs text-slate-400">
+                  <td colSpan={9} className="py-4 text-center text-xs text-slate-400">
                     No investments defined yet, so there is nothing to project yet.
                   </td>
                 </tr>
@@ -557,14 +616,14 @@ export default function WealthProjectionsPage() {
           {REINVEST_STEP}.
         </p>
         <div className="mt-4 overflow-x-hidden">
-          <table className="min-w-full table-fixed border-separate border-spacing-y-2 text-left text-xs text-black">
+          <table className="min-w-full table-fixed border-separate border-spacing-y-2 text-left text-xs text-white">
             <colgroup>
               {projectionColumns.map((key) => (
                 <col key={key} style={{ width: PROJECTION_COLUMN_WIDTHS[key] }} />
               ))}
             </colgroup>
             <thead>
-              <tr className="border-b border-slate-800 text-[11px] uppercase tracking-wide text-black">
+              <tr className="border-b border-slate-800 text-[11px] uppercase tracking-wide text-white">
                 {projectionColumns.map((key) => {
                   const isRight =
                     key !== "year" && key !== "age";
@@ -612,7 +671,7 @@ export default function WealthProjectionsPage() {
               {ageProjectionRows.map((row) => (
                 <Fragment key={row.year}>
                   <tr
-                    className="group cursor-pointer text-black transition"
+                    className="group cursor-pointer text-white transition"
                     onClick={() =>
                       setExpandedYear((prev) => {
                         if (prev === row.year) {
@@ -651,7 +710,7 @@ export default function WealthProjectionsPage() {
                               : "max-h-0 opacity-0"
                           }`}
                         >
-                          <table className="w-full table-fixed border-separate border-spacing-y-1 text-left text-xs text-black">
+                          <table className="w-full table-fixed border-separate border-spacing-y-1 text-left text-xs text-white">
                             <colgroup>
                               {projectionColumns.map((key) => (
                                 <col

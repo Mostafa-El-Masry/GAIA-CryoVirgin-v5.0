@@ -41,8 +41,12 @@ export function estimateTotalInterestOverHorizon(
   horizonMonths: number,
   today?: DayKey,
 ): number {
-  const remaining = remainingTermMonths(inst, today);
-  const months = Math.max(0, Math.min(remaining || horizonMonths, horizonMonths));
+  const todayKey = today ?? getTodayInKuwait();
+  const elapsed = Math.max(0, monthsBetween(inst.startDate, todayKey));
+  const remaining = Math.max(0, inst.termMonths - elapsed);
+  const horizonLimit = Math.max(0, Math.min(remaining, horizonMonths));
+  const delay = elapsed === 0 ? 1 : 0;
+  const months = Math.max(0, horizonLimit - delay);
   const monthly = estimateMonthlyInterest(inst);
   return monthly * months;
 }
