@@ -14,8 +14,7 @@ const typeLabels: Record<WealthAccountType, string> = {
 
 const order: WealthAccountType[] = ["cash", "certificate", "investment", "other"];
 
-const surface =
-  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] text-[var(--gaia-text-default)] shadow-[0_18px_60px_rgba(0,0,0,0.18)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
 const WealthMap: FC<WealthMapProps> = ({ overview }) => {
   const grouped = new Map<WealthAccountType, typeof overview.accounts>();

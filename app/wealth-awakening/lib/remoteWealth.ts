@@ -161,3 +161,38 @@ export async function pushRemoteWealthAll(state: WealthState): Promise<boolean> 
     return false;
   }
 }
+
+export async function fetchRemoteFlowIds(): Promise<string[] | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  try {
+    const res = await supabase.from("wealth_flows").select("id");
+    if (res.error) {
+      console.warn("[Wealth] Supabase flow id fetch error", res.error);
+      return null;
+    }
+    return (res.data ?? []).map((row) => String(row.id));
+  } catch (err) {
+    console.warn("[Wealth] Supabase flow id fetch exception", err);
+    return null;
+  }
+}
+
+export async function deleteRemoteFlows(flowIds: string[]): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return false;
+  if (!flowIds.length) return true;
+
+  try {
+    const res = await supabase.from("wealth_flows").delete().in("id", flowIds);
+    if (res.error) {
+      console.warn("[Wealth] Supabase flow delete error", res.error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn("[Wealth] Supabase flow delete exception", err);
+    return false;
+  }
+}

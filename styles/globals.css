@@ -186,6 +186,162 @@ html[data-theme="dark"] body {
   color: color-mix(in srgb, var(--gaia-foreground) 35%, transparent) !important;
 }
 
+.wealth-theme {
+  --gaia-font-sans: "Manrope", "Sora", "SF Pro Display", "Segoe UI",
+    "Helvetica Neue", Arial, sans-serif;
+  --gaia-surface: #ffffff;
+  --gaia-surface-soft: #f5f6f8;
+  --gaia-border: #e5e7eb;
+  --gaia-foreground: #111827;
+  --gaia-muted: #7b8494;
+  --gaia-text-strong: #111827;
+  --gaia-text-default: #1f2937;
+  --gaia-text-muted: #7b8494;
+  --gaia-contrast-bg: #111827;
+  --gaia-contrast-text: #f8fafc;
+  --gaia-overlay: rgba(15, 23, 42, 0.08);
+  --gaia-accent: #8b5cf6;
+  --gaia-info: #8b5cf6;
+  --gaia-positive: #22c55e;
+  --gaia-negative: #ef4444;
+  --gaia-warning: #f59e0b;
+  --gaia-positive-border: color-mix(
+    in srgb,
+    var(--gaia-positive) 45%,
+    var(--gaia-surface) 55%
+  );
+  --gaia-positive-bg: color-mix(
+    in srgb,
+    var(--gaia-positive) 18%,
+    var(--gaia-surface) 82%
+  );
+  --gaia-info-border: color-mix(
+    in srgb,
+    var(--gaia-info) 45%,
+    var(--gaia-surface) 55%
+  );
+  --gaia-info-bg: color-mix(
+    in srgb,
+    var(--gaia-info) 18%,
+    var(--gaia-surface) 82%
+  );
+  --gaia-glass: color-mix(in srgb, #ffffff 84%, transparent);
+  --gaia-glass-strong: color-mix(in srgb, #ffffff 92%, transparent);
+  --gaia-ink-soft: color-mix(
+    in srgb,
+    var(--gaia-foreground) 6%,
+    var(--gaia-surface) 94%
+  );
+  --gaia-ink-faint: color-mix(
+    in srgb,
+    var(--gaia-foreground) 4%,
+    var(--gaia-surface) 96%
+  );
+  --gaia-border-soft: color-mix(
+    in srgb,
+    var(--gaia-border) 70%,
+    transparent
+  );
+  font-family: var(--gaia-font-sans);
+}
+
+.wealth-shell {
+  background: linear-gradient(180deg, #f9fafb 0%, #eef1f4 100%);
+}
+
+.wealth-theme .wealth-surface {
+  border-radius: 1.5rem;
+  border: 1px solid var(--gaia-border);
+  background: var(--gaia-surface);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+}
+
+.wealth-theme .wealth-surface-soft {
+  border-radius: 1.5rem;
+  border: 1px solid var(--gaia-border);
+  background: var(--gaia-surface-soft);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.wealth-theme input,
+.wealth-theme select,
+.wealth-theme textarea {
+  background-color: var(--gaia-surface);
+  color: var(--gaia-text-default);
+  border-color: var(--gaia-border);
+}
+
+.wealth-theme input::placeholder,
+.wealth-theme textarea::placeholder {
+  color: color-mix(
+    in srgb,
+    var(--gaia-text-muted) 75%,
+    transparent
+  );
+}
+
+.wealth-theme .text-slate-100,
+.wealth-theme .text-slate-200 {
+  color: var(--gaia-text-default) !important;
+}
+
+.wealth-theme .text-slate-300,
+.wealth-theme .text-slate-400,
+.wealth-theme .text-slate-500 {
+  color: var(--gaia-text-muted) !important;
+}
+
+.wealth-theme .text-white {
+  color: var(--gaia-text-strong) !important;
+}
+
+.wealth-theme .bg-slate-900,
+.wealth-theme .bg-slate-900\/80,
+.wealth-theme .bg-slate-900\/70,
+.wealth-theme .bg-slate-950 {
+  background-color: var(--gaia-surface) !important;
+}
+
+.wealth-theme .bg-slate-800,
+.wealth-theme .bg-slate-800\/80 {
+  background-color: var(--gaia-surface-soft) !important;
+}
+
+.wealth-theme .border-slate-800,
+.wealth-theme .border-slate-700 {
+  border-color: var(--gaia-border) !important;
+}
+
+.wealth-theme button,
+.wealth-theme .wealth-button {
+  border-radius: 9999px;
+  border: 1px solid var(--gaia-border);
+  background: linear-gradient(180deg, #fafbfc 0%, #eef2f6 100%);
+  color: var(--gaia-text-strong);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.wealth-theme button:hover,
+.wealth-theme .wealth-button:hover {
+  background: linear-gradient(180deg, #f5f7fa 0%, #e9eef4 100%);
+  border-color: color-mix(in srgb, var(--gaia-border) 80%, transparent);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+}
+
+.wealth-theme button:disabled,
+.wealth-theme .wealth-button:disabled {
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+.wealth-theme button:focus-visible,
+.wealth-theme .wealth-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.45),
+    0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
 .gaia-hover-soft:hover {
   background-color: color-mix(
     in srgb,

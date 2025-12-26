@@ -14,9 +14,8 @@ const typeLabels: Record<WealthAccountType, string> = {
   other: "Other",
 };
 
-const surface =
-  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] text-[var(--gaia-text-default)] shadow-[0_18px_60px_rgba(0,0,0,0.12)]";
-const softSurface = "rounded-2xl border gaia-border bg-[var(--gaia-surface-soft)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
+const softSurface = "wealth-surface-soft";
 
 function computeCurrencyTotals(accounts: WealthAccount[]): CurrencyTotals {
   const totals: CurrencyTotals = {};

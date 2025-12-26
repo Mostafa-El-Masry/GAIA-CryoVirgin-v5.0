@@ -28,8 +28,7 @@ type FxInfo = {
   isCached: boolean;
 };
 
-const surface =
-  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] text-[var(--gaia-text-default)] shadow-[0_18px_60px_rgba(0,0,0,0.18)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
 function formatCurrency(value: number, currency: string) {
   if (!Number.isFinite(value)) return "-";
@@ -39,25 +38,6 @@ function formatCurrency(value: number, currency: string) {
     maximumFractionDigits: 0,
   }).format(value);
 }
-
-const MONTHLY_STATUS_ROWS = [
-  { range: "Under 45,000 EGP", status: "Poor" },
-  { range: "45,000 – 90,000 EGP", status: "Low-income" },
-  { range: "90,000 – 135,000 EGP", status: "Stably paid" },
-  { range: "135,000 – 180,000 EGP", status: "Middle class" },
-  { range: "180,000 – 270,000 EGP", status: "Comfortable" },
-  { range: "270,000 – 360,000 EGP", status: "Upper-middle class" },
-  { range: "360,000 – 750,000 EGP", status: "Wealthy" },
-  { range: "750,000 – 2,400,000 EGP", status: "Rich" },
-];
-
-const ANNUAL_STATUS_ROWS = [
-  { range: "30M – 60M EGP / year", status: "Millionaire" },
-  { range: "60M – 900M EGP / year", status: "Multi-millionaire" },
-  { range: "900M – 30B EGP / year", status: "Ultra-rich" },
-  { range: "30B – 60B EGP / year", status: "Billionaire" },
-  { range: "More than 60B EGP / year", status: "Multi-billionaire" },
-];
 
 function getLevelDefinitions(snapshot: WealthLevelsSnapshot | null) {
   if (!snapshot) {
@@ -79,21 +59,21 @@ function getLevelDefinitions(snapshot: WealthLevelsSnapshot | null) {
 
 function buildLevelHeadline(snapshot: WealthLevelsSnapshot | null): string {
   if (!snapshot) {
-    return "GAIA needs at least one month of expenses to place you on the ladder.";
+    return "GAIA needs balances and revenue to place you on the comfort ladder.";
   }
   const { current } = getLevelDefinitions(snapshot);
   if (!current) {
-    return "You are at the starting line. Once expenses and interest are logged for at least one month, GAIA will place you on the ladder.";
+    return "You are at the starting line. Once balances and monthly revenue are logged, GAIA will place you on the ladder.";
   }
 
   const order = current.order ?? 0;
   if (order <= 2) {
-    return "You are in the early buffer zone. This is still a 'poor' level, but it is a starting point, not a verdict.";
+    return "You are in the early comfort zone. Focus on building savings and monthly revenue.";
   }
   if (order <= 4) {
-    return "You are in the stability-building zone. You are no longer at the very bottom; the focus now is deepening your runway.";
+    return "You are in the stability-building zone. The focus now is deepening savings and revenue.";
   }
-  return "You are in a strong stability / wealth zone. The main work from here is maintenance and gentle optimisation, not stress.";
+  return "You are in a strong comfort zone. The main work from here is maintenance and gentle optimisation.";
 }
 
 function buildPlanHeadline(
@@ -101,49 +81,40 @@ function buildPlanHeadline(
   overview: WealthOverview | null,
 ): string {
   if (!snapshot || !overview) {
-    return "Log grouped expenses and any interest events for at least one month so GAIA can suggest a concrete next step.";
+    return "Log balances and investments so GAIA can suggest a concrete next step.";
   }
 
-  const { next } = getLevelDefinitions(snapshot);
-  const monthsSaved = snapshot.monthsOfExpensesSaved;
-  const expenses = snapshot.estimatedMonthlyExpenses;
+  const { current, next } = getLevelDefinitions(snapshot);
   const currency = overview.primaryCurrency;
-
-  if (
-    !next ||
-    monthsSaved == null ||
-    !Number.isFinite(monthsSaved) ||
-    !expenses ||
-    !Number.isFinite(expenses)
-  ) {
-    return "Keep logging income, deposits, expenses, and interest. GAIA will refine your next step as the picture becomes clearer.";
+  if (!current) {
+    return "Keep logging balances and revenue. GAIA will refine your next step as the picture becomes clearer.";
   }
 
-  const targetMonths = next.minMonthsOfExpenses ?? monthsSaved;
-  if (!Number.isFinite(targetMonths) || targetMonths <= monthsSaved) {
-    return "You are very close to the next level. A few more consistent months of saving will push you over the line.";
+  const totalSavings = Number.isFinite(snapshot.totalSavings) ? snapshot.totalSavings : 0;
+  const monthlyRevenue = snapshot.monthlyPassiveIncome ?? 0;
+  const savingsGap =
+    current.minSavings != null ? current.minSavings - totalSavings : null;
+  const revenueGap =
+    current.minMonthlyRevenue != null
+      ? current.minMonthlyRevenue - monthlyRevenue
+      : null;
+
+  if ((savingsGap == null || savingsGap <= 0) && (revenueGap == null || revenueGap <= 0)) {
+    return "You are already at the next plan thresholds. Keep it steady.";
   }
 
-  const deltaMonths = targetMonths - monthsSaved;
-  const additionalNeeded = deltaMonths * expenses;
+  const parts: string[] = [];
+  if (savingsGap != null && savingsGap > 0) {
+    parts.push(`add about ${formatCurrency(savingsGap, currency)} in savings`);
+  }
+  if (revenueGap != null && revenueGap > 0) {
+    parts.push(
+      `raise monthly revenue by about ${formatCurrency(revenueGap, currency)}`,
+    );
+  }
 
-  const formattedNeeded = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(additionalNeeded);
-
-  const levelName = next.name || "your next level";
-
-  return `If you can add roughly ${formattedNeeded} into your buffers / certificates over time, you will cross into ${levelName}. Small, repeatable moves are enough.`;
-}
-
-function passiveTargetEgpForOrder(order: number | null): number {
-  if (order === null || !Number.isFinite(order)) return 1000;
-  if (order <= 2) return 1000; // early breathing
-  if (order <= 4) return 3000; // stabilise
-  if (order <= 6) return 5000; // secure
-  return 10000; // grow
+  const planName = next?.name || "your next plan";
+  return `To reach ${planName}, ${parts.join(" and ")}.`;
 }
 
 export default function WealthAwakeningClientPage() {
@@ -155,7 +126,6 @@ export default function WealthAwakeningClientPage() {
   >("syncing");
   const [supabaseEnabled, setSupabaseEnabled] = useState(false);
   const [fxInfo, setFxInfo] = useState<FxInfo | null>(null);
-  const [openStatusTable, setOpenStatusTable] = useState<"monthly" | "annual" | null>(null);
 
   // Detect whether Supabase is configured on the client
   useEffect(() => {
@@ -187,7 +157,7 @@ export default function WealthAwakeningClientPage() {
       const today = getTodayInKuwait();
       const ov = buildWealthOverview(state, today);
       setOverview(ov);
-      const snapshot = buildLevelsSnapshot(ov);
+      const snapshot = buildLevelsSnapshot(ov, { planCurrency: "EGP" });
       setLevelsSnapshot(snapshot);
     }
 
@@ -215,6 +185,15 @@ export default function WealthAwakeningClientPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!overview) return;
+    const snapshot = buildLevelsSnapshot(overview, {
+      planCurrency: "EGP",
+      fxRate: fxInfo?.rate,
+    });
+    setLevelsSnapshot(snapshot);
+  }, [overview, fxInfo]);
 
   const syncLabel =
     syncStatus === "syncing"
@@ -244,57 +223,36 @@ export default function WealthAwakeningClientPage() {
 
   const primaryCurrency = overview?.primaryCurrency ?? "KWD";
   const monthsSaved = levelsSnapshot?.monthsOfExpensesSaved ?? null;
-  const { current: currentLevel, next: nextLevel } = getLevelDefinitions(levelsSnapshot);
-  const monthlyPassive = levelsSnapshot?.monthlyPassiveIncome ?? null;
-  const displayCurrency =
-    overview?.accounts?.some((a) => a.currency === "EGP") ||
-    overview?.instruments?.some((i) => i.currency === "EGP")
-      ? "EGP"
-      : primaryCurrency;
-  const certificatePrincipal =
-    overview?.instruments?.reduce((sum, inst) => sum + inst.principal, 0) ?? 0;
-  const investmentPrincipal =
-    overview?.accounts
-      .filter((a) => a.type === "investment")
-      .reduce((sum, a) => sum + a.currentBalance, 0) ?? 0;
-  const savingsPrincipal = certificatePrincipal + investmentPrincipal;
+  const { current: currentPlan, next: nextPlan } = getLevelDefinitions(levelsSnapshot);
+  const totalSavings = levelsSnapshot?.totalSavings ?? 0;
+  const monthlyRevenue = levelsSnapshot?.monthlyPassiveIncome ?? 0;
+  const planCurrency = "EGP";
+
   const savingsLabel =
-    savingsPrincipal > 0
-      ? formatCurrency(savingsPrincipal, displayCurrency)
+    totalSavings > 0
+      ? formatCurrency(totalSavings, planCurrency)
       : "Not logged";
-  const targetMonths = nextLevel?.minMonthsOfExpenses ?? null;
-  const targetSavings =
-    targetMonths && levelsSnapshot?.estimatedMonthlyExpenses
-      ? targetMonths * levelsSnapshot.estimatedMonthlyExpenses
-      : null;
-  const targetPassive =
-    levelsSnapshot?.estimatedMonthlyExpenses && nextLevel?.minInterestCoveragePercent
-      ? (levelsSnapshot.estimatedMonthlyExpenses *
-          nextLevel.minInterestCoveragePercent) /
-        100
-      : null;
+  const monthlyRevenueLabel =
+    monthlyRevenue > 0
+      ? formatCurrency(monthlyRevenue, planCurrency)
+      : "Not logged";
+
+  const targetSavings = currentPlan?.minSavings ?? null;
+  const targetRevenue = currentPlan?.minMonthlyRevenue ?? null;
+  const savingsGap = targetSavings != null ? targetSavings - totalSavings : null;
+  const revenueGap = targetRevenue != null ? targetRevenue - monthlyRevenue : null;
+  const nextPlanReady =
+    (savingsGap == null || savingsGap <= 0) &&
+    (revenueGap == null || revenueGap <= 0);
+
   const targetSavingsLabel =
-    targetSavings && Number.isFinite(targetSavings)
-      ? formatCurrency(targetSavings, displayCurrency)
-      : "Set expenses first";
-  const targetPassiveLabel =
-    targetPassive && Number.isFinite(targetPassive)
-      ? formatCurrency(targetPassive, displayCurrency)
-      : "Set expenses first";
-  const planTargetEgp = passiveTargetEgpForOrder(currentLevel?.order ?? null);
-  const planTargetLabel = formatCurrency(planTargetEgp, "EGP");
-  const planComplete =
-    monthlyPassive != null &&
-    displayCurrency === "EGP" &&
-    monthlyPassive >= planTargetEgp;
-  const planRemaining =
-    monthlyPassive != null && displayCurrency === "EGP"
-      ? planTargetEgp - monthlyPassive
-      : null;
-  const planRemainingLabel =
-    planRemaining != null && planRemaining > 0
-      ? formatCurrency(planRemaining, "EGP")
-      : "0";
+    targetSavings != null && Number.isFinite(targetSavings)
+      ? formatCurrency(targetSavings, planCurrency)
+      : "Set plan thresholds";
+  const targetRevenueLabel =
+    targetRevenue != null && Number.isFinite(targetRevenue)
+      ? formatCurrency(targetRevenue, planCurrency)
+      : "Set plan thresholds";
 
   return (
     <div className="space-y-6 text-[var(--gaia-text-default)]">
@@ -350,10 +308,10 @@ export default function WealthAwakeningClientPage() {
           </div>
 
           <div className="relative mt-5 flex flex-wrap items-center gap-3">
-            <button className="rounded-full bg-[var(--gaia-contrast-bg)] px-4 py-2 text-sm font-semibold text-[var(--gaia-contrast-text)] shadow-lg shadow-[var(--gaia-contrast-bg)]/25 transition hover:brightness-110">
+            <button className="px-4 py-2 text-sm font-semibold text-[var(--gaia-text-strong)]">
               Verify & sync
             </button>
-            <button className="rounded-full border gaia-border bg-[var(--gaia-surface-soft)] px-4 py-2 text-sm font-semibold text-[var(--gaia-text-default)] transition hover:border-[var(--gaia-contrast-bg)]">
+            <button className="px-4 py-2 text-sm font-semibold text-[var(--gaia-text-strong)]">
               Add deposit
             </button>
             {fxText && (
@@ -370,38 +328,41 @@ export default function WealthAwakeningClientPage() {
                   Current wealth plan
                 </p>
                 <h4 className="text-sm font-semibold text-[var(--gaia-text-strong)]">
-                  {currentLevel?.shortLabel ?? "Need data to place you"}
+                  {currentPlan?.shortLabel ?? "Need data to place you"}
                 </h4>
-                <p className="mt-1 text-[11px] gaia-muted">
-                  {currentLevel?.description ??
-                    "Log expenses and deposits so GAIA can place you on the ladder."}
-                </p>
-              </div>
+                  <p className="mt-1 text-[11px] gaia-muted">
+                  {currentPlan?.description ??
+                    "Log balances and investments so GAIA can place you on the ladder."}
+                  </p>
+                </div>
               <div className="text-right">
                 <p className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
                   Next
                 </p>
                 <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
-                  {nextLevel?.shortLabel ?? "TBD"}
+                  {nextPlan?.shortLabel ?? "TBD"}
                 </p>
                 <p className="mt-1 text-[10px] gaia-muted">
-                  Passive target: {planTargetLabel}
+                  Savings target: {targetSavingsLabel}
+                </p>
+                <p className="text-[10px] gaia-muted">
+                  Monthly revenue target: {targetRevenueLabel}
                 </p>
                 <span
                   className={`mt-1 inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${
-                    planComplete
+                    nextPlanReady
                       ? "bg-emerald-500/15 text-emerald-200 border border-emerald-500/40"
                       : "gaia-border bg-[var(--gaia-surface)] text-[var(--gaia-text-muted)]"
                   }`}
                 >
-                  {planComplete ? "Target reached" : "Target pending"}
+                  {nextPlanReady ? "Ready to move up" : "In progress"}
                 </span>
               </div>
             </div>
             <div className="mt-2 grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               <div className="rounded-lg border gaia-border bg-[var(--gaia-surface)] px-3 py-2">
                 <p className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
-                  Savings (certs + investments)
+                  Investment savings (EGP)
                 </p>
                 <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
                   {savingsLabel}
@@ -419,15 +380,13 @@ export default function WealthAwakeningClientPage() {
               </div>
               <div className="rounded-lg border gaia-border bg-[var(--gaia-surface)] px-3 py-2">
                 <p className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
-                  Passive / month
+                  Monthly revenue
                 </p>
                 <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
-                  {monthlyPassive != null
-                    ? formatCurrency(monthlyPassive, displayCurrency)
-                    : "Not logged"}
+                  {monthlyRevenueLabel}
                 </p>
                 <p className="mt-1 text-[10px] gaia-muted">
-                  Includes estimated certificate yield (all currencies).
+                  Estimated investment yield (converted to EGP).
                 </p>
               </div>
               <div className="rounded-lg border gaia-border bg-[var(--gaia-surface)] px-3 py-2">
@@ -437,20 +396,22 @@ export default function WealthAwakeningClientPage() {
                 <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
                   {targetSavingsLabel}
                 </p>
+                {savingsGap != null && savingsGap > 0 ? (
+                  <p className="text-[10px] gaia-muted">
+                    ~{formatCurrency(savingsGap, planCurrency)} to hit the next plan.
+                  </p>
+                ) : null}
               </div>
               <div className="rounded-lg border gaia-border bg-[var(--gaia-surface)] px-3 py-2">
                 <p className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
-                  Target passive / month
+                  Target monthly revenue
                 </p>
                 <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
-                  {targetPassiveLabel}
+                  {targetRevenueLabel}
                 </p>
-                <p className="mt-1 text-[10px] gaia-muted">Plan target (hardcoded EGP): {planTargetLabel}</p>
-                {planComplete ? (
-                  <p className="text-[10px] text-emerald-300">Target hit. Ready to move up.</p>
-                ) : displayCurrency === "EGP" && planRemaining != null ? (
+                {revenueGap != null && revenueGap > 0 ? (
                   <p className="text-[10px] gaia-muted">
-                    ~{planRemainingLabel} to hit plan target.
+                    ~{formatCurrency(revenueGap, planCurrency)} to hit the next plan.
                   </p>
                 ) : null}
               </div>
@@ -460,10 +421,10 @@ export default function WealthAwakeningClientPage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gaia-text-muted)]">
-                Level & plan
+                Plan progress
               </p>
               <h3 className="text-xl font-semibold text-[var(--gaia-text-strong)]">
-                Stay on the ladder
+                Stay on the comfort ladder
               </h3>
             </div>
             <span className="rounded-full bg-[var(--gaia-surface-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--gaia-text-default)]">
@@ -497,106 +458,56 @@ export default function WealthAwakeningClientPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <article className={`${surface} overflow-hidden`}>
-          <button
-            type="button"
-            onClick={() =>
-              setOpenStatusTable((prev) => (prev === "monthly" ? null : "monthly"))
-            }
-            aria-expanded={openStatusTable === "monthly"}
-            className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-[var(--gaia-surface-soft)]"
+      <section className={`${surface} p-5`}>
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gaia-text-muted)]">
+              Plan thresholds
+            </p>
+            <h3 className="text-base font-semibold text-[var(--gaia-text-strong)]">
+              Comfort ladder
+            </h3>
+            <p className="text-xs gaia-muted">
+              Preview only. Edit thresholds in the Plans tab.
+            </p>
+          </div>
+          <a
+            href="/wealth-awakening/levels"
+            className="wealth-button px-3 py-1 text-[11px] font-semibold text-[var(--gaia-text-strong)]"
           >
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gaia-text-muted)]">
-                Plans · Target saving ladder
-              </p>
-              <h3 className="text-base font-semibold text-[var(--gaia-text-strong)]">
-                Monthly target saving status (EGP)
-              </h3>
-              <p className="text-xs gaia-muted">
-                Quick reference for planning. Only one table stays open at a time.
-              </p>
-            </div>
-            <span className="text-sm text-[var(--gaia-text-muted)]">
-              {openStatusTable === "monthly" ? "▾" : "▸"}
-            </span>
-          </button>
-          {openStatusTable === "monthly" && (
-            <div className="border-t gaia-border px-5 py-4">
-              <table className="w-full text-left text-xs text-[var(--gaia-text-default)]">
-                <thead>
-                  <tr className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
-                    <th className="py-2 pr-3">Target saving</th>
-                    <th className="px-3 py-2">Financial status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {MONTHLY_STATUS_ROWS.map((row) => (
-                    <tr key={row.range} className="border-b gaia-border last:border-b-0">
-                      <td className="py-2 pr-3 text-[11px] font-semibold text-[var(--gaia-text-strong)]">
-                        {row.range}
-                      </td>
-                      <td className="px-3 py-2 text-[11px] text-[var(--gaia-text-default)]">
-                        {row.status}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </article>
-
-        <article className={`${surface} overflow-hidden`}>
-          <button
-            type="button"
-            onClick={() =>
-              setOpenStatusTable((prev) => (prev === "annual" ? null : "annual"))
-            }
-            aria-expanded={openStatusTable === "annual"}
-            className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-[var(--gaia-surface-soft)]"
-          >
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gaia-text-muted)]">
-                Plans · Target saving ladder
-              </p>
-              <h3 className="text-base font-semibold text-[var(--gaia-text-strong)]">
-                Annual target saving status (EGP)
-              </h3>
-              <p className="text-xs gaia-muted">
-                Collapsed by default; click to toggle. Switching auto-closes the other table.
-              </p>
-            </div>
-            <span className="text-sm text-[var(--gaia-text-muted)]">
-              {openStatusTable === "annual" ? "▾" : "▸"}
-            </span>
-          </button>
-          {openStatusTable === "annual" && (
-            <div className="border-t gaia-border px-5 py-4">
-              <table className="w-full text-left text-xs text-[var(--gaia-text-default)]">
-                <thead>
-                  <tr className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
-                    <th className="py-2 pr-3">Target saving</th>
-                    <th className="px-3 py-2">Financial status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ANNUAL_STATUS_ROWS.map((row) => (
-                    <tr key={row.range} className="border-b gaia-border last:border-b-0">
-                      <td className="py-2 pr-3 text-[11px] font-semibold text-[var(--gaia-text-strong)]">
-                        {row.range}
-                      </td>
-                      <td className="px-3 py-2 text-[11px] text-[var(--gaia-text-default)]">
-                        {row.status}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </article>
+            Edit plans
+          </a>
+        </div>
+        <div className="mt-4 overflow-hidden rounded-xl border gaia-border">
+          <table className="w-full text-left text-xs text-[var(--gaia-text-default)]">
+            <thead className="bg-[var(--gaia-surface-soft)]">
+              <tr className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
+                <th className="px-4 py-2">Plan</th>
+                <th className="px-4 py-2">Target savings</th>
+                <th className="px-4 py-2">Target monthly revenue</th>
+                <th className="px-4 py-2">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(levelsSnapshot?.levels ?? []).map((plan) => (
+                <tr key={plan.id} className="border-t gaia-border">
+                  <td className="px-4 py-2 text-[11px] font-semibold text-[var(--gaia-text-strong)]">
+                    {plan.shortLabel}
+                  </td>
+                  <td className="px-4 py-2 text-[11px]">
+                    {formatCurrency(plan.minSavings ?? 0, planCurrency)}
+                  </td>
+                  <td className="px-4 py-2 text-[11px]">
+                    {formatCurrency(plan.minMonthlyRevenue ?? 0, planCurrency)}
+                  </td>
+                  <td className="px-4 py-2 text-[11px] gaia-muted">
+                    {plan.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {!overview ? (
@@ -638,7 +549,7 @@ export default function WealthAwakeningClientPage() {
                 {syncLabel}
               </p>
               <p className="mt-1 text-xs gaia-muted">
-                Supabase mirror with local cache always on.
+                Supabase mirror with local cache for accounts and investments.
               </p>
             </div>
           </section>

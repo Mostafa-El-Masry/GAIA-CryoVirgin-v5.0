@@ -11,8 +11,7 @@ type RemoteStatus =
   | { mode: "ok"; state: WealthState }
   | { mode: "error"; message: string };
 
-const surface =
-  "rounded-2xl border border-slate-800 bg-slate-900/80 shadow-[0_18px_60px_rgba(0,0,0,0.45)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
 function countSummary(state: WealthState | null) {
   if (!state) {
@@ -94,7 +93,7 @@ export default function WealthStatusPage() {
           <p className="mt-1 text-xs text-slate-300">
             Stored under{" "}
             <code className="rounded bg-slate-800 px-1 py-0.5 text-slate-200">
-              gaia_wealth_awakening_state_v1
+              gaia_wealth_awakening_state_v2
             </code>{" "}
             in your browser.
           </p>
@@ -113,7 +112,7 @@ export default function WealthStatusPage() {
             </div>
           </dl>
           <p className="mt-3 text-[11px] text-slate-400">
-            Local data is always the first source GAIA uses, even when Supabase is offline.
+            Local cache stores accounts/investments. Flows stay Supabase-only when configured.
           </p>
         </article>
 

@@ -1,7 +1,6 @@
 import Link from "next/link";
 
-const surface =
-  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] text-[var(--gaia-text-default)] shadow-[0_18px_60px_rgba(0,0,0,0.18)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
 const QuickLinks = () => {
   const links = [
@@ -12,7 +11,7 @@ const QuickLinks = () => {
     },
     {
       href: "/wealth-awakening/instruments",
-      title: "Certificates & instruments",
+      title: "Certificates & investments",
       body: "Track your CDs and long-term deposits with their rules.",
     },
     {
@@ -22,8 +21,8 @@ const QuickLinks = () => {
     },
     {
       href: "/wealth-awakening/levels",
-      title: "Wealth levels",
-      body: "Poor -> Stable -> Wealthy, defined using your real numbers.",
+      title: "Plans",
+      body: "Comfort tiers based on your savings and monthly revenue.",
     },
     {
       href: "/wealth-awakening/projections",

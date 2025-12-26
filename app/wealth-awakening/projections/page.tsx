@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useWealthUnlocks } from "../hooks/useWealthUnlocks";
 import type { WealthInstrument, WealthState } from "../lib/types";
-import { loadWealthState } from "../lib/wealthStore";
+import { loadWealthStateWithRemote } from "../lib/wealthStore";
 import {
   estimateMonthlyInterest,
   estimateTotalInterestOverHorizon,
@@ -13,9 +13,11 @@ import {
 import { getTodayInKuwait } from "../lib/summary";
 
 const HORIZON_OPTIONS = [12, 24, 36] as const;
+const BIRTH_DATE_UTC = new Date(Date.UTC(1991, 7, 10));
+const MIN_ANNUAL_RATE = 10;
+const REINVEST_STEP = 1000;
 
-const surface =
-  "rounded-2xl border border-slate-800 bg-slate-900/80 shadow-[0_18px_60px_rgba(0,0,0,0.45)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
 function formatCurrency(value: number, currency: string) {
   if (!Number.isFinite(value)) return "-";
@@ -25,6 +27,88 @@ function formatCurrency(value: number, currency: string) {
     maximumFractionDigits: 0,
   }).format(value);
 }
+
+function calculateAge(today: Date, birthDate: Date): number {
+  let age = today.getUTCFullYear() - birthDate.getUTCFullYear();
+  const hasBirthdayPassed =
+    today.getUTCMonth() > birthDate.getUTCMonth() ||
+    (today.getUTCMonth() === birthDate.getUTCMonth() &&
+      today.getUTCDate() >= birthDate.getUTCDate());
+  if (!hasBirthdayPassed) {
+    age -= 1;
+  }
+  return Math.max(0, age);
+}
+
+type AgeProjectionRow = {
+  year: number;
+  age: number;
+  startBalance: number;
+  deposit: number;
+  depositYear: number;
+  revenue: number;
+  endBalance: number;
+  rate: number;
+  uninvested: number;
+  months: {
+    month: string;
+    age: number;
+    startBalance: number;
+    deposit: number;
+    depositYear: number;
+    revenue: number;
+    endBalance: number;
+    rate: number;
+    uninvested: number;
+  }[];
+};
+
+type ProjectionColumnKey =
+  | "year"
+  | "age"
+  | "startBalance"
+  | "deposit"
+  | "depositYear"
+  | "revenue"
+  | "endBalance"
+  | "rate"
+  | "uninvested";
+
+const PROJECTION_COLUMNS: ProjectionColumnKey[] = [
+  "year",
+  "age",
+  "startBalance",
+  "deposit",
+  "depositYear",
+  "revenue",
+  "endBalance",
+  "rate",
+  "uninvested",
+];
+
+const PROJECTION_COLUMN_LABELS: Record<ProjectionColumnKey, string> = {
+  year: "Year",
+  age: "Age",
+  startBalance: "Starting balance",
+  deposit: "Deposit",
+  depositYear: "Deposit per year",
+  revenue: "Revenue",
+  endBalance: "Ending balance",
+  rate: "Rate",
+  uninvested: "Uninvested revenue",
+};
+
+const PROJECTION_COLUMN_WIDTHS: Record<ProjectionColumnKey, string> = {
+  year: "64px",
+  age: "54px",
+  startBalance: "120px",
+  deposit: "120px",
+  depositYear: "130px",
+  revenue: "110px",
+  endBalance: "120px",
+  rate: "70px",
+  uninvested: "130px",
+};
 
 export default function WealthProjectionsPage() {
   const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
@@ -47,14 +131,139 @@ export default function WealthProjectionsPage() {
 
   const [state, setState] = useState<WealthState | null>(null);
   const [horizon, setHorizon] = useState<(typeof HORIZON_OPTIONS)[number]>(12);
+  const [expandedYear, setExpandedYear] = useState<number | null>(null);
+  const [collapsingYear, setCollapsingYear] = useState<number | null>(null);
+  const [projectionColumns, setProjectionColumns] =
+    useState<ProjectionColumnKey[]>(PROJECTION_COLUMNS);
+  const [draggingColumn, setDraggingColumn] =
+    useState<ProjectionColumnKey | null>(null);
+  const [dragOverColumn, setDragOverColumn] =
+    useState<ProjectionColumnKey | null>(null);
 
   useEffect(() => {
-    const s = loadWealthState();
-    setState(s);
+    let cancelled = false;
+
+    async function init() {
+      const s = await loadWealthStateWithRemote();
+      if (!cancelled) {
+        setState(s);
+      }
+    }
+
+    init();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const today = getTodayInKuwait();
   const instruments = state?.instruments ?? [];
+  const projectionCurrency =
+    state?.accounts.find((acc) => acc.isPrimary)?.currency ||
+    instruments[0]?.currency ||
+    "KWD";
+  const columnCount = projectionColumns.length;
+  const ageProjectionRows = useMemo(() => {
+    if (instruments.length === 0) return [] as AgeProjectionRow[];
+    const todayDate = new Date(`${today}T00:00:00Z`);
+    const currentAge = calculateAge(todayDate, BIRTH_DATE_UTC);
+    if (currentAge >= 60) return [] as AgeProjectionRow[];
+
+    let baseRateWeighted = 0;
+    let totalPrincipal = 0;
+    for (const inst of instruments) {
+      const principal = Number(inst.principal) || 0;
+      const baseRate = Number(inst.annualRatePercent) || 0;
+      if (principal <= 0) continue;
+      totalPrincipal += principal;
+      baseRateWeighted += principal * baseRate;
+    }
+    if (totalPrincipal <= 0) return [] as AgeProjectionRow[];
+    const baseRate = baseRateWeighted / totalPrincipal;
+    let principal = totalPrincipal;
+    let reinvestBucket = 0;
+
+    const startDate = new Date(
+      Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1),
+    );
+    const endDate = new Date(
+      Date.UTC(BIRTH_DATE_UTC.getUTCFullYear() + 60, BIRTH_DATE_UTC.getUTCMonth(), 1),
+    );
+    const rowsByYear = new Map<number, AgeProjectionRow>();
+
+    for (
+      let cursor = new Date(startDate), monthIndex = 0;
+      cursor <= endDate;
+      cursor = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1)),
+        monthIndex += 1
+    ) {
+      const year = cursor.getUTCFullYear();
+      const yearOffset = year - todayDate.getUTCFullYear();
+      const effectiveRate = Math.max(MIN_ANNUAL_RATE, baseRate - yearOffset);
+      const monthLabel = cursor.toLocaleDateString("en-US", { month: "short" });
+      const monthAge = calculateAge(cursor, BIRTH_DATE_UTC);
+      const startBalance = principal + reinvestBucket;
+      const monthlyRevenue =
+        monthIndex === 0 ? 0 : (principal * effectiveRate) / 100 / 12;
+      const bucketTotal = reinvestBucket + monthlyRevenue;
+      const investable = Math.floor(bucketTotal / REINVEST_STEP) * REINVEST_STEP;
+      reinvestBucket = bucketTotal - investable;
+      principal += investable;
+      const endBalance = principal + reinvestBucket;
+
+      const existing = rowsByYear.get(year);
+      if (!existing) {
+        rowsByYear.set(year, {
+          year,
+          age: calculateAge(new Date(Date.UTC(year, 11, 31)), BIRTH_DATE_UTC),
+          startBalance,
+          deposit: principal,
+          depositYear: investable,
+          revenue: monthlyRevenue,
+          endBalance,
+          rate: effectiveRate,
+          uninvested: reinvestBucket,
+          months: [
+            {
+              month: monthLabel,
+              age: monthAge,
+              startBalance,
+              deposit: principal,
+              depositYear: investable,
+              revenue: monthlyRevenue,
+              endBalance,
+              rate: effectiveRate,
+              uninvested: reinvestBucket,
+            },
+          ],
+        });
+      } else {
+        existing.deposit = principal;
+        existing.depositYear += investable;
+        existing.revenue += monthlyRevenue;
+        existing.endBalance = endBalance;
+        existing.rate = effectiveRate;
+        existing.uninvested = reinvestBucket;
+        existing.months.push({
+          month: monthLabel,
+          age: monthAge,
+          startBalance,
+          deposit: principal,
+          depositYear: investable,
+          revenue: monthlyRevenue,
+          endBalance,
+          rate: effectiveRate,
+          uninvested: reinvestBucket,
+        });
+      }
+    }
+
+    return Array.from(rowsByYear.values()).map((row) => ({
+      ...row,
+      revenue: row.months.length ? row.revenue / row.months.length : 0,
+    }));
+  }, [instruments, today]);
 
   const byCurrency = useMemo(() => {
     const map = new Map<
@@ -82,11 +291,110 @@ export default function WealthProjectionsPage() {
     return (
       <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-slate-100">
         <section className={`${surface} p-6 text-sm text-slate-300`}>
-          Loading your instruments and projections from local cache...
+          Loading your investments and projections...
         </section>
       </main>
     );
   }
+
+  const getCellClasses = (
+    key: ProjectionColumnKey,
+    isMonth: boolean,
+  ): string => {
+    const align = key === "year" || key === "age" ? "" : "text-right";
+    const base = isMonth ? "py-2" : "py-3";
+    if (isMonth) {
+      const monthBg = "bg-blue-600/10";
+      if (key === "year") {
+        return `${base} pr-2 pl-4 text-[11px] text-black ${monthBg} ${align}`.trim();
+      }
+      if (key === "age") {
+        return `${base} px-2 text-[11px] text-black ${monthBg} ${align}`.trim();
+      }
+      if (key === "deposit" || key === "revenue" || key === "endBalance") {
+        return `${base} px-2 text-[11px] font-semibold text-black ${monthBg} ${align}`.trim();
+      }
+      return `${base} px-2 text-[11px] text-black ${monthBg} ${align}`.trim();
+    }
+
+    const hoverBg = "group-hover:bg-blue-600/12";
+    if (key === "year") {
+      return `${base} pr-2 text-[11px] text-black ${hoverBg}`.trim();
+    }
+    if (key === "age") {
+      return `${base} px-2 text-[11px] text-black ${hoverBg}`.trim();
+    }
+    if (key === "deposit" || key === "revenue" || key === "endBalance") {
+      return `${base} px-2 text-[11px] font-semibold text-black ${hoverBg} ${align}`.trim();
+    }
+    return `${base} px-2 text-[11px] text-black ${hoverBg} ${align}`.trim();
+  };
+
+  const renderYearCell = (key: ProjectionColumnKey, row: AgeProjectionRow) => {
+    switch (key) {
+      case "year":
+        return row.year;
+      case "age":
+        return row.age;
+      case "startBalance":
+        return formatCurrency(row.startBalance, projectionCurrency);
+      case "deposit":
+        return formatCurrency(row.deposit, projectionCurrency);
+      case "depositYear":
+        return formatCurrency(row.depositYear, projectionCurrency);
+      case "revenue":
+        return formatCurrency(row.revenue, projectionCurrency);
+      case "endBalance":
+        return formatCurrency(row.endBalance, projectionCurrency);
+      case "rate":
+        return `${row.rate.toFixed(2)}%`;
+      case "uninvested":
+        return formatCurrency(row.uninvested, projectionCurrency);
+      default:
+        return "";
+    }
+  };
+
+  const renderMonthCell = (
+    key: ProjectionColumnKey,
+    month: AgeProjectionRow["months"][number],
+  ) => {
+    switch (key) {
+      case "year":
+        return month.month;
+      case "age":
+        return month.age;
+      case "startBalance":
+        return formatCurrency(month.startBalance, projectionCurrency);
+      case "deposit":
+        return formatCurrency(month.deposit, projectionCurrency);
+      case "depositYear":
+        return formatCurrency(month.depositYear, projectionCurrency);
+      case "revenue":
+        return formatCurrency(month.revenue, projectionCurrency);
+      case "endBalance":
+        return formatCurrency(month.endBalance, projectionCurrency);
+      case "rate":
+        return `${month.rate.toFixed(2)}%`;
+      case "uninvested":
+        return formatCurrency(month.uninvested, projectionCurrency);
+      default:
+        return "";
+    }
+  };
+
+  const handleColumnDrop = (
+    sourceKey: ProjectionColumnKey,
+    targetKey: ProjectionColumnKey,
+  ) => {
+    if (sourceKey === targetKey) return;
+    setProjectionColumns((prev) => {
+      const next = prev.filter((key) => key !== sourceKey);
+      const targetIndex = next.indexOf(targetKey);
+      next.splice(targetIndex, 0, sourceKey);
+      return next;
+    });
+  };
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-slate-100">
@@ -162,7 +470,7 @@ export default function WealthProjectionsPage() {
             ))}
             {byCurrency.size === 0 && (
               <p className="text-xs text-slate-400">
-                No instruments defined yet. Add certificates first, then revisit projections.
+                No investments defined yet. Add certificates first, then revisit projections.
               </p>
             )}
           </div>
@@ -170,9 +478,9 @@ export default function WealthProjectionsPage() {
       </section>
 
       <section className={`${surface} p-5 md:p-6`}>
-        <h2 className="text-sm font-semibold text-white">Instrument breakdown</h2>
+        <h2 className="text-sm font-semibold text-white">Investment breakdown</h2>
         <p className="mt-1 text-xs text-slate-400">
-          For each instrument, see the approximate monthly interest and how much it could pay you
+          For each investment, see the approximate monthly interest and how much it could pay you
           over the selected horizon, within its term.
         </p>
         <div className="mt-4 overflow-x-auto">
@@ -227,7 +535,7 @@ export default function WealthProjectionsPage() {
               {instruments.length === 0 && (
                 <tr>
                   <td colSpan={7} className="py-4 text-center text-xs text-slate-400">
-                    No instruments defined yet, so there is nothing to project yet.
+                    No investments defined yet, so there is nothing to project yet.
                   </td>
                 </tr>
               )}
@@ -239,6 +547,161 @@ export default function WealthProjectionsPage() {
           conversions. For Awakening, the goal is a gentle, human-scale feeling of what your current
           certificates are doing for you.
         </p>
+      </section>
+
+      <section className={`${surface} p-5 md:p-6`}>
+        <h2 className="text-sm font-semibold text-white">Age projection to 60</h2>
+        <p className="mt-1 text-xs text-slate-400">
+          Assumes certificates renew every 3 years, principal stays constant, and the annual rate
+          drops 1% per year until it floors at 10%. Revenue is reinvested in chunks of{" "}
+          {REINVEST_STEP}.
+        </p>
+        <div className="mt-4 overflow-x-hidden">
+          <table className="min-w-full table-fixed border-separate border-spacing-y-2 text-left text-xs text-black">
+            <colgroup>
+              {projectionColumns.map((key) => (
+                <col key={key} style={{ width: PROJECTION_COLUMN_WIDTHS[key] }} />
+              ))}
+            </colgroup>
+            <thead>
+              <tr className="border-b border-slate-800 text-[11px] uppercase tracking-wide text-black">
+                {projectionColumns.map((key) => {
+                  const isRight =
+                    key !== "year" && key !== "age";
+                  return (
+                    <th
+                      key={key}
+                      draggable
+                      onDragStart={(event) => {
+                        setDraggingColumn(key);
+                        event.dataTransfer.setData("text/plain", key);
+                        event.dataTransfer.effectAllowed = "move";
+                      }}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        setDragOverColumn(key);
+                      }}
+                      onDragLeave={() => setDragOverColumn(null)}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        const source =
+                          draggingColumn ||
+                          (event.dataTransfer.getData("text/plain") as ProjectionColumnKey);
+                        if (source) {
+                          handleColumnDrop(source, key);
+                        }
+                        setDraggingColumn(null);
+                        setDragOverColumn(null);
+                      }}
+                      onDragEnd={() => {
+                        setDraggingColumn(null);
+                        setDragOverColumn(null);
+                      }}
+                      className={`py-2 ${isRight ? "px-2 text-right" : "pr-2"} ${
+                        dragOverColumn === key ? "bg-blue-600/10" : ""
+                      }`}
+                      title="Drag to reorder columns"
+                    >
+                      {PROJECTION_COLUMN_LABELS[key]}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {ageProjectionRows.map((row) => (
+                <Fragment key={row.year}>
+                  <tr
+                    className="group cursor-pointer text-black transition"
+                    onClick={() =>
+                      setExpandedYear((prev) => {
+                        if (prev === row.year) {
+                          setCollapsingYear(row.year);
+                          setTimeout(() => setCollapsingYear(null), 700);
+                          return null;
+                        }
+                        return row.year;
+                      })
+                    }
+                  >
+                    {projectionColumns.map((key, idx) => {
+                      const rounding =
+                        idx === 0
+                          ? "rounded-l-xl"
+                          : idx === projectionColumns.length - 1
+                          ? "rounded-r-xl"
+                          : "";
+                      return (
+                        <td
+                          key={key}
+                          className={`${getCellClasses(key, false)} ${rounding}`}
+                        >
+                          {renderYearCell(key, row)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  {expandedYear === row.year || collapsingYear === row.year ? (
+                    <tr className="border-b border-slate-800">
+                      <td colSpan={columnCount} className="p-0">
+                        <div
+                          className={`overflow-hidden transition-[max-height,opacity] duration-[700ms] ease-in-out ${
+                            expandedYear === row.year && collapsingYear !== row.year
+                              ? "max-h-[720px] opacity-100"
+                              : "max-h-0 opacity-0"
+                          }`}
+                        >
+                          <table className="w-full table-fixed border-separate border-spacing-y-1 text-left text-xs text-black">
+                            <colgroup>
+                              {projectionColumns.map((key) => (
+                                <col
+                                  key={key}
+                                  style={{ width: PROJECTION_COLUMN_WIDTHS[key] }}
+                                />
+                              ))}
+                            </colgroup>
+                            <tbody>
+                              {row.months.map((month, idx) => (
+                                <tr
+                                  key={`${row.year}-${idx}-${month.month}`}
+                                  className="border-b border-slate-800 text-slate-300"
+                                >
+                                  {projectionColumns.map((key, colIdx) => {
+                                    const rounding =
+                                      colIdx === 0
+                                        ? "rounded-l-xl"
+                                        : colIdx === projectionColumns.length - 1
+                                        ? "rounded-r-xl"
+                                        : "";
+                                    return (
+                                      <td
+                                        key={key}
+                                        className={`${getCellClasses(key, true)} ${rounding}`}
+                                      >
+                                        {renderMonthCell(key, month)}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
+              ))}
+              {ageProjectionRows.length === 0 && (
+                <tr>
+                  <td colSpan={columnCount} className="py-4 text-center text-xs text-slate-400">
+                    No investment data to project by age yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   );

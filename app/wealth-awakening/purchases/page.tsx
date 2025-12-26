@@ -13,8 +13,7 @@ type PurchaseForm = {
   description: string;
 };
 
-const surface =
-  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] text-[var(--gaia-text-default)] shadow-[0_18px_60px_rgba(0,0,0,0.12)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
 const emptyForm: PurchaseForm = {
   date: "",

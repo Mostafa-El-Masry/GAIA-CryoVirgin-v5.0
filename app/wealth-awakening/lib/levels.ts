@@ -5,81 +5,228 @@ import type {
   WealthFlow,
   MonthKey,
 } from "./types";
+import { readJSON, writeJSON } from "@/lib/user-storage";
 import { getTodayInKuwait } from "./summary";
 import { estimateMonthlyInterest } from "./projections";
 
-const LEVELS: WealthLevelDefinition[] = [
+type PlanSnapshotOptions = {
+  planCurrency?: string;
+  fxRate?: number;
+};
+
+type StoredRate = {
+  rate: number;
+  timestamp: number;
+};
+
+const PLANS_STORAGE_KEY = "wealth_plans_definitions_v3";
+const FX_STORAGE_KEY = "wealth_awakening_fx_egp_per_kwd";
+
+export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L1",
-    name: "Thin buffer",
-    shortLabel: "L1 · Thin buffer",
+    name: "Poor",
+    shortLabel: "Level 1 - Poor",
     order: 1,
-    minMonthsOfExpenses: 0,
-    minInterestCoveragePercent: 0,
+    minSavings: 50000,
+    minMonthlyRevenue: 0,
     description:
-      "You have some money, but it would not comfortably cover a full month of your typical expenses yet.",
+      "Barely surviving. Living paycheck to paycheck, no emergency savings.",
   },
   {
     id: "L2",
-    name: "First month",
-    shortLabel: "L2 · First month",
+    name: "Struggling",
+    shortLabel: "Level 2 - Struggling",
     order: 2,
-    minMonthsOfExpenses: 1,
-    minInterestCoveragePercent: 0,
+    minSavings: 200000,
+    minMonthlyRevenue: 0,
     description:
-      "Your savings can roughly cover about one month of expenses. This is the first real breathing room.",
+      "Can cover small emergencies, but one big issue is dangerous.",
   },
   {
     id: "L3",
-    name: "3-month runway",
-    shortLabel: "L3 · 3-month runway",
+    name: "Survivor",
+    shortLabel: "Level 3 - Survivor",
     order: 3,
-    minMonthsOfExpenses: 3,
-    minInterestCoveragePercent: 0,
+    minSavings: 500000,
+    minMonthlyRevenue: 0,
     description:
-      "You could keep your current life running for around three months even with no new income.",
+      "Has basic savings, maybe can invest small. Still vulnerable to shocks.",
   },
   {
     id: "L4",
-    name: "6-month runway",
-    shortLabel: "L4 · 6-month runway",
+    name: "Stable",
+    shortLabel: "Level 4 - Stable",
     order: 4,
-    minMonthsOfExpenses: 6,
-    minInterestCoveragePercent: 0,
+    minSavings: 1000000,
+    minMonthlyRevenue: 0,
     description:
-      "Your savings could cover about half a year of expenses. This is a strong stability zone.",
+      "First big milestone. Can survive without income for a while.",
   },
   {
     id: "L5",
-    name: "1-year runway",
-    shortLabel: "L5 · 1-year runway",
+    name: "Comfortable",
+    shortLabel: "Level 5 - Comfortable",
     order: 5,
-    minMonthsOfExpenses: 12,
-    minInterestCoveragePercent: 0,
+    minSavings: 2500000,
+    minMonthlyRevenue: 0,
     description:
-      "You have roughly one year of expenses parked. You are well into the \"Stable\" territory.",
+      "Can invest meaningfully. Lifestyle upgrades possible.",
   },
   {
     id: "L6",
-    name: "Interest helper",
-    shortLabel: "L6 · Interest helper",
+    name: "Secure",
+    shortLabel: "Level 6 - Secure",
     order: 6,
-    minMonthsOfExpenses: 12,
-    minInterestCoveragePercent: 20,
+    minSavings: 5000000,
+    minMonthlyRevenue: 0,
     description:
-      "Your savings are strong and interest is starting to meaningfully cover a slice of your costs.",
+      "Serious buffer. Investment income can match a middle-class salary.",
   },
   {
     id: "L7",
-    name: "Interest cover",
-    shortLabel: "L7 · Interest cover",
+    name: "Prosperous",
+    shortLabel: "Level 7 - Prosperous",
     order: 7,
-    minMonthsOfExpenses: 12,
-    minInterestCoveragePercent: 100,
+    minSavings: 10000000,
+    minMonthlyRevenue: 0,
     description:
-      "Based on today&apos;s numbers, interest income could roughly match or exceed your typical monthly expenses.",
+      "Financial independence in Egypt. Returns can cover most lifestyles.",
+  },
+  {
+    id: "L8",
+    name: "Rich",
+    shortLabel: "Level 8 - Rich",
+    order: 8,
+    minSavings: 25000000,
+    minMonthlyRevenue: 0,
+    description:
+      "Considered rich by Egyptian standards. Property, cars, travel comfortably.",
+  },
+  {
+    id: "L9",
+    name: "Very rich",
+    shortLabel: "Level 9 - Very rich",
+    order: 9,
+    minSavings: 100000000,
+    minMonthlyRevenue: 0,
+    description:
+      "Upper-class. Multiple assets and aggressive investing.",
+  },
+  {
+    id: "L10",
+    name: "Wealthy",
+    shortLabel: "Level 10 - Wealthy",
+    order: 10,
+    minSavings: 100000000,
+    minMonthlyRevenue: 0,
+    description:
+      "Beyond personal needs. Generational wealth or investor scale.",
   },
 ];
+
+function normalizeNumber(value: unknown, fallback: number): number {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.max(0, numeric);
+}
+
+function getCachedEgpPerKwd(): number | null {
+  const stored = readJSON<StoredRate | null>(FX_STORAGE_KEY, null);
+  if (!stored || !Number.isFinite(stored.rate) || stored.rate <= 0) return null;
+  return stored.rate;
+}
+
+function resolveConversionRate(
+  primaryCurrency: string,
+  planCurrency: string,
+  fxRate?: number,
+): number {
+  if (primaryCurrency === planCurrency) return 1;
+  if (planCurrency === "EGP" && primaryCurrency === "KWD") {
+    const rate = fxRate ?? getCachedEgpPerKwd();
+    if (rate && Number.isFinite(rate) && rate > 0) {
+      return rate;
+    }
+  }
+  return 1;
+}
+
+function getConversionRateForCurrency(
+  fromCurrency: string,
+  planCurrency: string,
+  primaryCurrency: string,
+  fxRate?: number,
+): number | null {
+  if (fromCurrency === planCurrency) return 1;
+  if (fromCurrency === primaryCurrency) {
+    return resolveConversionRate(primaryCurrency, planCurrency, fxRate);
+  }
+  if (planCurrency === "EGP" && fromCurrency === "KWD") {
+    const rate = fxRate ?? getCachedEgpPerKwd();
+    if (rate && Number.isFinite(rate) && rate > 0) {
+      return rate;
+    }
+  }
+  return null;
+}
+
+function mergePlanDefinitions(
+  overrides: WealthLevelDefinition[] | null,
+): WealthLevelDefinition[] {
+  if (!Array.isArray(overrides) || overrides.length === 0) {
+    return [...DEFAULT_PLAN_DEFINITIONS].sort((a, b) => a.order - b.order);
+  }
+
+  const byId = new Map(overrides.map((level) => [level.id, level]));
+
+  return DEFAULT_PLAN_DEFINITIONS.map((def) => {
+    const override = byId.get(def.id);
+    if (!override) return def;
+
+    return {
+      ...def,
+      name: typeof override.name === "string" && override.name.trim() ? override.name : def.name,
+      shortLabel:
+        typeof override.shortLabel === "string" && override.shortLabel.trim()
+          ? override.shortLabel
+          : def.shortLabel,
+      description:
+        typeof override.description === "string" && override.description.trim()
+          ? override.description
+          : def.description,
+      minSavings: normalizeNumber(override.minSavings, def.minSavings ?? 0),
+      minMonthlyRevenue: normalizeNumber(
+        override.minMonthlyRevenue,
+        def.minMonthlyRevenue ?? 0,
+      ),
+    };
+  }).sort((a, b) => a.order - b.order);
+}
+
+export function getPlanDefinitions(): WealthLevelDefinition[] {
+  if (typeof window === "undefined") {
+    return [...DEFAULT_PLAN_DEFINITIONS].sort((a, b) => a.order - b.order);
+  }
+  const stored = readJSON<WealthLevelDefinition[] | null>(
+    PLANS_STORAGE_KEY,
+    null,
+  );
+  return mergePlanDefinitions(stored);
+}
+
+export function savePlanDefinitions(
+  levels: WealthLevelDefinition[],
+): WealthLevelDefinition[] {
+  const merged = mergePlanDefinitions(levels);
+  writeJSON(PLANS_STORAGE_KEY, merged);
+  return merged;
+}
+
+export function resetPlanDefinitions(): WealthLevelDefinition[] {
+  writeJSON(PLANS_STORAGE_KEY, DEFAULT_PLAN_DEFINITIONS);
+  return [...DEFAULT_PLAN_DEFINITIONS].sort((a, b) => a.order - b.order);
+}
 
 function toMonthKey(day: string): MonthKey {
   return day.slice(0, 7);
@@ -95,46 +242,50 @@ function flowsForMonth(flows: WealthFlow[], monthKey: MonthKey): WealthFlow[] {
 
 export function buildLevelsSnapshot(
   overview: WealthOverview,
+  options: PlanSnapshotOptions = {},
 ): WealthLevelsSnapshot {
   const today = getTodayInKuwait();
   const monthKey = toMonthKey(today);
+  const levels = getPlanDefinitions();
+  const planCurrency = options.planCurrency ?? overview.primaryCurrency;
+  const conversionRate = resolveConversionRate(
+    overview.primaryCurrency,
+    planCurrency,
+    options.fxRate,
+  );
+  const toPlanCurrency = (value: number) => value * conversionRate;
 
   const flowsThisMonth = flowsForMonth(overview.flows, monthKey);
 
   // Estimate monthly expenses in primary currency
-  const monthlyExpenses = sumBy(
+  const monthlyExpensesPrimary = sumBy(
     flowsThisMonth.filter(
       (f) => f.kind === "expense" && f.currency === overview.primaryCurrency,
     ),
     (f) => f.amount,
   );
+  const monthlyExpenses = toPlanCurrency(monthlyExpensesPrimary);
 
-  const monthlyPassiveIncomeFromFlows = sumBy(
-    flowsThisMonth.filter(
-      (f) => f.kind === "interest" && f.currency === overview.primaryCurrency,
-    ),
-    (f) => f.amount,
-  );
+  let monthlyPassiveIncomeFromInstruments = 0;
+  let totalInstrumentSavings = 0;
+  for (const inst of overview.instruments) {
+    const rate = getConversionRateForCurrency(
+      inst.currency,
+      planCurrency,
+      overview.primaryCurrency,
+      options.fxRate,
+    );
+    if (!rate) continue;
+    totalInstrumentSavings += inst.principal * rate;
+    monthlyPassiveIncomeFromInstruments += estimateMonthlyInterest(inst) * rate;
+  }
 
-  // Include estimated passive return from certificates/instruments in primary currency.
-  const monthlyPassiveIncomeFromInstruments = sumBy(
-    overview.instruments,
-    (inst) => estimateMonthlyInterest(inst),
-  );
-
-  const monthlyPassiveIncome =
-    monthlyPassiveIncomeFromFlows + monthlyPassiveIncomeFromInstruments;
-
-  const totalPrimaryCurrencyStash = sumBy(
-    overview.accounts.filter(
-      (a) => a.currency === overview.primaryCurrency,
-    ),
-    (a) => a.currentBalance,
-  );
+  const monthlyPassiveIncome = monthlyPassiveIncomeFromInstruments;
+  const totalSavings = totalInstrumentSavings;
 
   const monthsOfExpensesSaved =
     monthlyExpenses > 0
-      ? totalPrimaryCurrencyStash / monthlyExpenses
+      ? totalSavings / monthlyExpenses
       : null;
 
   const coveragePercent =
@@ -144,6 +295,7 @@ export function buildLevelsSnapshot(
 
   const snapshotBase: Omit<WealthLevelsSnapshot, "levels" | "currentLevelId" | "nextLevelId"> =
     {
+      totalSavings,
       monthsOfExpensesSaved,
       monthlyPassiveIncome:
         monthlyPassiveIncome > 0 ? monthlyPassiveIncome : 0,
@@ -151,44 +303,32 @@ export function buildLevelsSnapshot(
       coveragePercent,
     };
 
-  if (monthsOfExpensesSaved === null || !Number.isFinite(monthsOfExpensesSaved)) {
-    return {
-      ...snapshotBase,
-      levels: LEVELS,
-      currentLevelId: null,
-      nextLevelId: LEVELS[0]?.id ?? null,
-    };
-  }
-
-  // Determine current level by thresholds
+  // Determine current plan by target thresholds (upper bounds).
   let current: WealthLevelDefinition | null = null;
-  for (const level of LEVELS) {
-    const meetsMonths =
-      level.minMonthsOfExpenses == null ||
-      monthsOfExpensesSaved >= level.minMonthsOfExpenses;
-    const meetsCoverage =
-      level.minInterestCoveragePercent == null ||
-      (coveragePercent ?? 0) >= level.minInterestCoveragePercent;
+  for (const level of levels) {
+    const savingsTarget = level.minSavings ?? Number.POSITIVE_INFINITY;
+    const revenueTarget = level.minMonthlyRevenue ?? 0;
+    const meetsSavingsTarget = totalSavings >= savingsTarget;
+    const meetsRevenueTarget = monthlyPassiveIncome >= revenueTarget;
 
-    if (meetsMonths && meetsCoverage) {
-      if (!current || level.order > current.order) {
-        current = level;
-      }
+    if (!meetsSavingsTarget || !meetsRevenueTarget) {
+      current = level;
+      break;
     }
+    current = level;
   }
 
-  // Next level: smallest level with higher order than current (or first one if none yet)
+  // Next plan: smallest plan with higher order than current (or first one if none yet)
   let next: WealthLevelDefinition | null = null;
   if (!current) {
-    next = LEVELS[0] ?? null;
+    next = levels[0] ?? null;
   } else {
-    next =
-      LEVELS.find((lvl) => lvl.order === current!.order + 1) ?? null;
+    next = levels.find((lvl) => lvl.order === current.order + 1) ?? null;
   }
 
   return {
     ...snapshotBase,
-    levels: LEVELS,
+    levels,
     currentLevelId: current?.id ?? null,
     nextLevelId: next?.id ?? null,
   };

@@ -16,6 +16,7 @@ export interface WealthAccount {
 export type WealthFlowKind =
   | "income"
   | "deposit"
+  | "investment"
   | "withdrawal"
   | "interest"
   | "expense";
@@ -86,19 +87,19 @@ export interface WealthOverview extends WealthState {
   monthStory: WealthMonthStory;
 }
 
-// --- Wealth Levels ---
+// --- Wealth Plans ---
 
 /**
- * A conceptual level on the Poor → Stable → Wealthy ladder.
- * Thresholds are intentionally simple (months of expenses, interest coverage).
+ * Plans are comfort tiers based on savings size and monthly revenue.
+ * Thresholds are intentionally simple (minimum savings and monthly revenue).
  */
 export interface WealthLevelDefinition {
   id: string;
   name: string;
   shortLabel: string;
   order: number;
-  minMonthsOfExpenses?: number;
-  minInterestCoveragePercent?: number;
+  minSavings?: number;
+  minMonthlyRevenue?: number;
   description: string;
 }
 
@@ -106,6 +107,7 @@ export interface WealthLevelsSnapshot {
   levels: WealthLevelDefinition[];
   currentLevelId: string | null;
   nextLevelId: string | null;
+  totalSavings: number;
   monthsOfExpensesSaved: number | null;
   monthlyPassiveIncome: number | null;
   estimatedMonthlyExpenses: number | null;

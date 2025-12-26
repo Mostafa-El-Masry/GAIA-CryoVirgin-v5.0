@@ -12,14 +12,15 @@ import {
   saveWealthStateWithRemote,
 } from "../lib/wealthStore";
 import { hasSupabaseConfig } from "../lib/remoteWealth";
+import { getExchangeRate } from "../lib/exchangeRate";
+import { buildInstrumentAutoFlows, mergeInstrumentFlows } from "../lib/instrumentFlows";
 import {
   estimateMonthlyInterest,
   estimateTotalInterestOverHorizon,
 } from "../lib/projections";
 import { getTodayInKuwait } from "../lib/summary";
 
-const surface =
-  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] text-[var(--gaia-text-default)] shadow-[0_18px_60px_rgba(0,0,0,0.08)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
 function computeEndDate(startDate: string, termMonths: number): string {
   if (!startDate) return "-";
@@ -54,7 +55,7 @@ function LockedState({
     <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-[var(--gaia-text-default)]">
       <section className={`${surface} p-8`}>
         <h1 className="mb-2 text-xl font-semibold text-white">
-          Certificates & instruments locked
+          Certificates & investments locked
         </h1>
         <p className="mb-3 text-sm text-slate-300">
           Complete more Academy lessons in Apollo to unlock this part of Wealth.
@@ -86,7 +87,7 @@ function WealthInstrumentsContent() {
         const s = await loadWealthStateWithRemote();
         setState(s);
       } catch (err: any) {
-        setError(err?.message ?? "Failed to load instruments.");
+        setError(err?.message ?? "Failed to load investments.");
       }
     };
     void load();
@@ -120,7 +121,7 @@ function WealthInstrumentsContent() {
     return (
       <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-slate-100">
         <section className={`${surface} p-6 text-sm text-slate-300`}>
-          Loading your instruments from Supabase...
+          Loading your investments from Supabase...
         </section>
       </main>
     );
@@ -134,10 +135,10 @@ function WealthInstrumentsContent() {
             Wall Street Drive
           </p>
           <h1 className="mt-1 text-3xl font-semibold text-[var(--gaia-text-strong)]">
-            Certificates & instruments
+            Certificates & investments
           </h1>
           <p className="mt-2 max-w-3xl text-sm gaia-muted">
-            Long-term deposits, CDs, and other instruments that generate
+            Long-term deposits, CDs, and other investments that generate
             interest for you. For now, GAIA uses a simple monthly-interest
             estimate without complex compounding.
           </p>
@@ -191,7 +192,7 @@ function WealthInstrumentsContent() {
             Portfolio overview
           </h2>
           <p className="mt-2 text-xs gaia-muted">
-            Overview of your instruments by currency. All numbers are rough,
+            Overview of your investments by currency. All numbers are rough,
             on-purpose-simple estimates.
           </p>
         </article>
@@ -236,7 +237,7 @@ function WealthInstrumentsContent() {
             )}
             {portfolioByCurrency.size === 0 && (
               <p className="text-xs gaia-muted">
-                No instruments defined yet. Later you&apos;ll be able to add
+                No investments defined yet. Later you&apos;ll be able to add
                 real certificates here.
               </p>
             )}
@@ -246,10 +247,10 @@ function WealthInstrumentsContent() {
 
       <section className={`${surface} p-5 md:p-6`}>
         <h2 className="text-sm font-semibold text-[var(--gaia-text-strong)]">
-          Instruments list
+          Investments list
         </h2>
         <p className="mt-1 text-xs gaia-muted">
-          Each row is a single certificate or instrument, with a simple
+          Each row is a single certificate or investment, with a simple
           monthly-interest estimate and rough 12-month projection.
         </p>
         {!supabaseReady && (
@@ -552,9 +553,21 @@ function WealthInstrumentsContent() {
                                 instrumentsNext.push(payload);
                               }
 
+                              const fxInfo = await getExchangeRate();
+                              const autoFlows = buildInstrumentAutoFlows(
+                                payload,
+                                fxInfo.rate,
+                                today,
+                              );
+                              const flowsNext = mergeInstrumentFlows(
+                                state.flows,
+                                payload.id,
+                                autoFlows,
+                              );
                               const next: WealthState = {
                                 ...state,
                                 instruments: instrumentsNext,
+                                flows: flowsNext,
                               };
                               try {
                                 await saveWealthStateWithRemote(next);
@@ -594,6 +607,7 @@ function WealthInstrumentsContent() {
                               const next: WealthState = {
                                 ...state,
                                 instruments: state.instruments.filter((i) => i.id !== inst.id),
+                                flows: state.flows.filter((flow) => flow.instrumentId !== inst.id),
                               };
                               try {
                                 await saveWealthStateWithRemote(next);
@@ -632,7 +646,7 @@ function WealthInstrumentsContent() {
                     colSpan={13}
                     className="py-4 text-center text-xs gaia-muted"
                   >
-                    No instruments defined yet. In later weeks, you&apos;ll be
+                    No investments defined yet. In later weeks, you&apos;ll be
                     able to add your real certificates here.
                   </td>
                 </tr>

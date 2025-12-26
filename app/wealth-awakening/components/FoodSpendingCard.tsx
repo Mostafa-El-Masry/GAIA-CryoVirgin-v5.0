@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { getTodayInKuwait } from "../lib/summary";
 import { SEED_FOOD_ITEMS } from "../../health-awakening/lib/foodLibrary";
 
-const surface =
-  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] text-[...ar(--gaia-text-default)] shadow-[0_18px_60px_rgba(0,0,0,0.18)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
 type FoodStatsRow = {
   id: string;

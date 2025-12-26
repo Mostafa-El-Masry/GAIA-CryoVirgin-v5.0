@@ -8,8 +8,7 @@ interface BlendsStripProps {
   snapshot: WealthLevelsSnapshot | null;
 }
 
-const surface =
-  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] text-[var(--gaia-text-default)] shadow-[0_18px_60px_rgba(0,0,0,0.18)]";
+const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
 const BlendsStrip: FC<BlendsStripProps> = ({ snapshot }) => {
   const activeBlend = pickBlendForSnapshot(snapshot);

@@ -5,8 +5,7 @@ interface WealthSnapshotProps {
   overview: WealthOverview;
 }
 
-const surface =
-  "rounded-2xl border gaia-border bg-[var(--gaia-surface)] shadow-[0_18px_60px_rgba(0,0,0,0.18)]";
+const surface = "wealth-surface";
 
 const formatCurrency = (value: number, currency: string) => {
   if (!Number.isFinite(value)) return "-";
@@ -78,7 +77,7 @@ const WealthSnapshot: FC<WealthSnapshotProps> = ({ overview }) => {
                 Money Map
               </h2>
               <span className="text-[11px] gaia-muted">
-                {overview.accounts.length} accounts - {overview.instruments.length} instruments
+                {overview.accounts.length} accounts - {overview.instruments.length} investments
               </span>
             </div>
             <div className="mt-3 grid gap-2 text-xs text-[var(--gaia-text-default)] sm:grid-cols-3">

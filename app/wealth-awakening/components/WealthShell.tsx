@@ -3,6 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { Manrope } from "next/font/google";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
 type NavItem = {
   href: string;
@@ -15,8 +22,8 @@ const navItems: NavItem[] = [
   { href: "/wealth-awakening/accounts", label: "Accounts" },
   { href: "/wealth-awakening/flows", label: "Flows" },
   { href: "/wealth-awakening/purchases", label: "Purchases" },
-  { href: "/wealth-awakening/instruments", label: "Instruments" },
-  { href: "/wealth-awakening/levels", label: "Levels" },
+  { href: "/wealth-awakening/instruments", label: "Investments" },
+  { href: "/wealth-awakening/levels", label: "Plans" },
   { href: "/wealth-awakening/projections", label: "Projections" },
   { href: "/wealth-awakening/status", label: "Status" },
 ];
@@ -28,9 +35,11 @@ export default function WealthShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-[var(--gaia-surface-soft)] text-[var(--gaia-text-default)]">
+    <div
+      className={`wealth-shell wealth-theme min-h-screen text-[var(--gaia-text-default)] ${manrope.className}`}
+    >
       <div className="flex min-h-screen">
-        <aside className="hidden w-64 shrink-0 flex-col border-r gaia-border bg-[var(--gaia-surface)]/95 px-5 py-6 shadow-[6px_0_30px_rgba(0,0,0,0.25)] lg:flex">
+        <aside className="hidden w-64 shrink-0 flex-col border-r gaia-border bg-[var(--gaia-surface)]/95 px-5 py-6 shadow-[6px_0_24px_rgba(15,23,42,0.08)] lg:flex">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--gaia-contrast-bg)]/20 text-lg font-bold text-[var(--gaia-contrast-bg)]">
               G
@@ -55,7 +64,7 @@ export default function WealthShell({ children }: { children: ReactNode }) {
             </div>
             <Link
               href="/settings"
-              className="mt-3 inline-flex w-full items-center justify-center rounded-lg bg-[var(--gaia-contrast-bg)] px-3 py-2 text-[12px] font-semibold text-[var(--gaia-contrast-text)] transition hover:brightness-110"
+              className="wealth-button mt-3 inline-flex w-full items-center justify-center px-3 py-2 text-[12px] font-semibold text-[var(--gaia-text-strong)]"
             >
               Complete profile
             </Link>
@@ -86,7 +95,7 @@ export default function WealthShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="mt-auto space-y-3 text-[var(--gaia-text-default)]">
-            <button className="w-full rounded-lg bg-[var(--gaia-contrast-bg)] px-3 py-2 text-sm font-semibold text-[var(--gaia-contrast-text)] shadow-lg shadow-[var(--gaia-contrast-bg)]/25 transition hover:brightness-110">
+            <button className="w-full px-3 py-2 text-sm font-semibold text-[var(--gaia-text-strong)]">
               Deposit funds
             </button>
           </div>
