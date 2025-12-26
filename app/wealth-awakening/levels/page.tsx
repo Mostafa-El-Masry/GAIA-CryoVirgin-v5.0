@@ -607,6 +607,8 @@ export default function WealthLevelsPage() {
     }
   }
 
+  const showPlanProjectionInline = !isEditingPlans && currentPlanRows.length > 0;
+
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-slate-100">
       <header className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -766,67 +768,282 @@ export default function WealthLevelsPage() {
                 const isNext = plan.id === snapshot.nextLevelId;
 
                 return (
-                  <tr
-                    key={plan.id}
-                    className={`border-t border-slate-800 ${
-                      isCurrent
-                        ? "bg-emerald-500/10"
-                        : isNext
-                        ? "bg-sky-500/10"
-                        : ""
-                    }`}
-                  >
-                    <td className="px-4 py-2 text-[11px] font-semibold text-white">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span>{plan.shortLabel}</span>
-                        {isCurrent && (
-                          <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
-                            Current
-                          </span>
+                  <Fragment key={plan.id}>
+                    <tr
+                      className={`border-t border-slate-800 ${
+                        isCurrent
+                          ? "bg-emerald-500/10"
+                          : isNext
+                          ? "bg-sky-500/10"
+                          : ""
+                      }`}
+                    >
+                      <td className="px-4 py-2 text-[11px] font-semibold text-white">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span>{plan.shortLabel}</span>
+                          {isCurrent && (
+                            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
+                              Current
+                            </span>
+                          )}
+                          {isNext && !isCurrent && (
+                            <span className="rounded-full bg-sky-500/20 px-2 py-0.5 text-[10px] font-semibold text-sky-100">
+                              Next target
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-[11px]">
+                        {isEditingPlans ? (
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={plan.minSavings ?? 0}
+                            onChange={(e) =>
+                              updatePlanNumber(idx, "minSavings", e.target.value)
+                            }
+                            className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-white"
+                          />
+                        ) : (
+                          formatCurrency(plan.minSavings ?? 0, planCurrency)
                         )}
-                        {isNext && !isCurrent && (
-                          <span className="rounded-full bg-sky-500/20 px-2 py-0.5 text-[10px] font-semibold text-sky-100">
-                            Next target
-                          </span>
+                      </td>
+                      <td className="px-4 py-2 text-[11px]">
+                        {isEditingPlans ? (
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={plan.minMonthlyRevenue ?? 0}
+                            onChange={(e) =>
+                              updatePlanNumber(idx, "minMonthlyRevenue", e.target.value)
+                            }
+                            className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-white"
+                          />
+                        ) : (
+                          formatCurrency(plan.minMonthlyRevenue ?? 0, planCurrency)
                         )}
-                      </div>
-                    </td>
-                  <td className="px-4 py-2 text-[11px]">
-                    {isEditingPlans ? (
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={plan.minSavings ?? 0}
-                        onChange={(e) =>
-                          updatePlanNumber(idx, "minSavings", e.target.value)
-                        }
-                        className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-white"
-                      />
-                    ) : (
-                      formatCurrency(plan.minSavings ?? 0, planCurrency)
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-[11px]">
-                    {isEditingPlans ? (
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={plan.minMonthlyRevenue ?? 0}
-                        onChange={(e) =>
-                          updatePlanNumber(idx, "minMonthlyRevenue", e.target.value)
-                        }
-                        className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-white"
-                      />
-                    ) : (
-                      formatCurrency(plan.minMonthlyRevenue ?? 0, planCurrency)
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-[11px] text-slate-300">
-                    {plan.description}
-                  </td>
-                </tr>
+                      </td>
+                      <td className="px-4 py-2 text-[11px] text-slate-300">
+                        {plan.description}
+                      </td>
+                    </tr>
+                    {showPlanProjectionInline && isCurrent ? (
+                      <tr className="border-t border-slate-800">
+                        <td colSpan={4} className="px-4 pb-4">
+                          <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+                            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                              <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                  Plan projections
+                                </p>
+                                <p className="mt-1 text-xs text-slate-300">
+                                  Path to current target (stops when savings and revenue targets are met).
+                                </p>
+                              </div>
+                              <div className="text-xs text-slate-400">
+                                Reinvests every {REINVEST_STEP}. Rate drops 1% per year to a 10% floor.
+                              </div>
+                            </div>
+                            <div className="mt-3 border-t border-slate-800 pt-3">
+                              <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                                <div>
+                                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                    {currentPlan?.shortLabel ?? "Current plan"}
+                                  </p>
+                                  <p className="mt-1 text-xs text-slate-300">
+                                    {currentPlan?.description ?? "No plan available yet."}
+                                  </p>
+                                </div>
+                                <div className="text-xs text-slate-300">
+                                  Target savings:{" "}
+                                  <span className="font-semibold text-white">
+                                    {targetSavingsLabel}
+                                  </span>
+                                  <span className="ml-3">
+                                    Target revenue:{" "}
+                                    <span className="font-semibold text-white">
+                                      {targetRevenueLabel}
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="mt-3 overflow-x-hidden">
+                                <table className="min-w-full table-fixed border-separate border-spacing-y-2 text-left text-xs text-white">
+                                  <colgroup>
+                                    {planProjectionColumns.map((key) => (
+                                      <col key={key} style={{ width: PLAN_PROJECTION_COLUMN_WIDTHS[key] }} />
+                                    ))}
+                                  </colgroup>
+                                  <thead>
+                                    <tr className="text-[11px] uppercase tracking-wide text-white">
+                                      {planProjectionColumns.map((key) => {
+                                        const isRight = key !== "year" && key !== "age";
+                                        return (
+                                          <th
+                                            key={key}
+                                            draggable
+                                            onDragStart={(event) => {
+                                              setDraggingColumn(key);
+                                              event.dataTransfer.setData("text/plain", key);
+                                              event.dataTransfer.effectAllowed = "move";
+                                            }}
+                                            onDragOver={(event) => {
+                                              event.preventDefault();
+                                              setDragOverColumn(key);
+                                            }}
+                                            onDragLeave={() => setDragOverColumn(null)}
+                                            onDrop={(event) => {
+                                              event.preventDefault();
+                                              const source =
+                                                draggingColumn ||
+                                                (event.dataTransfer.getData("text/plain") as ProjectionColumnKey);
+                                              if (source) {
+                                                handleColumnDrop(source, key);
+                                              }
+                                              setDraggingColumn(null);
+                                              setDragOverColumn(null);
+                                            }}
+                                            onDragEnd={() => {
+                                              setDraggingColumn(null);
+                                              setDragOverColumn(null);
+                                            }}
+                                            className={`py-2 ${isRight ? "px-2 text-right" : "pr-2"} ${
+                                              dragOverColumn === key ? "bg-blue-600/10" : ""
+                                            }`}
+                                            title="Drag to reorder columns"
+                                          >
+                                            {PLAN_PROJECTION_COLUMN_LABELS[key]}
+                                          </th>
+                                        );
+                                      })}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {currentPlanRows.map((row) => (
+                                      <Fragment key={row.year}>
+                                        <tr
+                                          className="group cursor-pointer text-white transition"
+                                          onClick={() =>
+                                            setExpandedYear((prev) => {
+                                              if (prev === row.year) {
+                                                setCollapsingYear(row.year);
+                                                setTimeout(() => setCollapsingYear(null), 700);
+                                                return null;
+                                              }
+                                              return row.year;
+                                            })
+                                          }
+                                        >
+                                          {planProjectionColumns.map((key, colIndex) => {
+                                            const rounding =
+                                              colIndex === 0
+                                                ? "rounded-l-xl"
+                                                : colIndex === planProjectionColumns.length - 1
+                                                ? "rounded-r-xl"
+                                                : "";
+                                            return (
+                                              <td
+                                                key={key}
+                                                className={`${getCellClasses(key, false)} ${rounding}`}
+                                              >
+                                                {renderYearCell(key, row)}
+                                              </td>
+                                            );
+                                          })}
+                                        </tr>
+                                        {expandedYear === row.year || collapsingYear === row.year ? (
+                                          <tr className="border-b border-slate-800">
+                                            <td colSpan={planColumnCount} className="p-0">
+                                              <div
+                                                className={`overflow-hidden transition-[max-height,opacity] duration-[700ms] ease-in-out ${
+                                                  expandedYear === row.year && collapsingYear !== row.year
+                                                    ? "max-h-[720px] opacity-100"
+                                                    : "max-h-0 opacity-0"
+                                                }`}
+                                              >
+                                                <table className="w-full table-fixed border-separate border-spacing-y-1 text-left text-xs text-white">
+                                                  <colgroup>
+                                                    {planProjectionColumns.map((key) => (
+                                                      <col
+                                                        key={key}
+                                                        style={{ width: PLAN_PROJECTION_COLUMN_WIDTHS[key] }}
+                                                      />
+                                                    ))}
+                                                  </colgroup>
+                                                  <tbody>
+                                                    {row.months.map((month, monthIndex) => (
+                                                      <tr
+                                                        key={`${row.year}-${monthIndex}-${month.month}`}
+                                                        className="border-b border-slate-800 text-slate-300"
+                                                      >
+                                                        {planProjectionColumns.map((key, monthColIndex) => {
+                                                          const rounding =
+                                                            monthColIndex === 0
+                                                              ? "rounded-l-xl"
+                                                              : monthColIndex === planProjectionColumns.length - 1
+                                                              ? "rounded-r-xl"
+                                                              : "";
+                                                          return (
+                                                            <td
+                                                              key={key}
+                                                              className={`${getCellClasses(key, true)} ${rounding}`}
+                                                            >
+                                                              {renderMonthCell(key, month)}
+                                                            </td>
+                                                          );
+                                                        })}
+                                                      </tr>
+                                                    ))}
+                                                  </tbody>
+                                                </table>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        ) : null}
+                                      </Fragment>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                              <div className="mt-4 border-t border-slate-800 pt-3">
+                                <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                  Coverage
+                                </h3>
+                                <dl className="mt-2 space-y-1 text-xs text-slate-200">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <dt>Estimated monthly expenses</dt>
+                                    <dd className="font-semibold text-white">
+                                      {snapshot.estimatedMonthlyExpenses
+                                        ? formatCurrency(snapshot.estimatedMonthlyExpenses, planCurrency)
+                                        : "-"}
+                                    </dd>
+                                  </div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <dt>Monthly interest (passive)</dt>
+                                    <dd className="font-semibold text-white">
+                                      {formatCurrency(snapshot.monthlyPassiveIncome ?? 0, planCurrency)}
+                                    </dd>
+                                  </div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <dt>Interest coverage</dt>
+                                    <dd className="font-semibold text-white">
+                                      {formatPercent(snapshot.coveragePercent)}
+                                    </dd>
+                                  </div>
+                                </dl>
+                                <p className="mt-2 text-[11px] text-slate-400">
+                                  Coverage is how much of your estimated monthly expenses could be paid by interest alone,
+                                  in EGP.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : null}
+                  </Fragment>
                 );
               })}
             </tbody>
@@ -846,225 +1063,6 @@ export default function WealthLevelsPage() {
         )}
       </section>
 
-      <section className={`${surface} p-4 md:p-5`}>
-        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Plan projections
-            </p>
-            <h3 className="text-base font-semibold text-white">
-              Path to current target
-            </h3>
-            <p className="mt-1 text-xs text-slate-300">
-              Projections stop once both the target savings and revenue for the plan are met.
-            </p>
-          </div>
-          <div className="text-xs text-slate-400">
-            Reinvests every {REINVEST_STEP}. Rate drops 1% per year to a 10% floor.
-          </div>
-        </div>
-
-        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                {currentPlan?.shortLabel ?? "Current plan"}
-              </p>
-              <p className="mt-1 text-xs text-slate-300">
-                {currentPlan?.description ?? "No plan available yet."}
-              </p>
-            </div>
-            <div className="text-xs text-slate-300">
-              Target savings:{" "}
-              <span className="font-semibold text-white">
-                {targetSavingsLabel}
-              </span>
-              <span className="ml-3">
-                Target revenue:{" "}
-                <span className="font-semibold text-white">
-                  {targetRevenueLabel}
-                </span>
-              </span>
-            </div>
-          </div>
-          <div className="mt-3 border-t border-slate-800 pt-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Coverage
-            </h3>
-            <dl className="mt-2 space-y-1 text-xs text-slate-200">
-              <div className="flex items-center justify-between gap-2">
-                <dt>Estimated monthly expenses</dt>
-                <dd className="font-semibold text-white">
-                  {snapshot.estimatedMonthlyExpenses
-                    ? formatCurrency(snapshot.estimatedMonthlyExpenses, planCurrency)
-                    : "-"}
-                </dd>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <dt>Monthly interest (passive)</dt>
-                <dd className="font-semibold text-white">
-                  {formatCurrency(snapshot.monthlyPassiveIncome ?? 0, planCurrency)}
-                </dd>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <dt>Interest coverage</dt>
-                <dd className="font-semibold text-white">
-                  {formatPercent(snapshot.coveragePercent)}
-                </dd>
-              </div>
-            </dl>
-            <p className="mt-2 text-[11px] text-slate-400">
-              Coverage is how much of your estimated monthly expenses could be paid by interest alone,
-              in EGP.
-            </p>
-          </div>
-
-          {currentPlanRows.length > 0 ? (
-            <div className="mt-3 overflow-x-hidden">
-              <table className="min-w-full table-fixed border-separate border-spacing-y-2 text-left text-xs text-white">
-                <colgroup>
-                  {planProjectionColumns.map((key) => (
-                    <col key={key} style={{ width: PLAN_PROJECTION_COLUMN_WIDTHS[key] }} />
-                  ))}
-                </colgroup>
-                <thead>
-                  <tr className="text-[11px] uppercase tracking-wide text-white">
-                    {planProjectionColumns.map((key) => {
-                      const isRight = key !== "year" && key !== "age";
-                      return (
-                        <th
-                          key={key}
-                          draggable
-                          onDragStart={(event) => {
-                            setDraggingColumn(key);
-                            event.dataTransfer.setData("text/plain", key);
-                            event.dataTransfer.effectAllowed = "move";
-                          }}
-                          onDragOver={(event) => {
-                            event.preventDefault();
-                            setDragOverColumn(key);
-                          }}
-                          onDragLeave={() => setDragOverColumn(null)}
-                          onDrop={(event) => {
-                            event.preventDefault();
-                            const source =
-                              draggingColumn ||
-                              (event.dataTransfer.getData("text/plain") as ProjectionColumnKey);
-                            if (source) {
-                              handleColumnDrop(source, key);
-                            }
-                            setDraggingColumn(null);
-                            setDragOverColumn(null);
-                          }}
-                          onDragEnd={() => {
-                            setDraggingColumn(null);
-                            setDragOverColumn(null);
-                          }}
-                          className={`py-2 ${isRight ? "px-2 text-right" : "pr-2"} ${
-                            dragOverColumn === key ? "bg-blue-600/10" : ""
-                          }`}
-                          title="Drag to reorder columns"
-                        >
-                          {PLAN_PROJECTION_COLUMN_LABELS[key]}
-                        </th>
-                      );
-                    })}
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentPlanRows.map((row) => (
-                    <Fragment key={row.year}>
-                      <tr
-                        className="group cursor-pointer text-white transition"
-                        onClick={() =>
-                          setExpandedYear((prev) => {
-                            if (prev === row.year) {
-                              setCollapsingYear(row.year);
-                              setTimeout(() => setCollapsingYear(null), 700);
-                              return null;
-                            }
-                            return row.year;
-                          })
-                        }
-                      >
-                        {planProjectionColumns.map((key, idx) => {
-                          const rounding =
-                            idx === 0
-                              ? "rounded-l-xl"
-                              : idx === planProjectionColumns.length - 1
-                              ? "rounded-r-xl"
-                              : "";
-                          return (
-                            <td
-                              key={key}
-                              className={`${getCellClasses(key, false)} ${rounding}`}
-                            >
-                              {renderYearCell(key, row)}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                      {expandedYear === row.year || collapsingYear === row.year ? (
-                        <tr className="border-b border-slate-800">
-                          <td colSpan={planColumnCount} className="p-0">
-                            <div
-                              className={`overflow-hidden transition-[max-height,opacity] duration-[700ms] ease-in-out ${
-                                expandedYear === row.year && collapsingYear !== row.year
-                                  ? "max-h-[720px] opacity-100"
-                                  : "max-h-0 opacity-0"
-                              }`}
-                            >
-                              <table className="w-full table-fixed border-separate border-spacing-y-1 text-left text-xs text-white">
-                                <colgroup>
-                                  {planProjectionColumns.map((key) => (
-                                    <col
-                                      key={key}
-                                      style={{ width: PLAN_PROJECTION_COLUMN_WIDTHS[key] }}
-                                    />
-                                  ))}
-                                </colgroup>
-                                <tbody>
-                                  {row.months.map((month, idx) => (
-                                    <tr
-                                      key={`${row.year}-${idx}-${month.month}`}
-                                      className="border-b border-slate-800 text-slate-300"
-                                    >
-                                      {planProjectionColumns.map((key, colIdx) => {
-                                        const rounding =
-                                          colIdx === 0
-                                            ? "rounded-l-xl"
-                                            : colIdx === planProjectionColumns.length - 1
-                                            ? "rounded-r-xl"
-                                            : "";
-                                        return (
-                                          <td
-                                            key={key}
-                                            className={`${getCellClasses(key, true)} ${rounding}`}
-                                          >
-                                            {renderMonthCell(key, month)}
-                                          </td>
-                                        );
-                                      })}
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : null}
-                    </Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="mt-3 text-xs text-slate-400">
-              Target already met or not enough investment data to project.
-            </p>
-          )}
-        </div>
-      </section>
 
     </main>
   );
