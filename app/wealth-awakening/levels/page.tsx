@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useWealthUnlocks } from "../hooks/useWealthUnlocks";
 import type {
   WealthState,
@@ -45,11 +45,64 @@ function formatMonths(value: number | null) {
   return `${value.toFixed(0)} mo`;
 }
 
-type ProgressTone = {
-  card: string;
-  bar: string;
-  badge: string;
-};
+function useAnimatedNumber(
+  value: number | null,
+  options?: { enabled?: boolean; durationMs?: number }
+): number | null {
+  const { enabled = true, durationMs = 1400 } = options ?? {};
+  const [display, setDisplay] = useState<number | null>(value);
+  const previous = useRef<number | null>(value);
+  const frame = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (frame.current != null) {
+      cancelAnimationFrame(frame.current);
+    }
+
+    if (!enabled || value == null || !Number.isFinite(value)) {
+      previous.current = value;
+      setDisplay(value);
+      return undefined;
+    }
+
+    const startValue = previous.current;
+    if (startValue == null || !Number.isFinite(startValue)) {
+      previous.current = value;
+      setDisplay(value);
+      return undefined;
+    }
+
+    if (startValue === value) {
+      setDisplay(value);
+      return undefined;
+    }
+
+    const start = performance.now();
+    const delta = value - startValue;
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      setDisplay(startValue + delta * eased);
+      if (t < 1) {
+        frame.current = requestAnimationFrame(tick);
+      } else {
+        previous.current = value;
+        setDisplay(value);
+      }
+    };
+
+    frame.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (frame.current != null) {
+        cancelAnimationFrame(frame.current);
+      }
+    };
+  }, [value, enabled, durationMs]);
+
+  return display;
+}
 
 function getGoalProgress(current: number, target: number | null): number {
   if (target == null || target <= 0) return 1;
@@ -57,25 +110,27 @@ function getGoalProgress(current: number, target: number | null): number {
   return Math.min(1, Math.max(0, current / target));
 }
 
-function getProgressTone(progress: number): ProgressTone {
+type ProgressAccent = {
+  bar: string;
+  badge: string;
+};
+
+function getProgressAccent(progress: number): ProgressAccent {
   if (progress >= 1) {
     return {
-      card: "border-emerald-500/40 bg-emerald-500/10",
-      bar: "bg-emerald-400",
-      badge: "border-emerald-500/40 bg-emerald-500/20 text-emerald-100",
+      bar: "bg-emerald-300",
+      badge: "border-emerald-400/50 text-emerald-200",
     };
   }
   if (progress >= 0.5) {
     return {
-      card: "border-sky-500/40 bg-sky-500/10",
-      bar: "bg-sky-400",
-      badge: "border-sky-500/40 bg-sky-500/20 text-sky-100",
+      bar: "bg-sky-300",
+      badge: "border-sky-400/50 text-sky-200",
     };
   }
   return {
-    card: "border-amber-500/40 bg-amber-500/10",
-    bar: "bg-amber-400",
-    badge: "border-amber-500/40 bg-amber-500/20 text-amber-100",
+    bar: "bg-amber-300",
+    badge: "border-amber-400/50 text-amber-200",
   };
 }
 
@@ -171,7 +226,11 @@ function calculateAge(today: Date, birthDate: Date): number {
   return Math.max(0, age);
 }
 
-function parseDayKey(day: string): { year: number; month: number; day: number } {
+function parseDayKey(day: string): {
+  year: number;
+  month: number;
+  day: number;
+} {
   const [y, m, d] = day.split("-").map((v) => parseInt(v, 10));
   return {
     year: Number.isFinite(y) ? y : 1970,
@@ -194,7 +253,7 @@ function convertToPlanCurrency(
   amount: number,
   currency: string,
   planCurrency: string,
-  fxRate: number | null,
+  fxRate: number | null
 ): number {
   if (currency === planCurrency) return amount;
   if (planCurrency === "EGP" && currency === "KWD" && fxRate) {
@@ -238,7 +297,7 @@ function buildPlanProjectionRows(
   instruments: WealthInstrument[],
   planCurrency: string,
   fxRate: number | null,
-  todayKey: string,
+  todayKey: string
 ): PlanProjectionRow[] {
   const todayDate = new Date(`${todayKey}T00:00:00Z`);
   const projectionInstruments: ProjectionInstrument[] = instruments
@@ -252,7 +311,7 @@ function buildPlanProjectionRows(
           principalRaw,
           inst.currency,
           planCurrency,
-          fxRate,
+          fxRate
         ),
         startDate: inst.startDate,
         termMonths,
@@ -263,13 +322,13 @@ function buildPlanProjectionRows(
 
   const totalPrincipal = projectionInstruments.reduce(
     (sum, inst) => sum + inst.principal,
-    0,
+    0
   );
   if (totalPrincipal <= 0) return [];
   const baseRate =
     projectionInstruments.reduce(
       (sum, inst) => sum + inst.principal * inst.annualRatePercent,
-      0,
+      0
     ) / totalPrincipal;
   let reinvestBucket = 0;
 
@@ -284,7 +343,7 @@ function buildPlanProjectionRows(
   const maxMonths = 1200;
   for (let i = 0; i < maxMonths; i += 1) {
     const cursor = new Date(
-      Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth() + i, 1),
+      Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth() + i, 1)
     );
     const year = cursor.getUTCFullYear();
     const monthKey = toIsoDate(cursor);
@@ -299,7 +358,7 @@ function buildPlanProjectionRows(
 
     const startPrincipal = projectionInstruments.reduce(
       (sum, inst) => sum + inst.principal,
-      0,
+      0
     );
     const startBalance = startPrincipal + reinvestBucket;
     let eligiblePrincipal = 0;
@@ -396,7 +455,7 @@ function estimatePlanTargetYear(
   instruments: WealthInstrument[],
   planCurrency: string,
   fxRate: number | null,
-  todayKey: string,
+  todayKey: string
 ): number | null {
   const targetSavings = plan.minSavings ?? 0;
   const targetRevenue = plan.minMonthlyRevenue ?? 0;
@@ -408,15 +467,14 @@ function estimatePlanTargetYear(
     instruments,
     planCurrency,
     fxRate,
-    todayKey,
+    todayKey
   );
   if (rows.length === 0) return null;
   const lastRow = rows[rows.length - 1];
   const lastMonth = lastRow.months[lastRow.months.length - 1];
   if (!lastMonth) return null;
   const reached =
-    lastMonth.endBalance >= targetSavings &&
-    lastMonth.revenue >= targetRevenue;
+    lastMonth.endBalance >= targetSavings && lastMonth.revenue >= targetRevenue;
   return reached ? lastRow.year : null;
 }
 
@@ -428,11 +486,16 @@ export default function WealthLevelsPage() {
         <section className={`${surface} p-8`}>
           <h1 className="text-xl font-semibold text-white">Plans locked</h1>
           <p className="mt-2 text-sm text-slate-300">
-            Complete more Academy lessons in Apollo to unlock this part of Wealth.
+            Complete more Academy lessons in Apollo to unlock this part of
+            Wealth.
           </p>
           <p className="mt-2 text-xs text-slate-400">
-            Lessons completed: <span className="font-semibold text-white">{totalLessonsCompleted}</span>{" "}
-            - Wealth stage <span className="font-semibold text-white">{stage}</span>/5
+            Lessons completed:{" "}
+            <span className="font-semibold text-white">
+              {totalLessonsCompleted}
+            </span>{" "}
+            - Wealth stage{" "}
+            <span className="font-semibold text-white">{stage}</span>/5
           </p>
         </section>
       </main>
@@ -441,22 +504,24 @@ export default function WealthLevelsPage() {
 
   const [state, setState] = useState<WealthState | null>(null);
   const [snapshot, setSnapshot] = useState<WealthLevelsSnapshot | null>(null);
-  const [planDefinitions, setPlanDefinitions] = useState<WealthLevelDefinition[]>(() =>
-    getPlanDefinitions(),
-  );
+  const [planDefinitions, setPlanDefinitions] = useState<
+    WealthLevelDefinition[]
+  >(() => getPlanDefinitions());
   const [planDraft, setPlanDraft] = useState<WealthLevelDefinition[]>(() =>
-    getPlanDefinitions(),
+    getPlanDefinitions()
   );
   const [isEditingPlans, setIsEditingPlans] = useState(false);
   const [fxRate, setFxRate] = useState<number | null>(null);
   const [expandedYear, setExpandedYear] = useState<number | null>(null);
   const [collapsingYear, setCollapsingYear] = useState<number | null>(null);
-  const [planProjectionColumns, setPlanProjectionColumns] =
-    useState<ProjectionColumnKey[]>(PLAN_PROJECTION_COLUMNS);
+  const [planProjectionColumns, setPlanProjectionColumns] = useState<
+    ProjectionColumnKey[]
+  >(PLAN_PROJECTION_COLUMNS);
   const [draggingColumn, setDraggingColumn] =
     useState<ProjectionColumnKey | null>(null);
   const [dragOverColumn, setDragOverColumn] =
     useState<ProjectionColumnKey | null>(null);
+  const [animateNumbers, setAnimateNumbers] = useState(false);
   const planCurrency = "EGP";
   const todayKey = getTodayInKuwait();
 
@@ -507,6 +572,12 @@ export default function WealthLevelsPage() {
     };
   }, [state]);
 
+  useEffect(() => {
+    if (!snapshot || animateNumbers) return;
+    const id = requestAnimationFrame(() => setAnimateNumbers(true));
+    return () => cancelAnimationFrame(id);
+  }, [snapshot, animateNumbers]);
+
   const currentPlanId = snapshot?.currentLevelId ?? null;
   const currentPlanRows = useMemo(() => {
     if (!state || !currentPlanId) return [] as PlanProjectionRow[];
@@ -517,7 +588,7 @@ export default function WealthLevelsPage() {
       state.instruments ?? [],
       planCurrency,
       fxRate,
-      todayKey,
+      todayKey
     );
   }, [state, planDefinitions, planCurrency, fxRate, currentPlanId, todayKey]);
 
@@ -534,8 +605,8 @@ export default function WealthLevelsPage() {
           instruments,
           planCurrency,
           fxRate,
-          todayKey,
-        ),
+          todayKey
+        )
       );
     }
     return targets;
@@ -549,11 +620,35 @@ export default function WealthLevelsPage() {
     todayKey,
   ]);
 
+  const totalSavings =
+    typeof snapshot?.totalSavings === "number" &&
+    Number.isFinite(snapshot.totalSavings)
+      ? snapshot.totalSavings
+      : 0;
+  const monthlyRevenue =
+    typeof snapshot?.monthlyPassiveIncome === "number"
+      ? snapshot.monthlyPassiveIncome
+      : 0;
+  const monthsSaved =
+    typeof snapshot?.monthsOfExpensesSaved === "number" &&
+    Number.isFinite(snapshot.monthsOfExpensesSaved)
+      ? snapshot.monthsOfExpensesSaved
+      : null;
+  const animatedSavings = useAnimatedNumber(totalSavings, {
+    enabled: animateNumbers,
+  });
+  const animatedRevenue = useAnimatedNumber(monthlyRevenue, {
+    enabled: animateNumbers,
+  });
+  const animatedMonthsSaved = useAnimatedNumber(monthsSaved, {
+    enabled: animateNumbers,
+  });
+
   const planColumnCount = planProjectionColumns.length;
 
   const getCellClasses = (
     key: ProjectionColumnKey,
-    isMonth: boolean,
+    isMonth: boolean
   ): string => {
     const align = key === "year" || key === "age" ? "" : "text-right";
     const base = isMonth ? "py-2" : "py-3";
@@ -611,7 +706,7 @@ export default function WealthLevelsPage() {
 
   const renderMonthCell = (
     key: ProjectionColumnKey,
-    month: PlanProjectionRow["months"][number],
+    month: PlanProjectionRow["months"][number]
   ) => {
     switch (key) {
       case "year":
@@ -639,7 +734,7 @@ export default function WealthLevelsPage() {
 
   const handleColumnDrop = (
     sourceKey: ProjectionColumnKey,
-    targetKey: ProjectionColumnKey,
+    targetKey: ProjectionColumnKey
   ) => {
     if (sourceKey === targetKey) return;
     setPlanProjectionColumns((prev) => {
@@ -663,14 +758,14 @@ export default function WealthLevelsPage() {
   const updatePlanNumber = (
     index: number,
     field: "minSavings" | "minMonthlyRevenue",
-    value: string,
+    value: string
   ) => {
     const parsed = value === "" ? 0 : Number(value);
     const cleanValue = Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
     setPlanDraft((prev) =>
       prev.map((plan, idx) =>
-        idx === index ? { ...plan, [field]: cleanValue } : plan,
-      ),
+        idx === index ? { ...plan, [field]: cleanValue } : plan
+      )
     );
   };
 
@@ -692,17 +787,20 @@ export default function WealthLevelsPage() {
     );
   }
 
-  const currentPlan = snapshot.levels.find((lvl) => lvl.id === snapshot.currentLevelId);
-  const nextPlan = snapshot.levels.find((lvl) => lvl.id === snapshot.nextLevelId);
-
-  const totalSavings = Number.isFinite(snapshot.totalSavings) ? snapshot.totalSavings : 0;
-  const monthlyRevenue = snapshot.monthlyPassiveIncome ?? 0;
+  const currentPlan = snapshot.levels.find(
+    (lvl) => lvl.id === snapshot.currentLevelId
+  );
+  const nextPlan = snapshot.levels.find(
+    (lvl) => lvl.id === snapshot.nextLevelId
+  );
 
   const targetSavings = currentPlan?.minSavings ?? null;
   const targetRevenue = currentPlan?.minMonthlyRevenue ?? null;
 
-  const savingsGap = targetSavings != null ? targetSavings - totalSavings : null;
-  const revenueGap = targetRevenue != null ? targetRevenue - monthlyRevenue : null;
+  const savingsGap =
+    targetSavings != null ? targetSavings - totalSavings : null;
+  const revenueGap =
+    targetRevenue != null ? targetRevenue - monthlyRevenue : null;
   const nextPlanReady =
     (savingsGap == null || savingsGap <= 0) &&
     (revenueGap == null || revenueGap <= 0);
@@ -715,31 +813,50 @@ export default function WealthLevelsPage() {
     targetRevenue != null && Number.isFinite(targetRevenue)
       ? formatCurrency(targetRevenue, planCurrency)
       : "Set plan thresholds";
-  const savingsProgress = getGoalProgress(totalSavings, targetSavings);
-  const revenueProgress = getGoalProgress(monthlyRevenue, targetRevenue);
-  const savingsProgressTone = getProgressTone(savingsProgress);
-  const revenueProgressTone = getProgressTone(revenueProgress);
+  const savingsProgress = getGoalProgress(
+    animatedSavings ?? totalSavings,
+    targetSavings
+  );
+  const revenueProgress = getGoalProgress(
+    animatedRevenue ?? monthlyRevenue,
+    targetRevenue
+  );
+  const savingsAccent = getProgressAccent(savingsProgress);
+  const revenueAccent = getProgressAccent(revenueProgress);
   const savingsProgressPercent = Math.round(savingsProgress * 100);
   const revenueProgressPercent = Math.round(revenueProgress * 100);
-  const currentSavingsLabel = formatCurrency(totalSavings, planCurrency);
+  const currentSavingsLabel = formatCurrency(
+    animatedSavings ?? totalSavings,
+    planCurrency
+  );
   const currentRevenueLabel =
-    monthlyRevenue > 0 ? formatCurrency(monthlyRevenue, planCurrency) : "Not logged";
+    monthlyRevenue > 0
+      ? formatCurrency(animatedRevenue ?? monthlyRevenue, planCurrency)
+      : "Not logged";
 
   let nextPlanHint: string | null = null;
   if (nextPlan) {
     const hints: string[] = [];
     if (savingsGap != null && savingsGap > 0) {
-      hints.push(`Add about ${formatCurrency(savingsGap, planCurrency)} more in savings`);
+      hints.push(
+        `Add about ${formatCurrency(savingsGap, planCurrency)} more in savings`
+      );
     }
     if (revenueGap != null && revenueGap > 0) {
-      hints.push(`Raise monthly revenue by about ${formatCurrency(revenueGap, planCurrency)}`);
+      hints.push(
+        `Raise monthly revenue by about ${formatCurrency(
+          revenueGap,
+          planCurrency
+        )}`
+      );
     }
     if (hints.length > 0) {
       nextPlanHint = `${hints.join(" and ")} to reach ${nextPlan.shortLabel}.`;
     }
   }
 
-  const showPlanProjectionInline = !isEditingPlans && currentPlanRows.length > 0;
+  const showPlanProjectionInline =
+    !isEditingPlans && currentPlanRows.length > 0;
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-slate-100">
@@ -750,120 +867,12 @@ export default function WealthLevelsPage() {
           </p>
           <h1 className="mt-1 text-3xl font-semibold text-white">Plans</h1>
           <p className="mt-2 max-w-3xl text-sm text-slate-300">
-            A calm ladder of comfort tiers, driven by your savings and the monthly revenue they
-            generate. GAIA uses your real numbers to place you on the road.
+            A calm ladder of comfort tiers, driven by your savings and the
+            monthly revenue they generate. GAIA uses your real numbers to place
+            you on the road.
           </p>
         </div>
       </header>
-
-      <section className={`${surface} p-4 md:p-5`}>
-        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Current wealth plan
-            </p>
-            <h3 className="text-lg font-semibold text-white">
-              {currentPlan?.shortLabel ?? "Need data to place you"}
-            </h3>
-            <p className="mt-1 text-xs text-slate-300">
-              {currentPlan?.description ??
-                "Log balances and investments so GAIA can place you on the ladder."}
-            </p>
-          </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-right">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">Next</p>
-            <p className="text-sm font-semibold text-white">
-              {nextPlan?.shortLabel ?? "TBD"}
-            </p>
-            <p className="mt-1 text-[10px] text-slate-400">
-              Savings target: {targetSavingsLabel}
-            </p>
-            <p className="text-[10px] text-slate-400">
-              Monthly revenue target: {targetRevenueLabel}
-            </p>
-            <span
-              className={`mt-1 inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${
-                nextPlanReady
-                  ? "border border-emerald-500/40 bg-emerald-500/15 text-emerald-200"
-                  : "border border-slate-700 bg-slate-900 text-slate-300"
-              }`}
-            >
-              {nextPlanReady ? "Ready to move up" : "In progress"}
-            </span>
-          </div>
-        </div>
-        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_200px]">
-          <div className={`rounded-xl border px-4 py-3 ${savingsProgressTone.card}`}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-400">
-                  Savings goal
-                </p>
-                <p className="text-sm font-semibold text-white">{currentSavingsLabel}</p>
-                <p className="text-[11px] text-slate-200">Target: {targetSavingsLabel}</p>
-              </div>
-              <span
-                className={`rounded-full border px-2 py-1 text-[10px] font-semibold ${savingsProgressTone.badge}`}
-              >
-                {savingsProgressPercent}%
-              </span>
-            </div>
-            <div className="mt-3 h-2 w-full rounded-full bg-slate-900/80">
-              <div
-                className={`h-2 rounded-full ${savingsProgressTone.bar}`}
-                style={{ width: `${savingsProgressPercent}%` }}
-              />
-            </div>
-            {savingsGap != null && savingsGap > 0 ? (
-              <p className="mt-2 text-[10px] text-slate-200">
-                ~{formatCurrency(savingsGap, planCurrency)} remaining
-              </p>
-            ) : (
-              <p className="mt-2 text-[10px] text-slate-200">Goal met</p>
-            )}
-          </div>
-          <div className={`rounded-xl border px-4 py-3 ${revenueProgressTone.card}`}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-400">
-                  Monthly revenue goal
-                </p>
-                <p className="text-sm font-semibold text-white">{currentRevenueLabel}</p>
-                <p className="text-[11px] text-slate-200">Target: {targetRevenueLabel}</p>
-              </div>
-              <span
-                className={`rounded-full border px-2 py-1 text-[10px] font-semibold ${revenueProgressTone.badge}`}
-              >
-                {revenueProgressPercent}%
-              </span>
-            </div>
-            <div className="mt-3 h-2 w-full rounded-full bg-slate-900/80">
-              <div
-                className={`h-2 rounded-full ${revenueProgressTone.bar}`}
-                style={{ width: `${revenueProgressPercent}%` }}
-              />
-            </div>
-            {revenueGap != null && revenueGap > 0 ? (
-              <p className="mt-2 text-[10px] text-slate-200">
-                ~{formatCurrency(revenueGap, planCurrency)} remaining
-              </p>
-            ) : (
-              <p className="mt-2 text-[10px] text-slate-200">Goal met</p>
-            )}
-          </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">Months saved</p>
-            <p className="text-sm font-semibold text-white">
-              {snapshot.monthsOfExpensesSaved != null && Number.isFinite(snapshot.monthsOfExpensesSaved)
-                ? `${snapshot.monthsOfExpensesSaved.toFixed(1)} months`
-                : "Need data"}
-            </p>
-            <p className="mt-2 text-[10px] text-slate-400">
-              Coverage based on logged expenses.
-            </p>
-          </div>
-        </div>
-      </section>
 
       <section className={`${surface} p-5 md:p-6`}>
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -873,8 +882,8 @@ export default function WealthLevelsPage() {
             </p>
             <h2 className="text-base font-semibold text-white">Edit plans</h2>
             <p className="text-xs text-slate-400">
-              Plans are measured in EGP (converted from your primary currency). Both savings and
-              monthly revenue must meet the threshold.
+              Plans are measured in EGP (converted from your primary currency).
+              Both savings and monthly revenue must meet the threshold.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -915,311 +924,534 @@ export default function WealthLevelsPage() {
                 <th className="px-4 py-2">Target monthly revenue</th>
                 <th className="px-4 py-2">Est. year</th>
                 <th className="px-4 py-2">Est. age</th>
-                <th className="px-4 py-2">Status Trying To Achieve by this Plan</th>
+                <th className="px-4 py-2">
+                  Status Trying To Achieve by this Plan
+                </th>
               </tr>
             </thead>
             <tbody>
-              {(isEditingPlans ? planDraft : planDefinitions).map((plan, idx) => {
-                const isCurrent = plan.id === snapshot.currentLevelId;
-                const isNext = plan.id === snapshot.nextLevelId;
-                const targetYear = planTargetYears.get(plan.id) ?? null;
-                const targetAge =
-                  targetYear != null
-                    ? calculateAge(new Date(Date.UTC(targetYear, 11, 31)), BIRTH_DATE_UTC)
-                    : null;
+              {(isEditingPlans ? planDraft : planDefinitions).map(
+                (plan, idx) => {
+                  const isCurrent = plan.id === snapshot.currentLevelId;
+                  const isNext = plan.id === snapshot.nextLevelId;
+                  const targetYear = planTargetYears.get(plan.id) ?? null;
+                  const targetAge =
+                    targetYear != null
+                      ? calculateAge(
+                          new Date(Date.UTC(targetYear, 11, 31)),
+                          BIRTH_DATE_UTC
+                        )
+                      : null;
 
-                return (
-                  <Fragment key={plan.id}>
-                    <tr
-                      className={`border-t border-slate-800 ${
-                        isCurrent
-                          ? "bg-emerald-500/10"
-                          : isNext
-                          ? "bg-sky-500/10"
-                          : ""
-                      }`}
-                    >
-                      <td className="px-4 py-2 text-[11px] font-semibold text-white">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span>{plan.shortLabel}</span>
-                          {isCurrent && (
-                            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
-                              Current
-                            </span>
-                          )}
-                          {isNext && !isCurrent && (
-                            <span className="rounded-full bg-sky-500/20 px-2 py-0.5 text-[10px] font-semibold text-sky-100">
-                              Next target
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 text-[11px]">
-                        {isEditingPlans ? (
-                          <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={plan.minSavings ?? 0}
-                            onChange={(e) =>
-                              updatePlanNumber(idx, "minSavings", e.target.value)
-                            }
-                            className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-white"
-                          />
-                        ) : (
-                          formatCurrency(plan.minSavings ?? 0, planCurrency)
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-[11px]">
-                        {isEditingPlans ? (
-                          <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={plan.minMonthlyRevenue ?? 0}
-                            onChange={(e) =>
-                              updatePlanNumber(idx, "minMonthlyRevenue", e.target.value)
-                            }
-                            className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-white"
-                          />
-                        ) : (
-                          formatCurrency(plan.minMonthlyRevenue ?? 0, planCurrency)
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-[11px]">
-                        {targetYear != null ? targetYear : "-"}
-                      </td>
-                      <td className="px-4 py-2 text-[11px]">
-                        {targetAge != null ? targetAge : "-"}
-                      </td>
-                      <td className="px-4 py-2 text-[11px] text-slate-300">
-                        {plan.description}
-                      </td>
-                    </tr>
-                    {showPlanProjectionInline && isCurrent ? (
-                      <tr className="border-t border-slate-800">
-                        <td colSpan={6} className="px-4 pb-4">
-                          <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-                            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                              <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                  Plan projections
-                                </p>
-                                <p className="mt-1 text-xs text-slate-300">
-                                  Path to current target (stops when savings and revenue targets are met).
-                                </p>
-                              </div>
-                              <div className="text-xs text-slate-400">
-                                Reinvests every {REINVEST_STEP}. Certificates lock for their term and renew
-                                at the bank rate (17% in 2025, -1% per year to a 10% floor).
-                              </div>
-                            </div>
-                            <div className="mt-3 border-t border-slate-800 pt-3">
-                              <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                                <div className="text-lg font-bold leading-snug text-white md:text-xl">
-                                  <p>{currentPlan?.shortLabel ?? "Current plan"}</p>
-                                  <p className="mt-2">
-                                    {currentPlan?.description ?? "No plan available yet."}
-                                  </p>
-                                  <p className="mt-2">Target savings: {targetSavingsLabel}</p>
-                                  <p>Target Monthly revenue: {targetRevenueLabel}</p>
-                                </div>
-                              </div>
-                              <div className="mt-3 overflow-x-hidden">
-                                <table className="min-w-full table-fixed border-separate border-spacing-y-2 text-left text-xs text-white">
-                                  <colgroup>
-                                    {planProjectionColumns.map((key) => (
-                                      <col key={key} style={{ width: PLAN_PROJECTION_COLUMN_WIDTHS[key] }} />
-                                    ))}
-                                  </colgroup>
-                                  <thead>
-                                    <tr className="text-[11px] uppercase tracking-wide text-white">
-                                      {planProjectionColumns.map((key) => {
-                                        const isRight = key !== "year" && key !== "age";
-                                        return (
-                                          <th
-                                            key={key}
-                                            draggable
-                                            onDragStart={(event) => {
-                                              setDraggingColumn(key);
-                                              event.dataTransfer.setData("text/plain", key);
-                                              event.dataTransfer.effectAllowed = "move";
-                                            }}
-                                            onDragOver={(event) => {
-                                              event.preventDefault();
-                                              setDragOverColumn(key);
-                                            }}
-                                            onDragLeave={() => setDragOverColumn(null)}
-                                            onDrop={(event) => {
-                                              event.preventDefault();
-                                              const source =
-                                                draggingColumn ||
-                                                (event.dataTransfer.getData("text/plain") as ProjectionColumnKey);
-                                              if (source) {
-                                                handleColumnDrop(source, key);
-                                              }
-                                              setDraggingColumn(null);
-                                              setDragOverColumn(null);
-                                            }}
-                                            onDragEnd={() => {
-                                              setDraggingColumn(null);
-                                              setDragOverColumn(null);
-                                            }}
-                                            className={`py-2 ${isRight ? "px-2 text-right" : "pr-2"} ${
-                                              dragOverColumn === key ? "bg-blue-600/10" : ""
-                                            }`}
-                                            title="Drag to reorder columns"
-                                          >
-                                            {PLAN_PROJECTION_COLUMN_LABELS[key]}
-                                          </th>
-                                        );
-                                      })}
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {currentPlanRows.map((row) => (
-                                      <Fragment key={row.year}>
-                                        <tr
-                                          className="group cursor-pointer text-white transition"
-                                          onClick={() =>
-                                            setExpandedYear((prev) => {
-                                              if (prev === row.year) {
-                                                setCollapsingYear(row.year);
-                                                setTimeout(() => setCollapsingYear(null), 700);
-                                                return null;
-                                              }
-                                              return row.year;
-                                            })
-                                          }
-                                        >
-                                          {planProjectionColumns.map((key, colIndex) => {
-                                            const rounding =
-                                              colIndex === 0
-                                                ? "rounded-l-xl"
-                                                : colIndex === planProjectionColumns.length - 1
-                                                ? "rounded-r-xl"
-                                                : "";
-                                            return (
-                                              <td
-                                                key={key}
-                                                className={`${getCellClasses(key, false)} ${rounding}`}
-                                              >
-                                                {renderYearCell(key, row)}
-                                              </td>
-                                            );
-                                          })}
-                                        </tr>
-                                        {expandedYear === row.year || collapsingYear === row.year ? (
-                                          <tr className="border-b border-slate-800">
-                                            <td colSpan={planColumnCount} className="p-0">
-                                              <div
-                                                className={`overflow-hidden transition-[max-height,opacity] duration-[700ms] ease-in-out ${
-                                                  expandedYear === row.year && collapsingYear !== row.year
-                                                    ? "max-h-[720px] opacity-100"
-                                                    : "max-h-0 opacity-0"
-                                                }`}
-                                              >
-                                                <table className="w-full table-fixed border-separate border-spacing-y-1 text-left text-xs text-white">
-                                                  <colgroup>
-                                                    {planProjectionColumns.map((key) => (
-                                                      <col
-                                                        key={key}
-                                                        style={{ width: PLAN_PROJECTION_COLUMN_WIDTHS[key] }}
-                                                      />
-                                                    ))}
-                                                  </colgroup>
-                                                  <tbody>
-                                                    {row.months.map((month, monthIndex) => (
-                                                      <tr
-                                                        key={`${row.year}-${monthIndex}-${month.month}`}
-                                                        className="border-b border-slate-800 text-slate-300"
-                                                      >
-                                                        {planProjectionColumns.map((key, monthColIndex) => {
-                                                          const rounding =
-                                                            monthColIndex === 0
-                                                              ? "rounded-l-xl"
-                                                              : monthColIndex === planProjectionColumns.length - 1
-                                                              ? "rounded-r-xl"
-                                                              : "";
-                                                          return (
-                                                            <td
-                                                              key={key}
-                                                              className={`${getCellClasses(key, true)} ${rounding}`}
-                                                            >
-                                                              {renderMonthCell(key, month)}
-                                                            </td>
-                                                          );
-                                                        })}
-                                                      </tr>
-                                                    ))}
-                                                  </tbody>
-                                                </table>
-                                              </div>
-                                            </td>
-                                          </tr>
-                                        ) : null}
-                                      </Fragment>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                              <div className="mt-4 border-t border-slate-800 pt-3">
-                                <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                  Coverage
-                                </h3>
-                                <dl className="mt-2 space-y-1 text-xs text-slate-200">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <dt>Estimated monthly expenses</dt>
-                                    <dd className="font-semibold text-white">
-                                      {snapshot.estimatedMonthlyExpenses
-                                        ? formatCurrency(snapshot.estimatedMonthlyExpenses, planCurrency)
-                                        : "-"}
-                                    </dd>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-2">
-                                    <dt>Monthly interest (passive)</dt>
-                                    <dd className="font-semibold text-white">
-                                      {formatCurrency(snapshot.monthlyPassiveIncome ?? 0, planCurrency)}
-                                    </dd>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-2">
-                                    <dt>Interest coverage</dt>
-                                    <dd className="font-semibold text-white">
-                                      {formatPercent(snapshot.coveragePercent)}
-                                    </dd>
-                                  </div>
-                                </dl>
-                                <p className="mt-2 text-[11px] text-slate-400">
-                                  Coverage is how much of your estimated monthly expenses could be paid by interest alone,
-                                  in EGP.
-                                </p>
-                              </div>
-                            </div>
+                  return (
+                    <Fragment key={plan.id}>
+                      <tr
+                        className={`border-t border-slate-800 ${
+                          isCurrent
+                            ? "bg-emerald-500/10"
+                            : isNext
+                            ? "bg-sky-500/10"
+                            : ""
+                        }`}
+                      >
+                        <td className="px-4 py-2 text-[11px] font-semibold text-white">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span>{plan.shortLabel}</span>
+                            {isCurrent && (
+                              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
+                                Current
+                              </span>
+                            )}
+                            {isNext && !isCurrent && (
+                              <span className="rounded-full bg-sky-500/20 px-2 py-0.5 text-[10px] font-semibold text-sky-100">
+                                Next target
+                              </span>
+                            )}
                           </div>
                         </td>
+                        <td className="px-4 py-2 text-[11px]">
+                          {isEditingPlans ? (
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={plan.minSavings ?? 0}
+                              onChange={(e) =>
+                                updatePlanNumber(
+                                  idx,
+                                  "minSavings",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-white"
+                            />
+                          ) : (
+                            formatCurrency(plan.minSavings ?? 0, planCurrency)
+                          )}
+                        </td>
+                        <td className="px-4 py-2 text-[11px]">
+                          {isEditingPlans ? (
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={plan.minMonthlyRevenue ?? 0}
+                              onChange={(e) =>
+                                updatePlanNumber(
+                                  idx,
+                                  "minMonthlyRevenue",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-white"
+                            />
+                          ) : (
+                            formatCurrency(
+                              plan.minMonthlyRevenue ?? 0,
+                              planCurrency
+                            )
+                          )}
+                        </td>
+                        <td className="px-4 py-2 text-[11px]">
+                          {targetYear != null ? targetYear : "-"}
+                        </td>
+                        <td className="px-4 py-2 text-[11px]">
+                          {targetAge != null ? targetAge : "-"}
+                        </td>
+                      <td className="px-4 py-2 text-[11px] text-slate-300 max-w-[360px] truncate">
+                        {plan.description}
+                      </td>
                       </tr>
-                    ) : null}
-                  </Fragment>
-                );
-              })}
+                      {showPlanProjectionInline && isCurrent ? (
+                        <tr className="border-t border-slate-800">
+                          <td colSpan={6} className="px-4 pb-4">
+                            <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+                              <div className="mt-3 border-t border-slate-800 pt-3">
+                                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                                  <div
+                                    className="w-full rounded-2xl border border-slate-800 bg-slate-900 p-4 text-slate-100"
+                                    style={{ fontSize: "calc(1em + 2px)" }}
+                                  >
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide">
+                                      Plan brief
+                                    </p>
+                                    <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                      <div>
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide">
+                                          Current wealth plan
+                                        </p>
+                                        <h3 className="mt-1 text-lg font-semibold text-slate-100">
+                                          {currentPlan?.shortLabel ??
+                                            "Need data to place you"}
+                                        </h3>
+                                        <p
+                                          className="mt-2 text-slate-100 text-center self-center capitalize"
+                                          style={{
+                                            fontFamily:
+                                              '"GT Alpina Condensed","Times New Roman",serif',
+                                            fontSize: "48px",
+                                            lineHeight: "1.05",
+                                          }}
+                                        >
+                                          {currentPlan?.description ??
+                                            "Log balances and investments so GAIA can place you on the ladder."}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_200px]">
+                                      <div className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                          <div>
+                                            <p className="text-[11px] uppercase tracking-wide">
+                                              Savings goal
+                                            </p>
+                                            <p className="text-sm font-semibold text-slate-100">
+                                              {currentSavingsLabel}
+                                            </p>
+                                            <p className="text-[11px]">
+                                              Target: {targetSavingsLabel}
+                                            </p>
+                                          </div>
+                                          <span
+                                            className={`rounded-full border bg-slate-900 px-2 py-1 text-[10px] font-semibold ${savingsAccent.badge}`}
+                                          >
+                                            {savingsProgressPercent}%
+                                          </span>
+                                        </div>
+                                        <div className="mt-3 h-2 w-full rounded-full bg-slate-800">
+                                          <div
+                                            className={`h-2 rounded-full ${savingsAccent.bar}`}
+                                            style={{
+                                              width: `${savingsProgressPercent}%`,
+                                            }}
+                                          />
+                                        </div>
+                                        {savingsGap != null &&
+                                        savingsGap > 0 ? (
+                                          <p className="mt-2 text-[10px]">
+                                            ~
+                                            {formatCurrency(
+                                              savingsGap,
+                                              planCurrency
+                                            )}{" "}
+                                            remaining
+                                          </p>
+                                        ) : (
+                                          <p className="mt-2 text-[10px]">
+                                            Goal met
+                                          </p>
+                                        )}
+                                      </div>
+                                      <div className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                          <div>
+                                            <p className="text-[11px] uppercase tracking-wide">
+                                              Monthly revenue goal
+                                            </p>
+                                            <p className="text-sm font-semibold text-slate-100">
+                                              {currentRevenueLabel}
+                                            </p>
+                                            <p className="text-[11px]">
+                                              Target: {targetRevenueLabel}
+                                            </p>
+                                          </div>
+                                          <span
+                                            className={`rounded-full border bg-slate-900 px-2 py-1 text-[10px] font-semibold ${revenueAccent.badge}`}
+                                          >
+                                            {revenueProgressPercent}%
+                                          </span>
+                                        </div>
+                                        <div className="mt-3 h-2 w-full rounded-full bg-slate-800">
+                                          <div
+                                            className={`h-2 rounded-full ${revenueAccent.bar}`}
+                                            style={{
+                                              width: `${revenueProgressPercent}%`,
+                                            }}
+                                          />
+                                        </div>
+                                        {revenueGap != null &&
+                                        revenueGap > 0 ? (
+                                          <p className="mt-2 text-[10px]">
+                                            ~
+                                            {formatCurrency(
+                                              revenueGap,
+                                              planCurrency
+                                            )}{" "}
+                                            remaining
+                                          </p>
+                                        ) : (
+                                          <p className="mt-2 text-[10px]">
+                                            Goal met
+                                          </p>
+                                        )}
+                                      </div>
+                                      <div className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3">
+                                        <p className="text-[11px] uppercase tracking-wide">
+                                          Months saved
+                                        </p>
+                                        <p className="text-sm font-semibold text-slate-100">
+                                          {animatedMonthsSaved != null &&
+                                          Number.isFinite(animatedMonthsSaved)
+                                            ? `${animatedMonthsSaved.toFixed(
+                                                1
+                                              )} months`
+                                            : "Need data"}
+                                        </p>
+                                        <p className="mt-2 text-[10px]">
+                                          Coverage based on logged expenses.
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2">
+                                      <p className="text-[10px] font-semibold uppercase tracking-wide">
+                                        Plan projections
+                                      </p>
+                                      <p className="mt-1 text-[11px]">
+                                        Path to current target (stops when
+                                        savings and revenue targets are met).
+                                      </p>
+                                      <p className="mt-1 text-[11px]">
+                                        Reinvests every {REINVEST_STEP}.
+                                        Certificates lock for their term and
+                                        renew at the bank rate (17% in 2025, -1%
+                                        per year to a 10% floor).
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="mt-3 overflow-x-hidden">
+                                  <table className="min-w-full table-fixed border-separate border-spacing-y-2 text-left text-xs text-white">
+                                    <colgroup>
+                                      {planProjectionColumns.map((key) => (
+                                        <col
+                                          key={key}
+                                          style={{
+                                            width:
+                                              PLAN_PROJECTION_COLUMN_WIDTHS[
+                                                key
+                                              ],
+                                          }}
+                                        />
+                                      ))}
+                                    </colgroup>
+                                    <thead>
+                                      <tr className="text-[11px] uppercase tracking-wide text-white">
+                                        {planProjectionColumns.map((key) => {
+                                          const isRight =
+                                            key !== "year" && key !== "age";
+                                          return (
+                                            <th
+                                              key={key}
+                                              draggable
+                                              onDragStart={(event) => {
+                                                setDraggingColumn(key);
+                                                event.dataTransfer.setData(
+                                                  "text/plain",
+                                                  key
+                                                );
+                                                event.dataTransfer.effectAllowed =
+                                                  "move";
+                                              }}
+                                              onDragOver={(event) => {
+                                                event.preventDefault();
+                                                setDragOverColumn(key);
+                                              }}
+                                              onDragLeave={() =>
+                                                setDragOverColumn(null)
+                                              }
+                                              onDrop={(event) => {
+                                                event.preventDefault();
+                                                const source =
+                                                  draggingColumn ||
+                                                  (event.dataTransfer.getData(
+                                                    "text/plain"
+                                                  ) as ProjectionColumnKey);
+                                                if (source) {
+                                                  handleColumnDrop(source, key);
+                                                }
+                                                setDraggingColumn(null);
+                                                setDragOverColumn(null);
+                                              }}
+                                              onDragEnd={() => {
+                                                setDraggingColumn(null);
+                                                setDragOverColumn(null);
+                                              }}
+                                              className={`py-2 ${
+                                                isRight
+                                                  ? "px-2 text-right"
+                                                  : "pr-2"
+                                              } ${
+                                                dragOverColumn === key
+                                                  ? "bg-blue-600/10"
+                                                  : ""
+                                              }`}
+                                              title="Drag to reorder columns"
+                                            >
+                                              {
+                                                PLAN_PROJECTION_COLUMN_LABELS[
+                                                  key
+                                                ]
+                                              }
+                                            </th>
+                                          );
+                                        })}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {currentPlanRows.map((row) => (
+                                        <Fragment key={row.year}>
+                                          <tr
+                                            className="group cursor-pointer text-white transition"
+                                            onClick={() =>
+                                              setExpandedYear((prev) => {
+                                                if (prev === row.year) {
+                                                  setCollapsingYear(row.year);
+                                                  setTimeout(
+                                                    () =>
+                                                      setCollapsingYear(null),
+                                                    700
+                                                  );
+                                                  return null;
+                                                }
+                                                return row.year;
+                                              })
+                                            }
+                                          >
+                                            {planProjectionColumns.map(
+                                              (key, colIndex) => {
+                                                const rounding =
+                                                  colIndex === 0
+                                                    ? "rounded-l-xl"
+                                                    : colIndex ===
+                                                      planProjectionColumns.length -
+                                                        1
+                                                    ? "rounded-r-xl"
+                                                    : "";
+                                                return (
+                                                  <td
+                                                    key={key}
+                                                    className={`${getCellClasses(
+                                                      key,
+                                                      false
+                                                    )} ${rounding}`}
+                                                  >
+                                                    {renderYearCell(key, row)}
+                                                  </td>
+                                                );
+                                              }
+                                            )}
+                                          </tr>
+                                          {expandedYear === row.year ||
+                                          collapsingYear === row.year ? (
+                                            <tr className="border-b border-slate-800">
+                                              <td
+                                                colSpan={planColumnCount}
+                                                className="p-0"
+                                              >
+                                                <div
+                                                  className={`overflow-hidden transition-[max-height,opacity] duration-[700ms] ease-in-out ${
+                                                    expandedYear === row.year &&
+                                                    collapsingYear !== row.year
+                                                      ? "max-h-[720px] opacity-100"
+                                                      : "max-h-0 opacity-0"
+                                                  }`}
+                                                >
+                                                  <table className="w-full table-fixed border-separate border-spacing-y-1 text-left text-xs text-white">
+                                                    <colgroup>
+                                                      {planProjectionColumns.map(
+                                                        (key) => (
+                                                          <col
+                                                            key={key}
+                                                            style={{
+                                                              width:
+                                                                PLAN_PROJECTION_COLUMN_WIDTHS[
+                                                                  key
+                                                                ],
+                                                            }}
+                                                          />
+                                                        )
+                                                      )}
+                                                    </colgroup>
+                                                    <tbody>
+                                                      {row.months.map(
+                                                        (month, monthIndex) => (
+                                                          <tr
+                                                            key={`${row.year}-${monthIndex}-${month.month}`}
+                                                            className="border-b border-slate-800 text-slate-300"
+                                                          >
+                                                            {planProjectionColumns.map(
+                                                              (
+                                                                key,
+                                                                monthColIndex
+                                                              ) => {
+                                                                const rounding =
+                                                                  monthColIndex ===
+                                                                  0
+                                                                    ? "rounded-l-xl"
+                                                                    : monthColIndex ===
+                                                                      planProjectionColumns.length -
+                                                                        1
+                                                                    ? "rounded-r-xl"
+                                                                    : "";
+                                                                return (
+                                                                  <td
+                                                                    key={key}
+                                                                    className={`${getCellClasses(
+                                                                      key,
+                                                                      true
+                                                                    )} ${rounding}`}
+                                                                  >
+                                                                    {renderMonthCell(
+                                                                      key,
+                                                                      month
+                                                                    )}
+                                                                  </td>
+                                                                );
+                                                              }
+                                                            )}
+                                                          </tr>
+                                                        )
+                                                      )}
+                                                    </tbody>
+                                                  </table>
+                                                </div>
+                                              </td>
+                                            </tr>
+                                          ) : null}
+                                        </Fragment>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                                <div className="mt-4 border-t border-slate-800 pt-3">
+                                  <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                    Coverage
+                                  </h3>
+                                  <dl className="mt-2 space-y-1 text-xs text-slate-200">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <dt>Estimated monthly expenses</dt>
+                                      <dd className="font-semibold text-white">
+                                        {snapshot.estimatedMonthlyExpenses
+                                          ? formatCurrency(
+                                              snapshot.estimatedMonthlyExpenses,
+                                              planCurrency
+                                            )
+                                          : "-"}
+                                      </dd>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <dt>Monthly interest (passive)</dt>
+                                      <dd className="font-semibold text-white">
+                                        {formatCurrency(
+                                          snapshot.monthlyPassiveIncome ?? 0,
+                                          planCurrency
+                                        )}
+                                      </dd>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <dt>Interest coverage</dt>
+                                      <dd className="font-semibold text-white">
+                                        {formatPercent(
+                                          snapshot.coveragePercent
+                                        )}
+                                      </dd>
+                                    </div>
+                                  </dl>
+                                  <p className="mt-2 text-[11px] text-slate-400">
+                                    Coverage is how much of your estimated
+                                    monthly expenses could be paid by interest
+                                    alone, in EGP.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
+                  );
+                }
+              )}
             </tbody>
           </table>
         </div>
         <p className="mt-2 text-[11px] text-slate-400">
-          Tip: set a threshold to 0 if you want that requirement to be ignored for a plan.
+          Tip: set a threshold to 0 if you want that requirement to be ignored
+          for a plan.
         </p>
 
         <p className="mt-4 text-xs text-slate-400">
-          Each plan is a simple checkpoint. You don&apos;t have to race. The goal is to know roughly
-          where you stand and what the next gentle improvement could be.
+          Each plan is a simple checkpoint. You don&apos;t have to race. The
+          goal is to know roughly where you stand and what the next gentle
+          improvement could be.
         </p>
 
         {nextPlanHint && (
-          <p className="mt-3 text-xs font-medium text-emerald-200">{nextPlanHint}</p>
+          <p className="mt-3 text-xs font-medium text-emerald-200">
+            {nextPlanHint}
+          </p>
         )}
       </section>
-
-
     </main>
   );
 }
