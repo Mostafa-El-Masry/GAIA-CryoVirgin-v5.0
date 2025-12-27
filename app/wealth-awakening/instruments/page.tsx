@@ -78,6 +78,8 @@ function WealthInstrumentsContent() {
   const [editing, setEditing] = useState<WealthInstrument | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const supabaseReady = hasSupabaseConfig();
 
@@ -145,6 +147,34 @@ function WealthInstrumentsContent() {
         </div>
         <div className="flex flex-wrap gap-2 text-[11px]">
           {error && <span className="text-rose-300">{error}</span>}
+          {syncStatus && !error && (
+            <span className="text-emerald-300">{syncStatus}</span>
+          )}
+          {supabaseReady && (
+            <button
+              type="button"
+              disabled={syncing}
+              onClick={async () => {
+                if (!state) return;
+                setSyncing(true);
+                setError(null);
+                setSyncStatus(null);
+                try {
+                  await saveWealthStateWithRemote(state);
+                  const refreshed = await loadWealthStateWithRemote();
+                  setState(refreshed);
+                  setSyncStatus("Synced to Supabase.");
+                } catch (err: any) {
+                  setError(err?.message ?? "Failed to sync to Supabase.");
+                } finally {
+                  setSyncing(false);
+                }
+              }}
+              className="inline-flex items-center rounded-full border border-[var(--gaia-contrast-bg)]/40 bg-[var(--gaia-contrast-bg)]/8 px-3 py-1.5 font-semibold text-[var(--gaia-text-default)] hover:border-[var(--gaia-contrast-bg)] disabled:opacity-60"
+            >
+              {syncing ? "Syncing..." : "Sync now"}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
