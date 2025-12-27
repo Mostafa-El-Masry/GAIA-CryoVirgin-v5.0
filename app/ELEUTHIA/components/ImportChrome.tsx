@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from "react";
 import Button from "@/app/DesignSystem/components/Button";
 import type { EleuEntry, EleuVault } from "../types";
 import { uid } from "../lib/uid";
@@ -73,6 +74,12 @@ function toEntries(rows: string[][]): EleuEntry[] {
 }
 
 export default function ImportChrome({ onImport }: Props) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  function onImportClick() {
+    fileRef.current?.click();
+  }
+
   async function handleFile(file: File) {
     const text = await file.text();
     const rows = parseCSV(text);
@@ -88,20 +95,24 @@ export default function ImportChrome({ onImport }: Props) {
   }
 
   return (
-    <label className="inline-flex items-center gap-2">
+    <div className="inline-flex items-center gap-2">
       <input
+        ref={fileRef}
         type="file"
         accept=".csv,text/csv"
         className="hidden"
         onChange={async (e) => {
-          const f = e.target.files?.[0];
-          if (f) await handleFile(f);
-          e.currentTarget.value = "";
+          const input = e.currentTarget;
+          const f = input.files?.[0];
+          if (!f) return;
+          try {
+            await handleFile(f);
+          } finally {
+            input.value = "";
+          }
         }}
       />
-      <span className="inline-flex items-center">
-        <Button>Import Chrome CSV</Button>
-      </span>
-    </label>
+      <Button type="button" onClick={onImportClick}>Import Chrome CSV</Button>
+    </div>
   );
 }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { ComponentType } from "react";
 import { useMemo, useState } from "react";
 
-type CalendarKey = "health" | "learning";
+type CalendarKey = "health" | "training" | "learning";
 
 type CalendarView = {
   id: CalendarKey;
@@ -39,6 +39,14 @@ const LearningCalendar = dynamic(
   }
 );
 
+const TrainingCalendar = dynamic(
+  () => import("@/app/health-awakening/training-calendar/page"),
+  {
+    ssr: false,
+    loading: CalendarLoading,
+  }
+);
+
 export default function DashboardCalendarsPage() {
   const [active, setActive] = useState<CalendarKey>("health");
 
@@ -50,6 +58,13 @@ export default function DashboardCalendarsPage() {
         subtitle: "Food rotation, hydration, and training slots",
         href: "/health-awakening/food-calendar",
         Component: HealthCalendar,
+      },
+      {
+        id: "training",
+        label: "Training calendar",
+        subtitle: "Planned vs actual training volume by day",
+        href: "/health-awakening/training-calendar",
+        Component: TrainingCalendar,
       },
       {
         id: "learning",

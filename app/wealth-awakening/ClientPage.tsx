@@ -485,7 +485,7 @@ export default function WealthAwakeningClientPage() {
                 <th className="px-4 py-2">Plan</th>
                 <th className="px-4 py-2">Target savings</th>
                 <th className="px-4 py-2">Target monthly revenue</th>
-                <th className="px-4 py-2">Notes</th>
+                <th className="px-4 py-2">Status Trying To Achieve by this Plan</th>
               </tr>
             </thead>
             <tbody>

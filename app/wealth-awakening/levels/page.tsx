@@ -357,6 +357,35 @@ function buildPlanProjectionRows(
   return rows;
 }
 
+function estimatePlanTargetYear(
+  plan: WealthLevelDefinition,
+  instruments: WealthInstrument[],
+  planCurrency: string,
+  fxRate: number | null,
+  todayKey: string,
+): number | null {
+  const targetSavings = plan.minSavings ?? 0;
+  const targetRevenue = plan.minMonthlyRevenue ?? 0;
+  if (targetSavings <= 0 && targetRevenue <= 0) {
+    return parseDayKey(todayKey).year;
+  }
+  const rows = buildPlanProjectionRows(
+    plan,
+    instruments,
+    planCurrency,
+    fxRate,
+    todayKey,
+  );
+  if (rows.length === 0) return null;
+  const lastRow = rows[rows.length - 1];
+  const lastMonth = lastRow.months[lastRow.months.length - 1];
+  if (!lastMonth) return null;
+  const reached =
+    lastMonth.endBalance >= targetSavings &&
+    lastMonth.revenue >= targetRevenue;
+  return reached ? lastRow.year : null;
+}
+
 export default function WealthLevelsPage() {
   const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
   if (!canAccess("levels")) {
@@ -395,6 +424,7 @@ export default function WealthLevelsPage() {
   const [dragOverColumn, setDragOverColumn] =
     useState<ProjectionColumnKey | null>(null);
   const planCurrency = "EGP";
+  const todayKey = getTodayInKuwait();
 
   const refreshSnapshot = (nextState: WealthState | null) => {
     if (!nextState) return;
@@ -453,9 +483,37 @@ export default function WealthLevelsPage() {
       state.instruments ?? [],
       planCurrency,
       fxRate,
-      getTodayInKuwait(),
+      todayKey,
     );
-  }, [state, planDefinitions, planCurrency, fxRate, currentPlanId]);
+  }, [state, planDefinitions, planCurrency, fxRate, currentPlanId, todayKey]);
+
+  const planTargetYears = useMemo(() => {
+    const targets = new Map<string, number | null>();
+    if (!state) return targets;
+    const instruments = state.instruments ?? [];
+    const plans = isEditingPlans ? planDraft : planDefinitions;
+    for (const plan of plans) {
+      targets.set(
+        plan.id,
+        estimatePlanTargetYear(
+          plan,
+          instruments,
+          planCurrency,
+          fxRate,
+          todayKey,
+        ),
+      );
+    }
+    return targets;
+  }, [
+    state,
+    planDefinitions,
+    planDraft,
+    isEditingPlans,
+    planCurrency,
+    fxRate,
+    todayKey,
+  ]);
 
   const planColumnCount = planProjectionColumns.length;
 
@@ -790,13 +848,15 @@ export default function WealthLevelsPage() {
                 <th className="px-4 py-2">Plan</th>
                 <th className="px-4 py-2">Target savings</th>
                 <th className="px-4 py-2">Target monthly revenue</th>
-                <th className="px-4 py-2">Notes</th>
+                <th className="px-4 py-2">Est. year</th>
+                <th className="px-4 py-2">Status Trying To Achieve by this Plan</th>
               </tr>
             </thead>
             <tbody>
               {(isEditingPlans ? planDraft : planDefinitions).map((plan, idx) => {
                 const isCurrent = plan.id === snapshot.currentLevelId;
                 const isNext = plan.id === snapshot.nextLevelId;
+                const targetYear = planTargetYears.get(plan.id) ?? null;
 
                 return (
                   <Fragment key={plan.id}>
@@ -856,13 +916,16 @@ export default function WealthLevelsPage() {
                           formatCurrency(plan.minMonthlyRevenue ?? 0, planCurrency)
                         )}
                       </td>
+                      <td className="px-4 py-2 text-[11px]">
+                        {targetYear != null ? targetYear : "-"}
+                      </td>
                       <td className="px-4 py-2 text-[11px] text-slate-300">
                         {plan.description}
                       </td>
                     </tr>
                     {showPlanProjectionInline && isCurrent ? (
                       <tr className="border-t border-slate-800">
-                        <td colSpan={4} className="px-4 pb-4">
+                        <td colSpan={5} className="px-4 pb-4">
                           <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
                             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                               <div>

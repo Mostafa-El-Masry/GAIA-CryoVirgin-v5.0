@@ -647,6 +647,12 @@ export default function HealthAwakeningClientPage() {
               >
                 Food calendar
               </Link>
+              <Link
+                href="/health-awakening/training-calendar"
+                className="inline-flex items-center gap-2 rounded-full border gaia-border bg-[var(--gaia-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--gaia-text-strong)] transition hover:bg-[var(--gaia-surface-soft)]"
+              >
+                Training calendar
+              </Link>
             </div>
             <div className="flex flex-wrap gap-2 text-[11px] text-[var(--gaia-text-default)]">
               <span className="gaia-chip inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">

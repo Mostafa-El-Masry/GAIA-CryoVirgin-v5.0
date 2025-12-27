@@ -20,6 +20,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/health-awakening", label: "Overview" },
   { href: "/health-awakening/food-calendar", label: "Food calendar", badge: "beta" },
+  { href: "/health-awakening/training-calendar", label: "Training calendar", badge: "new" },
 ];
 
 export default function HealthShell({ children }: { children: ReactNode }) {

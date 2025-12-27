@@ -26,7 +26,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L1",
     name: "Poor",
-    shortLabel: "Level 1 - Poor",
+    shortLabel: "Plan J - Poor",
     order: 1,
     minSavings: 50000,
     minMonthlyRevenue: 0,
@@ -36,7 +36,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L2",
     name: "Struggling",
-    shortLabel: "Level 2 - Struggling",
+    shortLabel: "Plan I - Struggling",
     order: 2,
     minSavings: 200000,
     minMonthlyRevenue: 0,
@@ -46,7 +46,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L3",
     name: "Survivor",
-    shortLabel: "Level 3 - Survivor",
+    shortLabel: "Plan H - Survivor",
     order: 3,
     minSavings: 500000,
     minMonthlyRevenue: 0,
@@ -56,7 +56,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L4",
     name: "Stable",
-    shortLabel: "Level 4 - Stable",
+    shortLabel: "Plan G - Stable",
     order: 4,
     minSavings: 1000000,
     minMonthlyRevenue: 0,
@@ -66,7 +66,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L5",
     name: "Comfortable",
-    shortLabel: "Level 5 - Comfortable",
+    shortLabel: "Plan F - Comfortable",
     order: 5,
     minSavings: 2500000,
     minMonthlyRevenue: 0,
@@ -76,7 +76,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L6",
     name: "Secure",
-    shortLabel: "Level 6 - Secure",
+    shortLabel: "Plan E - Secure",
     order: 6,
     minSavings: 5000000,
     minMonthlyRevenue: 0,
@@ -86,7 +86,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L7",
     name: "Prosperous",
-    shortLabel: "Level 7 - Prosperous",
+    shortLabel: "Plan D - Prosperous",
     order: 7,
     minSavings: 10000000,
     minMonthlyRevenue: 0,
@@ -96,7 +96,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L8",
     name: "Rich",
-    shortLabel: "Level 8 - Rich",
+    shortLabel: "Plan C - Rich",
     order: 8,
     minSavings: 25000000,
     minMonthlyRevenue: 0,
@@ -106,7 +106,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L9",
     name: "Very rich",
-    shortLabel: "Level 9 - Very rich",
+    shortLabel: "Plan B - Very rich",
     order: 9,
     minSavings: 100000000,
     minMonthlyRevenue: 0,
@@ -116,7 +116,7 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L10",
     name: "Wealthy",
-    shortLabel: "Level 10 - Wealthy",
+    shortLabel: "Plan A - Wealthy",
     order: 10,
     minSavings: 100000000,
     minMonthlyRevenue: 0,
