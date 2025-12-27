@@ -45,6 +45,40 @@ function formatMonths(value: number | null) {
   return `${value.toFixed(0)} mo`;
 }
 
+type ProgressTone = {
+  card: string;
+  bar: string;
+  badge: string;
+};
+
+function getGoalProgress(current: number, target: number | null): number {
+  if (target == null || target <= 0) return 1;
+  if (!Number.isFinite(current)) return 0;
+  return Math.min(1, Math.max(0, current / target));
+}
+
+function getProgressTone(progress: number): ProgressTone {
+  if (progress >= 1) {
+    return {
+      card: "border-emerald-500/40 bg-emerald-500/10",
+      bar: "bg-emerald-400",
+      badge: "border-emerald-500/40 bg-emerald-500/20 text-emerald-100",
+    };
+  }
+  if (progress >= 0.5) {
+    return {
+      card: "border-sky-500/40 bg-sky-500/10",
+      bar: "bg-sky-400",
+      badge: "border-sky-500/40 bg-sky-500/20 text-sky-100",
+    };
+  }
+  return {
+    card: "border-amber-500/40 bg-amber-500/10",
+    bar: "bg-amber-400",
+    badge: "border-amber-500/40 bg-amber-500/20 text-amber-100",
+  };
+}
+
 type PlanProjectionRow = {
   year: number;
   age: number;
@@ -247,7 +281,7 @@ function buildPlanProjectionRows(
   let yearRow: PlanProjectionRow | null = null;
   let reached = false;
 
-  const maxMonths = 720;
+  const maxMonths = 1200;
   for (let i = 0; i < maxMonths; i += 1) {
     const cursor = new Date(
       Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth() + i, 1),
@@ -681,6 +715,15 @@ export default function WealthLevelsPage() {
     targetRevenue != null && Number.isFinite(targetRevenue)
       ? formatCurrency(targetRevenue, planCurrency)
       : "Set plan thresholds";
+  const savingsProgress = getGoalProgress(totalSavings, targetSavings);
+  const revenueProgress = getGoalProgress(monthlyRevenue, targetRevenue);
+  const savingsProgressTone = getProgressTone(savingsProgress);
+  const revenueProgressTone = getProgressTone(revenueProgress);
+  const savingsProgressPercent = Math.round(savingsProgress * 100);
+  const revenueProgressPercent = Math.round(revenueProgress * 100);
+  const currentSavingsLabel = formatCurrency(totalSavings, planCurrency);
+  const currentRevenueLabel =
+    monthlyRevenue > 0 ? formatCurrency(monthlyRevenue, planCurrency) : "Not logged";
 
   let nextPlanHint: string | null = null;
   if (nextPlan) {
@@ -749,53 +792,75 @@ export default function WealthLevelsPage() {
             </span>
           </div>
         </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">
-              Investment savings (EGP)
-            </p>
-            <p className="text-sm font-semibold text-white">
-              {formatCurrency(totalSavings, planCurrency)}
-            </p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_200px]">
+          <div className={`rounded-xl border px-4 py-3 ${savingsProgressTone.card}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                  Savings goal
+                </p>
+                <p className="text-sm font-semibold text-white">{currentSavingsLabel}</p>
+                <p className="text-[11px] text-slate-200">Target: {targetSavingsLabel}</p>
+              </div>
+              <span
+                className={`rounded-full border px-2 py-1 text-[10px] font-semibold ${savingsProgressTone.badge}`}
+              >
+                {savingsProgressPercent}%
+              </span>
+            </div>
+            <div className="mt-3 h-2 w-full rounded-full bg-slate-900/80">
+              <div
+                className={`h-2 rounded-full ${savingsProgressTone.bar}`}
+                style={{ width: `${savingsProgressPercent}%` }}
+              />
+            </div>
+            {savingsGap != null && savingsGap > 0 ? (
+              <p className="mt-2 text-[10px] text-slate-200">
+                ~{formatCurrency(savingsGap, planCurrency)} remaining
+              </p>
+            ) : (
+              <p className="mt-2 text-[10px] text-slate-200">Goal met</p>
+            )}
           </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
+          <div className={`rounded-xl border px-4 py-3 ${revenueProgressTone.card}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                  Monthly revenue goal
+                </p>
+                <p className="text-sm font-semibold text-white">{currentRevenueLabel}</p>
+                <p className="text-[11px] text-slate-200">Target: {targetRevenueLabel}</p>
+              </div>
+              <span
+                className={`rounded-full border px-2 py-1 text-[10px] font-semibold ${revenueProgressTone.badge}`}
+              >
+                {revenueProgressPercent}%
+              </span>
+            </div>
+            <div className="mt-3 h-2 w-full rounded-full bg-slate-900/80">
+              <div
+                className={`h-2 rounded-full ${revenueProgressTone.bar}`}
+                style={{ width: `${revenueProgressPercent}%` }}
+              />
+            </div>
+            {revenueGap != null && revenueGap > 0 ? (
+              <p className="mt-2 text-[10px] text-slate-200">
+                ~{formatCurrency(revenueGap, planCurrency)} remaining
+              </p>
+            ) : (
+              <p className="mt-2 text-[10px] text-slate-200">Goal met</p>
+            )}
+          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3">
             <p className="text-[11px] uppercase tracking-wide text-slate-400">Months saved</p>
             <p className="text-sm font-semibold text-white">
               {snapshot.monthsOfExpensesSaved != null && Number.isFinite(snapshot.monthsOfExpensesSaved)
                 ? `${snapshot.monthsOfExpensesSaved.toFixed(1)} months`
                 : "Need data"}
             </p>
-          </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">Monthly revenue</p>
-            <p className="text-sm font-semibold text-white">
-              {monthlyRevenue > 0
-                ? formatCurrency(monthlyRevenue, planCurrency)
-                : "Not logged"}
+            <p className="mt-2 text-[10px] text-slate-400">
+              Coverage based on logged expenses.
             </p>
-            <p className="mt-1 text-[10px] text-slate-400">
-              Estimated investment yield (converted to EGP).
-            </p>
-          </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">Target savings</p>
-            <p className="text-sm font-semibold text-white">{targetSavingsLabel}</p>
-            {savingsGap != null && savingsGap > 0 ? (
-              <p className="text-[10px] text-slate-400">
-                ~{formatCurrency(savingsGap, planCurrency)} to hit the next plan.
-              </p>
-            ) : null}
-          </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">
-              Target monthly revenue
-            </p>
-            <p className="text-sm font-semibold text-white">{targetRevenueLabel}</p>
-            {revenueGap != null && revenueGap > 0 ? (
-              <p className="text-[10px] text-slate-400">
-                ~{formatCurrency(revenueGap, planCurrency)} to hit the next plan.
-              </p>
-            ) : null}
           </div>
         </div>
       </section>
@@ -849,6 +914,7 @@ export default function WealthLevelsPage() {
                 <th className="px-4 py-2">Target savings</th>
                 <th className="px-4 py-2">Target monthly revenue</th>
                 <th className="px-4 py-2">Est. year</th>
+                <th className="px-4 py-2">Est. age</th>
                 <th className="px-4 py-2">Status Trying To Achieve by this Plan</th>
               </tr>
             </thead>
@@ -857,6 +923,10 @@ export default function WealthLevelsPage() {
                 const isCurrent = plan.id === snapshot.currentLevelId;
                 const isNext = plan.id === snapshot.nextLevelId;
                 const targetYear = planTargetYears.get(plan.id) ?? null;
+                const targetAge =
+                  targetYear != null
+                    ? calculateAge(new Date(Date.UTC(targetYear, 11, 31)), BIRTH_DATE_UTC)
+                    : null;
 
                 return (
                   <Fragment key={plan.id}>
@@ -919,13 +989,16 @@ export default function WealthLevelsPage() {
                       <td className="px-4 py-2 text-[11px]">
                         {targetYear != null ? targetYear : "-"}
                       </td>
+                      <td className="px-4 py-2 text-[11px]">
+                        {targetAge != null ? targetAge : "-"}
+                      </td>
                       <td className="px-4 py-2 text-[11px] text-slate-300">
                         {plan.description}
                       </td>
                     </tr>
                     {showPlanProjectionInline && isCurrent ? (
                       <tr className="border-t border-slate-800">
-                        <td colSpan={5} className="px-4 pb-4">
+                        <td colSpan={6} className="px-4 pb-4">
                           <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
                             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                               <div>

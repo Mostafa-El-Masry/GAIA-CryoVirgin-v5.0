@@ -131,6 +131,10 @@ function normalizeNumber(value: unknown, fallback: number): number {
   return Math.max(0, numeric);
 }
 
+function isLegacyShortLabel(label: string): boolean {
+  return /^level\s*\d+/i.test(label.trim());
+}
+
 function getCachedEgpPerKwd(): number | null {
   const stored = readJSON<StoredRate | null>(FX_STORAGE_KEY, null);
   if (!stored || !Number.isFinite(stored.rate) || stored.rate <= 0) return null;
@@ -188,7 +192,9 @@ function mergePlanDefinitions(
       ...def,
       name: typeof override.name === "string" && override.name.trim() ? override.name : def.name,
       shortLabel:
-        typeof override.shortLabel === "string" && override.shortLabel.trim()
+        typeof override.shortLabel === "string" &&
+        override.shortLabel.trim() &&
+        !isLegacyShortLabel(override.shortLabel)
           ? override.shortLabel
           : def.shortLabel,
       description:
