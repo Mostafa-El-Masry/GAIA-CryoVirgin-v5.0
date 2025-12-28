@@ -109,6 +109,9 @@ export async function importLegacyWealthStateToSupabase(): Promise<{
   if (!hasAnyData(legacy)) {
     return { ok: false, message: "No legacy local data found." };
   }
+  if (!legacy) {
+    return { ok: false, message: "No legacy local data found." };
+  }
   const { cleaned } = cleanState(legacy);
   const ok = await pushRemoteWealthAll(cleaned);
   if (!ok) {
