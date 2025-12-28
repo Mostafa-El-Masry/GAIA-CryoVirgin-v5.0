@@ -8,6 +8,7 @@ import {
 } from "./remoteWealth";
 
 const LOCAL_KEY = "gaia_wealth_awakening_state_v2";
+const LEGACY_MIGRATION_KEY = "gaia_wealth_awakening_migrated_v1";
 
 const DEFAULT_STATE: WealthState = {
   accounts: [],
@@ -47,13 +48,37 @@ function cleanState(state: WealthState): { cleaned: WealthState; removedFlowIds:
 }
 
 function loadLocal(): WealthState {
-  if (typeof window === "undefined") return DEFAULT_STATE;
+  return DEFAULT_STATE;
+}
+
+function saveLocal(state: WealthState, omitFlows = false) {
+  void state;
+  void omitFlows;
+}
+
+function setLegacyMigrationFlag(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(LEGACY_MIGRATION_KEY, "1");
+  } catch {
+    // ignore
+  }
+}
+
+function clearLegacyLocal(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(LOCAL_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+function readLegacyLocal(): WealthState | null {
+  if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(LOCAL_KEY);
-    if (!raw) {
-      window.localStorage.setItem(LOCAL_KEY, JSON.stringify(DEFAULT_STATE));
-      return DEFAULT_STATE;
-    }
+    if (!raw) return null;
     const parsed = JSON.parse(raw);
     const flows = Array.isArray(parsed.flows) ? parsed.flows : [];
     const { cleaned } = cleanFlows(flows);
@@ -63,18 +88,35 @@ function loadLocal(): WealthState {
       flows: cleaned,
     };
   } catch {
-    return DEFAULT_STATE;
+    return null;
   }
 }
 
-function saveLocal(state: WealthState, omitFlows = false) {
-  if (typeof window === "undefined") return;
-  try {
-    const payload = omitFlows ? { ...state, flows: [] } : state;
-    window.localStorage.setItem(LOCAL_KEY, JSON.stringify(payload));
-  } catch {
-    // ignore
+function hasAnyData(state: WealthState | null): boolean {
+  if (!state) return false;
+  return Boolean(state.accounts.length || state.instruments.length || state.flows.length);
+}
+
+export async function importLegacyWealthStateToSupabase(): Promise<{
+  ok: boolean;
+  message: string;
+  state?: WealthState;
+}> {
+  if (!hasSupabaseConfig()) {
+    return { ok: false, message: "Supabase is not configured." };
   }
+  const legacy = readLegacyLocal();
+  if (!hasAnyData(legacy)) {
+    return { ok: false, message: "No legacy local data found." };
+  }
+  const { cleaned } = cleanState(legacy);
+  const ok = await pushRemoteWealthAll(cleaned);
+  if (!ok) {
+    return { ok: false, message: "Supabase sync failed. Check RLS policies." };
+  }
+  setLegacyMigrationFlag();
+  clearLegacyLocal();
+  return { ok: true, message: "Imported legacy local data.", state: cleaned };
 }
 
 export function loadWealthState(): WealthState {
@@ -121,6 +163,19 @@ export async function loadWealthStateWithRemote(): Promise<WealthState> {
     cleaned.instruments.length === 0 &&
     cleaned.flows.length === 0;
 
+  if (remoteIsEmpty) {
+    const legacy = readLegacyLocal();
+    if (hasAnyData(legacy)) {
+      const { cleaned: cleanedLegacy } = cleanState(legacy);
+      const ok = await pushRemoteWealthAll(cleanedLegacy);
+      if (ok) {
+        setLegacyMigrationFlag();
+        clearLegacyLocal();
+        return cleanedLegacy;
+      }
+    }
+  }
+
   // If Supabase is empty but local has data, keep local and push up.
   if (
     remoteIsEmpty &&
@@ -166,7 +221,7 @@ export async function saveWealthStateWithRemote(state: WealthState): Promise<voi
     if (!ok) {
       // keep accounts/instruments locally, but avoid caching flows
       saveLocal(cleaned, true);
-      return;
+      throw new Error("Supabase sync failed. Check RLS or table permissions.");
     }
     saveLocal(cleaned, true);
     return;

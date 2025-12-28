@@ -10,6 +10,7 @@ import type {
 import {
   loadWealthStateWithRemote,
   saveWealthStateWithRemote,
+  importLegacyWealthStateToSupabase,
 } from "../lib/wealthStore";
 import { hasSupabaseConfig } from "../lib/remoteWealth";
 import { getExchangeRate } from "../lib/exchangeRate";
@@ -160,6 +161,21 @@ function WealthInstrumentsContent() {
                 setError(null);
                 setSyncStatus(null);
                 try {
+                  const hasData = Boolean(
+                    state.accounts.length || state.instruments.length || state.flows.length
+                  );
+                  if (!hasData) {
+                    const legacy = await importLegacyWealthStateToSupabase();
+                    if (!legacy.ok) {
+                      setError(legacy.message);
+                      return;
+                    }
+                    if (legacy.state) {
+                      setState(legacy.state);
+                    }
+                    setSyncStatus(legacy.message);
+                    return;
+                  }
                   await saveWealthStateWithRemote(state);
                   const refreshed = await loadWealthStateWithRemote();
                   setState(refreshed);

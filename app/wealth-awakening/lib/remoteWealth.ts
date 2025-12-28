@@ -69,7 +69,7 @@ function mapInstrumentToRow(inst: WealthInstrument) {
     account_number: inst.accountNumber ?? null,
     bank_name: inst.bankName ?? null,
     revenue_frequency: inst.revenueFrequency ?? null,
-    account_id: inst.accountId,
+    account_id: inst.accountId ? inst.accountId : null,
     name: inst.name,
     currency: inst.currency,
     principal: inst.principal,
@@ -86,8 +86,8 @@ function mapFlowToRow(flow: WealthFlow) {
   return {
     id: flow.id,
     date: flow.date,
-    account_id: flow.accountId ?? null,
-    instrument_id: flow.instrumentId ?? null,
+    account_id: flow.accountId ? flow.accountId : null,
+    instrument_id: flow.instrumentId ? flow.instrumentId : null,
     kind: flow.kind,
     amount: flow.amount,
     currency: flow.currency,
@@ -135,26 +135,30 @@ export async function pushRemoteWealthAll(state: WealthState): Promise<boolean> 
     const instrumentsRows = state.instruments.map(mapInstrumentToRow);
     const flowsRows = state.flows.map(mapFlowToRow);
 
-    const [accRes, instRes, flowRes] = await Promise.all([
-      accountsRows.length
-        ? supabase.from("wealth_accounts").upsert(accountsRows, { onConflict: "id" })
-        : Promise.resolve({ error: null }),
-      instrumentsRows.length
-        ? supabase.from("wealth_instruments").upsert(instrumentsRows, { onConflict: "id" })
-        : Promise.resolve({ error: null }),
-      flowsRows.length
-        ? supabase.from("wealth_flows").upsert(flowsRows, { onConflict: "id" })
-        : Promise.resolve({ error: null }),
-    ]);
-
-    if (accRes.error || instRes.error || flowRes.error) {
-      console.warn("[Wealth] Supabase upsert error", {
-        accError: accRes.error,
-        instError: instRes.error,
-        flowError: flowRes.error,
-      });
+    const accRes = accountsRows.length
+      ? await supabase.from("wealth_accounts").upsert(accountsRows, { onConflict: "id" })
+      : { error: null };
+    if (accRes.error) {
+      console.warn("[Wealth] Supabase upsert error", { accError: accRes.error });
       return false;
     }
+
+    const instRes = instrumentsRows.length
+      ? await supabase.from("wealth_instruments").upsert(instrumentsRows, { onConflict: "id" })
+      : { error: null };
+    if (instRes.error) {
+      console.warn("[Wealth] Supabase upsert error", { instError: instRes.error });
+      return false;
+    }
+
+    const flowRes = flowsRows.length
+      ? await supabase.from("wealth_flows").upsert(flowsRows, { onConflict: "id" })
+      : { error: null };
+    if (flowRes.error) {
+      console.warn("[Wealth] Supabase upsert error", { flowError: flowRes.error });
+      return false;
+    }
+
     return true;
   } catch (err) {
     console.warn("[Wealth] Supabase upsert exception", err);
