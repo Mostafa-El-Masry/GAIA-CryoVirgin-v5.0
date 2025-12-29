@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-type GuardianCheckinType = 'water' | 'study' | 'walk';
-type GuardianCheckinStatus = 'pending' | 'answered' | 'skipped';
+type GuardianCheckinType = "water" | "study" | "walk";
+type GuardianCheckinStatus = "pending" | "answered" | "skipped";
 
 interface GuardianCheckin {
   id: string;
@@ -19,7 +19,7 @@ interface CheckinsResponse {
 }
 
 const EVENING_START_HOUR = 20; // 8 PM local time
-const STORAGE_KEY_PREFIX = 'guardian_nudge_seen:';
+const STORAGE_KEY_PREFIX = "guardian_nudge_seen:";
 
 function getTodayKey(): { key: string; dateIso: string } {
   const now = new Date();
@@ -74,9 +74,9 @@ export default function GuardianNudgeClient({ disabled }: Props) {
     setDateIso(dateIso);
 
     // If we've already shown (and dismissed) the nudge today, stop.
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const seen = window.localStorage.getItem(key);
-      if (seen === '1') {
+      if (seen === "1") {
         setChecking(false);
         return;
       }
@@ -84,14 +84,14 @@ export default function GuardianNudgeClient({ disabled }: Props) {
 
     const run = async () => {
       try {
-        const res = await fetch('/api/brain/checkins?date=' + dateIso);
+        const res = await fetch("/api/brain/checkins?date=" + dateIso);
         const data = (await res.json()) as CheckinsResponse;
         if (!data.ok) {
           setChecking(false);
           return;
         }
         const checkins = data.checkins ?? [];
-        const pending = checkins.filter((c) => c.status === 'pending').length;
+        const pending = checkins.filter((c) => c.status === "pending").length;
         if (pending > 0) {
           setPendingCount(pending);
           setVisible(true);
@@ -107,9 +107,9 @@ export default function GuardianNudgeClient({ disabled }: Props) {
   }, [disabled]);
 
   const markSeen = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const { key } = getTodayKey();
-      window.localStorage.setItem(key, '1');
+      window.localStorage.setItem(key, "1");
     }
     setVisible(false);
   };
@@ -119,7 +119,7 @@ export default function GuardianNudgeClient({ disabled }: Props) {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-3 z-40 flex justify-center px-4">
+    <div className="pointer-events-none hidden sm:flex fixed inset-x-0 bottom-3 z-40 justify-center px-4">
       <div className="pointer-events-auto w-full max-w-md rounded-xl border border-emerald-500/40 bg-black/80 px-4 py-3 shadow-lg backdrop-blur">
         <div className="flex items-start gap-3">
           <div className="mt-0.5 h-7 w-7 flex items-center justify-center rounded-full border border-emerald-400/60 bg-emerald-500/10 text-[11px] font-semibold">
@@ -131,12 +131,14 @@ export default function GuardianNudgeClient({ disabled }: Props) {
             </p>
             <p className="text-sm font-medium">
               {pendingCount && pendingCount > 0
-                ? `You still have ${pendingCount} question${pendingCount === 1 ? '' : 's'} for today.`
-                : 'You still have pending questions for today.'}
+                ? `You still have ${pendingCount} question${
+                    pendingCount === 1 ? "" : "s"
+                  } for today.`
+                : "You still have pending questions for today."}
             </p>
             <p className="text-[11px] opacity-80">
-              Take a moment to answer water, study, and walk for{' '}
-              {dateIso ?? 'today'}. This helps GAIA keep your day complete.
+              Take a moment to answer water, study, and walk for{" "}
+              {dateIso ?? "today"}. This helps GAIA keep your day complete.
             </p>
           </div>
         </div>

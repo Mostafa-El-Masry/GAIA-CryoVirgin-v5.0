@@ -12,7 +12,7 @@ export function TopLeftHome() {
   if (!pathname) return null;
   if (pathname === "/") return null;
   return (
-    <div className="fixed left-4 top-4 z-50 md:left-6 md:top-6">
+    <div className="hidden sm:block fixed left-4 top-4 z-50 md:left-6 md:top-6">
       <Link
         href="/"
         aria-label="Back to GAIA Intro"

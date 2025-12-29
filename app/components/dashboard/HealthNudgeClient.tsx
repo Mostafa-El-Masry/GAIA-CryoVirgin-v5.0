@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 interface HealthSummary {
   date: string;
   totalWaterMl: number;
   totalWalkMinutes: number;
-  sleepState: 'unknown' | 'asleep' | 'awake';
+  sleepState: "unknown" | "asleep" | "awake";
 }
 
 interface HealthApiResponse {
@@ -42,9 +42,11 @@ interface HealthNudgeClientProps {
 // used by HealthQuickCard, plus 'water_skip' / 'walk_skip' for an
 // explicit "No, I didn't" that Guardian can see (status = 'skipped').
 
-type NudgeKind = 'water' | 'walk';
+type NudgeKind = "water" | "walk";
 
-const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' }) => {
+const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({
+  className = "",
+}) => {
   const [visible, setVisible] = useState(false);
   const [kind, setKind] = useState<NudgeKind | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
   const [summary, setSummary] = useState<HealthSummary | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const run = async () => {
       try {
@@ -74,19 +76,19 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
           return;
         }
 
-        const res = await fetch('/api/dashboard/health');
+        const res = await fetch("/api/dashboard/health");
         const data = (await res.json()) as HealthApiResponse;
         if (!data.ok || !data.summary) {
-          throw new Error(data.error || 'Failed to load health summary.');
+          throw new Error(data.error || "Failed to load health summary.");
         }
 
         setSummary(data.summary);
 
         let nextKind: NudgeKind | null = null;
         if (data.summary.totalWaterMl <= 0) {
-          nextKind = 'water';
+          nextKind = "water";
         } else if (data.summary.totalWalkMinutes <= 0) {
-          nextKind = 'walk';
+          nextKind = "walk";
         }
 
         if (nextKind) {
@@ -94,8 +96,8 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
           setVisible(true);
         }
       } catch (err: any) {
-        console.warn('[Dashboard] HealthNudgeClient error', err);
-        setError(err?.message ?? 'Failed to evaluate health nudge.');
+        console.warn("[Dashboard] HealthNudgeClient error", err);
+        setError(err?.message ?? "Failed to evaluate health nudge.");
       } finally {
         setLoading(false);
       }
@@ -105,7 +107,7 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
   }, []);
 
   const persistFlag = (value: string) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     const dateKey = new Date().toISOString().slice(0, 10);
     const lsKey = `gaia_health_nudge_${dateKey}`;
     try {
@@ -116,13 +118,13 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
   };
 
   const close = () => {
-    persistFlag('dismissed');
+    persistFlag("dismissed");
     setVisible(false);
   };
 
   const finishAndClose = (msg: string) => {
     setMessage(msg);
-    persistFlag('done');
+    persistFlag("done");
     window.setTimeout(() => {
       setVisible(false);
     }, 2600);
@@ -132,19 +134,19 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch('/api/dashboard/health', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/dashboard/health", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
       const data = (await res.json()) as HealthApiResponse;
       if (!data.ok || !data.summary) {
-        throw new Error(data.error || 'Action failed.');
+        throw new Error(data.error || "Action failed.");
       }
       setSummary(data.summary);
       finishAndClose(msg);
     } catch (err: any) {
-      setError(err?.message ?? 'Action failed.');
+      setError(err?.message ?? "Action failed.");
     } finally {
       setBusy(false);
     }
@@ -154,20 +156,20 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
     return null;
   }
 
-  const isWater = kind === 'water';
+  const isWater = kind === "water";
 
   const rootClasses =
-    'fixed bottom-4 right-4 z-40 max-w-sm rounded-xl border bg-black/90 ' +
-    'border-sky-800/70 shadow-lg backdrop-blur px-3 py-3 text-[11px] text-zinc-100 ' +
-    'flex flex-col gap-2 ';
+    "hidden sm:flex fixed bottom-4 right-4 z-40 max-w-sm rounded-xl border bg-black/90 " +
+    "border-sky-800/70 shadow-lg backdrop-blur px-3 py-3 text-[11px] text-zinc-100 " +
+    "flex flex-col gap-2 ";
 
   const title = isWater
-    ? 'No water logged yet today.'
-    : 'No walking logged yet today.';
+    ? "No water logged yet today."
+    : "No walking logged yet today.";
 
   const body = isWater
-    ? 'Did you drink water today? You can log it now or skip if today was really dry.'
-    : 'Did you walk today? You can log a small amount or tell me it was a full rest day.';
+    ? "Did you drink water today? You can log it now or skip if today was really dry."
+    : "Did you walk today? You can log a small amount or tell me it was a full rest day.";
 
   return (
     <div className={`${rootClasses} ${className}`}>
@@ -176,12 +178,8 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
           <p className="text-[10px] uppercase tracking-[0.18em] text-sky-300">
             Dashboard · Nudge
           </p>
-          <p className="text-[11px] font-semibold">
-            {title}
-          </p>
-          <p className="text-[11px] opacity-80">
-            {body}
-          </p>
+          <p className="text-[11px] font-semibold">{title}</p>
+          <p className="text-[11px] opacity-80">{body}</p>
         </div>
         <button
           type="button"
@@ -192,16 +190,10 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
         </button>
       </div>
 
-      {error && (
-        <p className="text-[11px] text-red-400">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-[11px] text-red-400">{error}</p>}
 
       {message && !error && (
-        <p className="text-[11px] text-emerald-300">
-          {message}
-        </p>
+        <p className="text-[11px] text-emerald-300">{message}</p>
       )}
 
       <div className="mt-1 flex flex-wrap gap-2">
@@ -210,10 +202,7 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
             <button
               type="button"
               onClick={() =>
-                runAction(
-                  'water_250',
-                  'Nice, 250ml logged for today. 💧'
-                )
+                runAction("water_250", "Nice, 250ml logged for today. 💧")
               }
               disabled={busy}
               className="inline-flex items-center justify-center rounded-md border border-sky-500/70 px-2.5 py-1 font-medium hover:bg-sky-500/10 disabled:opacity-60"
@@ -224,8 +213,8 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
               type="button"
               onClick={() =>
                 runAction(
-                  'water_500',
-                  '500ml logged. Your body is safer now. 💧'
+                  "water_500",
+                  "500ml logged. Your body is safer now. 💧"
                 )
               }
               disabled={busy}
@@ -237,8 +226,8 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
               type="button"
               onClick={() =>
                 runAction(
-                  'water_skip',
-                  'Okay, I will remember today as a dry day, not a forgotten day.'
+                  "water_skip",
+                  "Okay, I will remember today as a dry day, not a forgotten day."
                 )
               }
               disabled={busy}
@@ -253,8 +242,8 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
               type="button"
               onClick={() =>
                 runAction(
-                  'walk_15',
-                  '15 minutes logged. Future you can move more freely. 🚶‍♀️'
+                  "walk_15",
+                  "15 minutes logged. Future you can move more freely. 🚶‍♀️"
                 )
               }
               disabled={busy}
@@ -266,8 +255,8 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
               type="button"
               onClick={() =>
                 runAction(
-                  'walk_30',
-                  '30 minutes logged. That’s a strong signal for your heart. 🚶‍♀️'
+                  "walk_30",
+                  "30 minutes logged. That’s a strong signal for your heart. 🚶‍♀️"
                 )
               }
               disabled={busy}
@@ -279,8 +268,8 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
               type="button"
               onClick={() =>
                 runAction(
-                  'walk_skip',
-                  'Rest days are also allowed. I will remember that you chose to rest.'
+                  "walk_skip",
+                  "Rest days are also allowed. I will remember that you chose to rest."
                 )
               }
               disabled={busy}
@@ -294,8 +283,8 @@ const HealthNudgeClient: React.FC<HealthNudgeClientProps> = ({ className = '' })
 
       {summary && (
         <p className="mt-1 text-[10px] opacity-60">
-          Today so far · Water: {(summary.totalWaterMl / 1000).toFixed(2)} L · Walk:{' '}
-          {summary.totalWalkMinutes} min
+          Today so far · Water: {(summary.totalWaterMl / 1000).toFixed(2)} L ·
+          Walk: {summary.totalWalkMinutes} min
         </p>
       )}
     </div>
