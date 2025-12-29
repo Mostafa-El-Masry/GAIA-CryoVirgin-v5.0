@@ -94,7 +94,7 @@ export default function ArchiveSidebar({
     ) ?? [];
 
   return (
-    <aside className="gaia-surface flex h-full flex-col gap-5 rounded-3xl border gaia-border p-6 shadow-lg gaia-ring-soft">
+    <aside className="hidden md:flex gaia-surface flex h-full flex-col gap-5 rounded-3xl border gaia-border p-6 shadow-lg gaia-ring-soft">
       <header className="flex items-center justify-end">
         <button
           type="button"

@@ -6,13 +6,9 @@ type Props = {
   focusSubtitle: string;
 };
 
-export function SidebarPanel({
-  backHref,
-  focusTitle,
-  focusSubtitle,
-}: Props) {
+export function SidebarPanel({ backHref, focusTitle, focusSubtitle }: Props) {
   return (
-    <div className="flex flex-col items-start sm:items-end gap-2 text-sm">
+    <div className="hidden sm:flex flex-col items-start sm:items-end gap-2 text-sm">
       <Link
         href={backHref}
         className="health-button inline-flex items-center gap-2 px-3 py-1 text-[11px] font-semibold"
