@@ -1,0 +1,19 @@
+{
+  "brain": "GAIA CryoVirgin",
+  "version": "v5.0",
+  "last_updated": "2025-12-30",
+  "files": [
+    "domains.json",
+    "temporal_spine.json",
+    "input_canon.json",
+    "rejections.json",
+    "init.json",
+    "README.json",
+    "truth_schema.json",
+    "truth_hierarchy.json",
+    "contradiction_model.json",
+    "silence_rules.json",
+    "freeze_week_08.json"
+  ],
+  "notes": "Index of canonical brain files for GAIA CryoVirgin v5.0. Do not add files without approval."
+}

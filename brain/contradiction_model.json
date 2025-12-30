@@ -1,0 +1,23 @@
+{
+  "name": "GAIA CryoVirgin Contradiction Model",
+  "week": 6,
+  "contradiction_types": [
+    {
+      "id": "intent_vs_action",
+      "description": "Declared intent conflicts with actual behavior"
+    },
+    {
+      "id": "repeated_planning",
+      "description": "Same plan declared multiple times without action"
+    },
+    {
+      "id": "avoidance_pattern",
+      "description": "Consistent delay or deferral in the same domain"
+    }
+  ],
+  "storage_rules": {
+    "contradictions_are_not_resolved": true,
+    "contradictions_are_accumulated": true,
+    "contradictions_require_time_reference": true
+  }
+}

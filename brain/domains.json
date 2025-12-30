@@ -1,0 +1,53 @@
+{
+  "title": "GAIA CryoVirgin — Domain Locking (Week 2)",
+  "description": "These are the only domains GAIA is allowed to reason about. Anything outside this list is explicitly out of scope.",
+  "domains": [
+    {
+      "name": "Wealth",
+      "notes": [
+        "Income",
+        "savings",
+        "investments",
+        "certifications cost",
+        "financial trajectory"
+      ]
+    },
+    {
+      "name": "Health",
+      "notes": [
+        "Physical condition",
+        "energy",
+        "sleep",
+        "degradation",
+        "recovery"
+      ]
+    },
+    {
+      "name": "Work",
+      "notes": [
+        "Job conditions",
+        "effort",
+        "learning-to-output ratio",
+        "stagnation"
+      ]
+    },
+    {
+      "name": "Learning",
+      "notes": [
+        "Skill acquisition",
+        "study consistency",
+        "application vs theory"
+      ]
+    },
+    {
+      "name": "Identity",
+      "notes": ["Values", "self-image", "long-term direction", "integrity"]
+    }
+  ],
+  "rules": [
+    "No new domains may be added mid-year.",
+    "All inputs must map to exactly one domain.",
+    "Cross-domain reasoning is forbidden until Phase III."
+  ],
+  "raw": "GAIA CryoVirgin — Domain Locking (Week 2)\n\nThese are the only domains GAIA is allowed to reason about.\nAnything outside this list is explicitly out of scope.\n\n1. Wealth\n   - Income, savings, investments, certifications cost, financial trajectory\n\n2. Health\n   - Physical condition, energy, sleep, degradation, recovery\n\n3. Work\n   - Job conditions, effort, learning-to-output ratio, stagnation\n\n4. Learning\n   - Skill acquisition, study consistency, application vs theory\n\n5. Identity\n   - Values, self-image, long-term direction, integrity\n\nRules:\n- No new domains may be added mid-year.\n- All inputs must map to exactly one domain.\n- Cross-domain reasoning is forbidden until Phase III.\n"
+}

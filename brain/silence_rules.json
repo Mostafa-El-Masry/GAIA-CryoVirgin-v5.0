@@ -1,0 +1,17 @@
+{
+  "name": "GAIA CryoVirgin Silence Rules",
+  "week": 7,
+  "definitions": {
+    "silence": "Absence of input for a defined time period"
+  },
+  "interpretations": {
+    "one_day": "neutral",
+    "one_week": "potential avoidance",
+    "one_cycle": "confirmed disengagement"
+  },
+  "rules": {
+    "silence_is_recorded": true,
+    "silence_is_never_filled_automatically": true,
+    "silence_can_trigger_judgment_later": true
+  }
+}

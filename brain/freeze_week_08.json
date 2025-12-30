@@ -1,0 +1,22 @@
+{
+  "name": "GAIA CryoVirgin Freeze Week",
+  "week": 8,
+  "status": "frozen",
+  "rules": {
+    "no_new_domains": true,
+    "no_new_input_types": true,
+    "no_new_judgment_logic": true,
+    "no_refactors": true
+  },
+  "allowed_actions": [
+    "review",
+    "delete_unused_files",
+    "rename_for_clarity_only"
+  ],
+  "forbidden_actions": [
+    "adding_intelligence",
+    "adding_advice",
+    "adding_autonomy",
+    "changing_truth_hierarchy"
+  ]
+}

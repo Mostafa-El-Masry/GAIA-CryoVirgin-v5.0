@@ -1,0 +1,26 @@
+{
+  "name": "GAIA CryoVirgin Truth Hierarchy",
+  "week": 5,
+  "rules": {
+    "authority_order": [
+      "action",
+      "metric",
+      "repetition",
+      "intent",
+      "reflection",
+      "emotion"
+    ],
+    "definitions": {
+      "action": "Observable behavior that occurred",
+      "metric": "Numeric or binary evidence",
+      "repetition": "Same behavior occurring multiple times",
+      "intent": "Declared plan or goal",
+      "reflection": "Observation without action",
+      "emotion": "Feeling without evidence"
+    }
+  },
+  "constraints": {
+    "higher_authority_overrides_lower": true,
+    "emotion_has_no_decision_power": true
+  }
+}

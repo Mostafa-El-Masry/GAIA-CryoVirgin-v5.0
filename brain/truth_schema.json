@@ -1,0 +1,32 @@
+{
+  "name": "truth_record",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "domain": { "type": "string" },
+    "day": { "type": "string", "format": "date" },
+    "type": {
+      "type": "string",
+      "enum": ["Action", "Intent", "Reflection", "Metric"]
+    },
+    "value": { "type": ["string", "number", "object", "boolean"] },
+    "source": { "type": "object" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "provenance": { "type": "object" },
+    "status": {
+      "type": "string",
+      "enum": ["accepted", "rejected", "conflicted"]
+    }
+  },
+  "required": [
+    "id",
+    "domain",
+    "day",
+    "type",
+    "value",
+    "source",
+    "timestamp",
+    "status"
+  ]
+}

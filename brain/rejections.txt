@@ -1,7 +1,0 @@
-GAIA CryoVirgin — Input Rejections
-
-This file records rejected inputs.
-Rejected inputs are preserved as evidence of ambiguity or avoidance.
-
-No logic yet.
-Storage only.

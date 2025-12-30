@@ -1,0 +1,33 @@
+{
+  "title": "GAIA CryoVirgin — Temporal Spine (Week 3)",
+  "description": "Time is a first-class structure in GAIA. All judgment depends on consistent temporal meaning.",
+  "definitions": {
+    "DAY": {
+      "definition": "A calendar day.",
+      "notes": [
+        "May contain zero or more inputs.",
+        "Absence of input is recorded as silence."
+      ]
+    },
+    "WEEK": {
+      "definition": "7 consecutive days.",
+      "notes": [
+        "Primary unit for pattern detection.",
+        "Weekly summaries are allowed, judgments are not."
+      ]
+    },
+    "CYCLE": {
+      "definition": "4 consecutive weeks.",
+      "notes": [
+        "Minimum window for escalation.",
+        "Used for trajectory statements later."
+      ]
+    }
+  },
+  "rules": [
+    "No retroactive edits across cycles.",
+    "Silence is preserved, never auto-filled.",
+    "All inputs must reference DAY and WEEK IDs."
+  ],
+  "raw": "GAIA CryoVirgin — Temporal Spine (Week 3)\n\nTime is a first-class structure in GAIA.\nAll judgment depends on consistent temporal meaning.\n\nDefinitions:\n\nDAY\n- A calendar day.\n- May contain zero or more inputs.\n- Absence of input is recorded as silence.\n\nWEEK\n- 7 consecutive days.\n- Primary unit for pattern detection.\n- Weekly summaries are allowed, judgments are not.\n\nCYCLE\n- 4 consecutive weeks.\n- Minimum window for escalation.\n- Used for trajectory statements later.\n\nRules:\n- No retroactive edits across cycles.\n- Silence is preserved, never auto-filled.\n- All inputs must reference DAY and WEEK IDs.\n"
+}

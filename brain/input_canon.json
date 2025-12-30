@@ -1,0 +1,38 @@
+{
+  "title": "GAIA CryoVirgin — Input Canon (Week 4)",
+  "description": "This file defines what GAIA is allowed to accept as input. Anything outside this canon is invalid.",
+  "allowedInputTypes": [
+    {
+      "type": "Action",
+      "description": "Something that was actually done",
+      "constraints": ["Must be concrete and observable"]
+    },
+    {
+      "type": "Intent",
+      "description": "A declared plan or goal",
+      "constraints": ["Must reference a future day or week"]
+    },
+    {
+      "type": "Reflection",
+      "description": "Observation about behavior or outcome",
+      "constraints": ["No emotional language"]
+    },
+    {
+      "type": "Metric",
+      "description": "Numeric or binary data",
+      "examples": ["money amount", "hours", "yes/no"]
+    }
+  ],
+  "forbiddenInputTypes": [
+    "Motivation",
+    "Hypotheticals",
+    "Self-judgment language"
+  ],
+  "rules": [
+    "Every input must map to exactly one domain.",
+    "Every input must reference a DAY.",
+    "Mixed input types are not allowed.",
+    "Invalid input is stored as rejection, not deleted."
+  ],
+  "raw": "GAIA CryoVirgin — Input Canon (Week 4)\n\nThis file defines what GAIA is allowed to accept as input.\nAnything outside this canon is invalid.\n\nAllowed Input Types:\n\nAction\n\nSomething that was actually done\n\nMust be concrete and observable\n\nIntent\n\nA declared plan or goal\n\nMust reference a future day or week\n\nReflection\n\nObservation about behavior or outcome\n\nNo emotional language\n\nMetric\n\nNumeric or binary data\n\nExample: money amount, hours, yes/no\n\nForbidden Input Types:\n\nMotivation\n\nFeelings without action\n\nHypotheticals\n\nSelf-judgment language\n\nRules:\n\nEvery input must map to exactly one domain.\n\nEvery input must reference a DAY.\n\nMixed input types are not allowed.\n\nInvalid input is stored as rejection, not deleted.\n"
+}
