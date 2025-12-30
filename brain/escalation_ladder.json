@@ -1,0 +1,35 @@
+{
+  "name": "GAIA CryoVirgin Escalation Ladder",
+  "week": 12,
+  "levels": [
+    {
+      "level": 1,
+      "id": "observation",
+      "description": "Single or early pattern detected",
+      "allowed_output": "statement"
+    },
+    {
+      "level": 2,
+      "id": "pattern",
+      "description": "Repeated behavior meeting pattern thresholds",
+      "allowed_output": "pattern_statement"
+    },
+    {
+      "level": 3,
+      "id": "risk",
+      "description": "Pattern indicates probable negative outcome",
+      "allowed_output": "risk_statement"
+    },
+    {
+      "level": 4,
+      "id": "trajectory",
+      "description": "Long-term direction inferred if behavior continues",
+      "allowed_output": "trajectory_statement"
+    }
+  ],
+  "rules": {
+    "escalation_is_sequential": true,
+    "no_level_skipping": true,
+    "deescalation_is_not_automatic": true
+  }
+}
