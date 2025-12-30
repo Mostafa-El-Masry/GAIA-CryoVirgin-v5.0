@@ -1,0 +1,19 @@
+{
+  "name": "GAIA CryoVirgin Pattern Thresholds",
+  "week": 10,
+  "definitions": {
+    "signal": "A single observable event or input",
+    "pattern": "Multiple signals forming consistency",
+    "noise": "Isolated or non-repeating signal"
+  },
+  "thresholds": {
+    "minimum_repetitions": 3,
+    "minimum_time_span_days": 14,
+    "minimum_weeks": 2
+  },
+  "rules": {
+    "patterns_require_time_reference": true,
+    "single_events_never_create_patterns": true,
+    "patterns_are_domain_specific": true
+  }
+}
