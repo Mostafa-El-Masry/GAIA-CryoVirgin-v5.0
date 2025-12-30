@@ -186,6 +186,54 @@ html[data-theme="dark"] body {
   color: color-mix(in srgb, var(--gaia-foreground) 35%, transparent) !important;
 }
 
+/* Compatibility overrides: map common Tailwind slate/white utilities to GAIA tokens.
+   This helps enforce the GAIA theme across many components without rewriting classes.
+   These are conservative mappings for the most-used utilities in the app. */
+
+/* Text colors */
+.text-slate-100 { color: var(--gaia-foreground) !important; }
+.text-slate-200 { color: var(--gaia-text-strong) !important; }
+.text-slate-300 { color: var(--gaia-text-default) !important; }
+.text-slate-400 { color: var(--gaia-text-muted) !important; }
+.text-slate-500 { color: var(--gaia-text-muted) !important; }
+.text-slate-600 { color: color-mix(in srgb, var(--gaia-text-muted) 70%, var(--gaia-text-default) 30%) !important; }
+.text-white { color: var(--gaia-contrast-text) !important; }
+
+/* Backgrounds */
+.bg-slate-900 { background-color: color-mix(in srgb, var(--gaia-surface) 10%, black 90%) !important; }
+.bg-slate-950 { background-color: color-mix(in srgb, var(--gaia-surface) 6%, black 94%) !important; }
+.bg-slate-800 { background-color: color-mix(in srgb, var(--gaia-surface) 18%, black 82%) !important; }
+.bg-slate-900\/70 { background-color: color-mix(in srgb, var(--gaia-surface) 10%, black 90%) !important; }
+.bg-slate-900\/40 { background-color: color-mix(in srgb, var(--gaia-surface) 20%, black 80%) !important; }
+.bg-white\/5 { background-color: color-mix(in srgb, var(--gaia-surface) 95%, white 5%) !important; }
+
+/* Borders */
+.border-slate-700 { border-color: var(--gaia-border) !important; }
+.border-white\/10 { border-color: color-mix(in srgb, white 10%, transparent 90%) !important; }
+.border-white\/5 { border-color: color-mix(in srgb, white 5%, transparent 95%) !important; }
+
+/* Utility backgrounds and text used for buttons/labels */
+.text-slate-200 { color: var(--gaia-text-strong) !important; }
+.text-slate-300 { color: var(--gaia-text-default) !important; }
+.shadow-black\/20 { box-shadow: 0 10px 15px -3px color-mix(in srgb, black 20%, transparent 80%) !important; }
+
+/* DaisyUI / base-* compatibility: prefer GAIA tokens for base colors */
+[class*="bg-base-100"] { background-color: var(--gaia-surface) !important; color: var(--gaia-text-default) !important; }
+[class*="bg-base-200"] { background-color: var(--gaia-surface-soft) !important; color: var(--gaia-text-default) !important; }
+[class*="bg-base-300"] { background-color: color-mix(in srgb, var(--gaia-surface) 88%, transparent 12%) !important; }
+[class*="border-base-300"], [class*="border-base-200"], [class*="border-base-100"] { border-color: var(--gaia-border) !important; }
+[class*="text-base-content"] { color: var(--gaia-text-default) !important; }
+[class*="text-base-content/" ] { color: var(--gaia-text-default) !important; }
+
+/* Page-level GAIA background helper used by gallery pages */
+.gaia-bg {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--gaia-surface) 98%, var(--gaia-surface) 2%),
+    var(--gaia-surface-soft)
+  );
+}
+
 .wealth-theme,
 .health-theme {
   --gaia-font-sans: "Manrope", "Sora", "SF Pro Display", "Segoe UI",

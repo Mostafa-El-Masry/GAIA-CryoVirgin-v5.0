@@ -39,4 +39,4 @@ export const THEMES = [
   "daisybolt",
 ] as const;
 export type Theme = (typeof THEMES)[number];
-export const DEFAULT_THEME: Theme = "modern";
+export const DEFAULT_THEME: Theme = "night";

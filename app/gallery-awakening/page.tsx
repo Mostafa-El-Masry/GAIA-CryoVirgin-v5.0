@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from "react";
 import { Space_Grotesk } from "next/font/google";
-import { mockMediaItems } from './mockMedia';
-import type { MediaItem } from './mediaTypes';
-import { MediaGrid } from './components/MediaGrid';
-import { useGalleryData } from './useGalleryData';
+import { mockMediaItems } from "./mockMedia";
+import type { MediaItem } from "./mediaTypes";
+import { MediaGrid } from "./components/MediaGrid";
+import { useGalleryData } from "./useGalleryData";
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
-import { hasR2PublicBase } from './r2';
-import { useCurrentPermissions, isCreatorAdmin } from '@/lib/permissions';
-import { useAuthSnapshot } from '@/lib/auth-client';
+import { hasR2PublicBase } from "./r2";
+import { useCurrentPermissions, isCreatorAdmin } from "@/lib/permissions";
+import { useAuthSnapshot } from "@/lib/auth-client";
 
 const PAGE_SIZE = 24;
 
@@ -26,15 +26,14 @@ type GalleryAwakeningContentProps = {
 const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   allowedGalleryMediaCount,
 }) => {
-
   const { items } = useGalleryData(mockMediaItems);
   const { profile, status } = useAuthSnapshot();
   const permissions = useCurrentPermissions();
 
   const [localNewItems, setLocalNewItems] = useState<MediaItem[]>(() => {
-    if (typeof window === 'undefined') return [];
+    if (typeof window === "undefined") return [];
     try {
-      const raw = window.localStorage.getItem('gaia_gallery_local_items_v1');
+      const raw = window.localStorage.getItem("gaia_gallery_local_items_v1");
       const parsed = raw ? (JSON.parse(raw) as MediaItem[]) : [];
       return Array.isArray(parsed) ? parsed : [];
     } catch {
@@ -43,19 +42,21 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   });
   const [page, setPage] = useState<number>(1);
   const [shuffleSeed] = useState(() => Math.random().toString(36).slice(2, 10));
-  const [titleOverrides, setTitleOverrides] = useState<Record<string, string>>(() => {
-    if (typeof window === 'undefined') return {};
-    try {
-      const raw = window.localStorage.getItem('gaia_gallery_titles');
-      return raw ? (JSON.parse(raw) as Record<string, string>) : {};
-    } catch {
-      return {};
+  const [titleOverrides, setTitleOverrides] = useState<Record<string, string>>(
+    () => {
+      if (typeof window === "undefined") return {};
+      try {
+        const raw = window.localStorage.getItem("gaia_gallery_titles");
+        return raw ? (JSON.parse(raw) as Record<string, string>) : {};
+      } catch {
+        return {};
+      }
     }
-  });
+  );
   const [hiddenIds, setHiddenIds] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return [];
+    if (typeof window === "undefined") return [];
     try {
-      const raw = window.localStorage.getItem('gaia_gallery_hidden');
+      const raw = window.localStorage.getItem("gaia_gallery_hidden");
       return raw ? (JSON.parse(raw) as string[]) : [];
     } catch {
       return [];
@@ -63,10 +64,10 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   });
   // Persist locally added items so they survive reloads even if Supabase is absent.
   React.useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(
-        'gaia_gallery_local_items_v1',
+        "gaia_gallery_local_items_v1",
         JSON.stringify(localNewItems)
       );
     } catch {
@@ -88,11 +89,12 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
         : item
     );
     const withThumbs = withTitles.map((item) => {
-      if (item.type !== 'video') return item;
-      const hasThumbs = Array.isArray(item.thumbnails) && item.thumbnails.length > 0;
+      if (item.type !== "video") return item;
+      const hasThumbs =
+        Array.isArray(item.thumbnails) && item.thumbnails.length > 0;
       if (hasThumbs) return item;
       // synthesize six preview frames based on title when real thumbs are missing
-      const safeTitle = (item.title || 'Video').replace(/\.[^.]+$/, '').trim();
+      const safeTitle = (item.title || "Video").replace(/\.[^.]+$/, "").trim();
       const thumbs = Array.from({ length: 6 }).map((_, idx) => ({
         index: idx + 1,
         r2Key: `${safeTitle}_thumb_00${idx + 1}.jpg`,
@@ -141,8 +143,11 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     setHiddenIds((prev) => {
       const next = Array.from(new Set([...prev, id]));
       try {
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem('gaia_gallery_hidden', JSON.stringify(next));
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(
+            "gaia_gallery_hidden",
+            JSON.stringify(next)
+          );
         }
       } catch {
         // ignore
@@ -155,8 +160,11 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     setTitleOverrides((prev) => {
       const next = { ...prev, [id]: nextTitle };
       try {
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem('gaia_gallery_titles', JSON.stringify(next));
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(
+            "gaia_gallery_titles",
+            JSON.stringify(next)
+          );
         }
       } catch {
         // ignore
@@ -166,10 +174,7 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   };
 
   return (
-    <main
-      className={`relative min-h-screen ${spaceGrotesk.className} bg-[radial-gradient(circle_at_top,_#ffffff_0%,_#f5f5f4_45%,_#ffffff_100%)]`}
-    >
-
+    <main className={`relative min-h-screen ${spaceGrotesk.className} gaia-bg`}>
       <section>
         <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-10 xl:max-w-[85vw]">
           {/* BigShot grid */}
@@ -205,11 +210,13 @@ const GalleryAwakeningPage: React.FC = () => {
             Gallery locked Aú keep learning
           </h1>
           <p className="mb-4 text-sm text-[var(--gaia-text-muted)]">
-            Complete more Academy lessons in Apollo to slowly unlock your Gallery.
-            Each lesson from level 11 onward unlocks one more memory (image or video).
+            Complete more Academy lessons in Apollo to slowly unlock your
+            Gallery. Each lesson from level 11 onward unlocks one more memory
+            (image or video).
           </p>
           <p className="text-xs text-[var(--gaia-text-muted)]">
-            Lessons completed so far: <span className="font-semibold">{totalLessonsCompleted}</span>
+            Lessons completed so far:{" "}
+            <span className="font-semibold">{totalLessonsCompleted}</span>
           </p>
         </section>
       </main>

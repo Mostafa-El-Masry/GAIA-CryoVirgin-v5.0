@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-type GuardianCheckinType = 'water' | 'study' | 'walk';
-type GuardianCheckinStatus = 'pending' | 'answered' | 'skipped';
+type GuardianCheckinType = "water" | "study" | "walk";
+type GuardianCheckinStatus = "pending" | "answered" | "skipped";
 
 interface GuardianDaySummary {
   date: string;
@@ -51,7 +51,7 @@ interface Props {
   className?: string;
 }
 
-export default function GuardianTodayCard({ className = '' }: Props) {
+export default function GuardianTodayCard({ className = "" }: Props) {
   const [summary, setSummary] = useState<GuardianDaySummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,27 +68,27 @@ export default function GuardianTodayCard({ className = '' }: Props) {
     setError(null);
     try {
       // 1) Fetch summary
-      const sRes = await fetch('/api/brain/summary');
+      const sRes = await fetch("/api/brain/summary");
       const sData = (await sRes.json()) as SummaryResponse;
       if (!sData.ok) {
-        throw new Error(sData.error || 'Failed to load summary');
+        throw new Error(sData.error || "Failed to load summary");
       }
       setSummary(sData.summary);
 
       // 2) Fetch check-ins but only to know pending count
-      const cRes = await fetch('/api/brain/checkins');
+      const cRes = await fetch("/api/brain/checkins");
       const cData = (await cRes.json()) as CheckinsResponse;
       if (!cData.ok) {
         // Not critical – we can still show the summary
         setPendingCount(null);
       } else {
         const pending = (cData.checkins ?? []).filter(
-          (c) => c.status === 'pending'
+          (c) => c.status === "pending"
         ).length;
         setPendingCount(pending);
       }
     } catch (err: any) {
-      setError(err?.message ?? 'Unknown error');
+      setError(err?.message ?? "Unknown error");
       setSummary(null);
       setPendingCount(null);
     } finally {
@@ -98,20 +98,21 @@ export default function GuardianTodayCard({ className = '' }: Props) {
 
   const pillForStatus = (label: string, status?: GuardianCheckinStatus) => {
     if (!status) return null;
-    let base = 'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium';
-    if (status === 'answered') {
-      base += ' border-emerald-500/60 bg-emerald-500/10';
-    } else if (status === 'skipped') {
-      base += ' border-amber-500/60 bg-amber-500/10';
+    let base =
+      "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium";
+    if (status === "answered") {
+      base += " border-emerald-500/60 bg-emerald-500/10";
+    } else if (status === "skipped") {
+      base += " border-amber-500/60 bg-amber-500/10";
     } else {
-      base += ' border-sky-500/60 bg-sky-500/10';
+      base += " border-sky-500/60 bg-sky-500/10";
     }
     const text =
-      status === 'answered'
-        ? 'done'
-        : status === 'skipped'
-        ? 'skipped'
-        : 'pending';
+      status === "answered"
+        ? "done"
+        : status === "skipped"
+        ? "skipped"
+        : "pending";
     return (
       <span className={base}>
         {label}: {text}
@@ -121,44 +122,37 @@ export default function GuardianTodayCard({ className = '' }: Props) {
 
   return (
     <section
-      className={`rounded-xl border bg-black/5 p-4 shadow-sm flex flex-col gap-3 ${className}`}
+      className={`gaia-panel rounded-xl border p-4 shadow-sm flex flex-col gap-3 ${className}`}
     >
       <header className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-[11px] uppercase tracking-wide opacity-60">
+          <p className="text-xs uppercase tracking-wide opacity-70">
             Guardian · Today
           </p>
-          <h2 className="text-sm font-semibold">
-            Daily questions
-          </h2>
+          <h2 className="text-lg font-semibold">Daily questions</h2>
         </div>
         <button
           type="button"
           onClick={refresh}
           disabled={loading}
-          className="inline-flex items-center justify-center rounded-md border px-2.5 py-1 text-[11px] font-medium shadow-sm hover:bg-black/5 disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-md border px-3 py-1 text-xs font-medium shadow-sm hover:bg-white/5 disabled:opacity-60"
         >
-          {loading ? 'Refreshing…' : 'Refresh'}
+          {loading ? "Refreshing…" : "Refresh"}
         </button>
       </header>
 
-      {error && (
-        <p className="text-[11px] text-red-500">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-[11px] text-red-500">{error}</p>}
 
       {!summary && !error && (
         <p className="text-[11px] opacity-70">
-          No summary yet. Try running the Brain from <code>/guardian-debug</code> for today.
+          No summary yet. Try running the Brain from{" "}
+          <code>/guardian-debug</code> for today.
         </p>
       )}
 
       {summary && (
-        <div className="space-y-2 text-[11px]">
-          <p className="font-medium">
-            {summary.headline}
-          </p>
+        <div className="space-y-2 text-sm">
+          <p className="font-medium">{summary.headline}</p>
           <ul className="list-disc pl-4 space-y-0.5 opacity-80">
             {summary.detailLines.map((line, idx) => (
               <li key={idx}>{line}</li>
@@ -167,21 +161,22 @@ export default function GuardianTodayCard({ className = '' }: Props) {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 text-[10px] mt-1">
+      <div className="flex flex-wrap items-center gap-2 text-xs mt-1">
         {summary && (
           <>
-            {pillForStatus('Water', summary.waterStatus)}
-            {pillForStatus('Study', summary.studyStatus)}
-            {pillForStatus('Walk', summary.walkStatus)}
+            {pillForStatus("Water", summary.waterStatus)}
+            {pillForStatus("Study", summary.studyStatus)}
+            {pillForStatus("Walk", summary.walkStatus)}
           </>
         )}
       </div>
 
-      <footer className="mt-2 flex items-center justify-between gap-3 text-[10px] opacity-70">
+      <footer className="mt-2 flex items-center justify-between gap-3 text-xs opacity-70">
         <div>
           {pendingCount != null ? (
             <span>
-              Pending today: <span className="font-semibold">{pendingCount}</span>
+              Pending today:{" "}
+              <span className="font-semibold">{pendingCount}</span>
             </span>
           ) : (
             <span>Pending today: ·</span>
@@ -189,7 +184,7 @@ export default function GuardianTodayCard({ className = '' }: Props) {
         </div>
         <a
           href="/guardian-today"
-          className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium hover:bg-black/5"
+          className="inline-flex items-center gap-1 rounded-md gaia-border px-3 py-1 text-xs font-medium hover:bg-white/5"
         >
           Open full view
         </a>
