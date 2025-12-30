@@ -1,0 +1,20 @@
+{
+  "name": "Weekly Review Schema",
+  "version": "1.0",
+  "description": "Schema for structured weekly reflection and synthesis",
+  "fields": {
+    "week_number": "integer",
+    "time_range": "ISO-8601 start/end",
+    "completed_goals": "array of strings",
+    "missed_goals": "array of strings",
+    "violations_logged": "integer",
+    "patterns_detected": "array of strings",
+    "adjustments_required": "array of strings",
+    "carry_forward": "array of strings"
+  },
+  "rules": {
+    "review_frequency": "weekly",
+    "no_emotional_language": true,
+    "facts_before_interpretation": true
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Pattern Detection Rules",
+  "version": "1.0",
+  "rules": [
+    {
+      "id": "repeated_missed_goal",
+      "condition": "same_goal_missed_3_times",
+      "action": "flag_for_adjustment"
+    },
+    {
+      "id": "frequent_soft_violations",
+      "condition": "soft_violations > 5_per_week",
+      "action": "reduce_scope"
+    },
+    {
+      "id": "hard_violation_repeat",
+      "condition": "same_hard_violation_twice",
+      "action": "trigger_recovery_protocol"
+    }
+  ]
+}
