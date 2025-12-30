@@ -1,0 +1,31 @@
+{
+  "name": "GAIA CryoVirgin Value Declarations",
+  "week": 13,
+  "values": [
+    {
+      "id": "long_term_stability",
+      "description": "Prioritize actions that increase long-term stability over short-term relief",
+      "priority": 1
+    },
+    {
+      "id": "health_preservation",
+      "description": "Health degradation is treated as a compounding risk",
+      "priority": 2
+    },
+    {
+      "id": "wealth_progression",
+      "description": "Wealth progress is evaluated by trajectory, not single gains",
+      "priority": 3
+    },
+    {
+      "id": "authorship",
+      "description": "Building and owning systems outweighs passive consumption",
+      "priority": 4
+    }
+  ],
+  "rules": {
+    "lower_priority_values_yield_to_higher": true,
+    "values_are_used_for_conflict_resolution": true,
+    "values_are_not_motivational": true
+  }
+}
