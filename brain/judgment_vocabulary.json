@@ -1,0 +1,27 @@
+{
+  "name": "GAIA CryoVirgin Judgment Vocabulary",
+  "week": 9,
+  "allowed_judgments": [
+    {
+      "id": "alignment",
+      "description": "Actions are consistent with declared values or intent"
+    },
+    {
+      "id": "drift",
+      "description": "Gradual movement away from declared direction without explicit decision"
+    },
+    {
+      "id": "stagnation",
+      "description": "Repeated activity without measurable progress"
+    },
+    {
+      "id": "risk",
+      "description": "Current behavior increases probability of negative future outcome"
+    }
+  ],
+  "constraints": {
+    "no_advice_language": true,
+    "no_emotional_tone": true,
+    "judgments_are_descriptive_only": true
+  }
+}
