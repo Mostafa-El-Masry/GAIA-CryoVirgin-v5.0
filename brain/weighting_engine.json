@@ -1,0 +1,28 @@
+{
+  "name": "GAIA CryoVirgin Weighting Engine",
+  "week": 11,
+  "domain_weights": {
+    "wealth": 1.0,
+    "health": 1.0,
+    "work": 1.0,
+    "learning": 0.8,
+    "identity": 0.9
+  },
+  "input_type_weights": {
+    "action": 1.0,
+    "metric": 1.0,
+    "repetition": 0.9,
+    "intent": 0.6,
+    "reflection": 0.5,
+    "emotion": 0.0
+  },
+  "time_decay": {
+    "enabled": true,
+    "decay_rate_per_week": 0.05,
+    "minimum_weight": 0.2
+  },
+  "rules": {
+    "weights_are_multiplicative": true,
+    "weights_do_not_create_decisions": true
+  }
+}
