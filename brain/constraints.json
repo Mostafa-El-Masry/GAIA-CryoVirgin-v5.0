@@ -1,0 +1,31 @@
+{
+  "name": "GAIA CryoVirgin Constraints",
+  "week": 14,
+  "constraints": [
+    {
+      "id": "no_self_degradation",
+      "description": "Actions that knowingly degrade physical or mental health are prohibited unless required for survival",
+      "severity": "hard"
+    },
+    {
+      "id": "no_short_term_escapes",
+      "description": "Avoid behaviors chosen primarily to escape discomfort without resolving root causes",
+      "severity": "hard"
+    },
+    {
+      "id": "no_identity_betrayal",
+      "description": "Do not act in ways that contradict declared values for social approval or convenience",
+      "severity": "hard"
+    },
+    {
+      "id": "no_passive_drift",
+      "description": "Extended inaction without explicit rest justification is disallowed",
+      "severity": "soft"
+    }
+  ],
+  "enforcement_rules": {
+    "hard_constraints_override_goals": true,
+    "soft_constraints_trigger_review": true,
+    "constraints_apply_before_optimization": true
+  }
+}
