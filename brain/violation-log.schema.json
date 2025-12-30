@@ -1,0 +1,20 @@
+{
+  "name": "Constraint Violation Log",
+  "version": "1.0",
+  "description": "Standard schema for logging violations of constraints, values, or declared goals",
+  "fields": {
+    "timestamp": "ISO-8601 string",
+    "constraint_id": "string",
+    "severity": "hard | soft",
+    "context": "string",
+    "action_taken": "string",
+    "root_cause": "string",
+    "acknowledged": "boolean",
+    "recovery_protocol": "string"
+  },
+  "rules": {
+    "all_hard_violations_must_be_logged": true,
+    "logs_are_append_only": true,
+    "no_deletion_or_rewrite": true
+  }
+}

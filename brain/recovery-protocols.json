@@ -1,0 +1,29 @@
+{
+  "name": "GAIA Recovery Protocols",
+  "week": 15,
+  "protocols": [
+    {
+      "id": "hard_violation_recovery",
+      "trigger": "hard_constraint_violation",
+      "steps": [
+        "log_violation",
+        "pause_new_goals",
+        "identify_root_cause",
+        "restore_baseline_behaviors",
+        "resume_with_adjustment"
+      ],
+      "goal": "Prevent cascade failure and self-punishment"
+    },
+    {
+      "id": "soft_violation_review",
+      "trigger": "soft_constraint_violation",
+      "steps": ["log_violation", "weekly_review", "adjust_expectations"],
+      "goal": "Course correction without overreaction"
+    }
+  ],
+  "principles": [
+    "No shame loops",
+    "No identity collapse after failure",
+    "Recovery is mandatory, not optional"
+  ]
+}
