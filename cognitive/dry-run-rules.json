@@ -1,0 +1,9 @@
+{
+  "name": "Dry-Run Rules",
+  "version": "1.0",
+  "rules": {
+    "no_state_mutation_allowed": true,
+    "no_external_side_effects": true,
+    "results_must_be_logged": true
+  }
+}

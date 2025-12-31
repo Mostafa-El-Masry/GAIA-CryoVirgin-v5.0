@@ -1,0 +1,12 @@
+{
+  "name": "Simulation Schema",
+  "version": "1.0",
+  "fields": {
+    "simulation_id": "string",
+    "proposed_action": "string",
+    "simulation_scope": "local | system | external",
+    "predicted_outcomes": "array of strings",
+    "risk_level": "low | medium | high",
+    "executed_at": "ISO-8601"
+  }
+}

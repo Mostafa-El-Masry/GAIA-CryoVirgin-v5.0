@@ -1,0 +1,18 @@
+{
+  "name": "Simulation Gate",
+  "week": 42,
+  "inputs": [
+    "simulation.schema",
+    "dry-run-rules",
+    "intent-gate",
+    "ethics-gate",
+    "trust-gate"
+  ],
+  "outputs": [
+    "simulation_result",
+    "blocked_simulation"
+  ],
+  "constraints": {
+    "simulation_precedes_execution": true
+  }
+}
