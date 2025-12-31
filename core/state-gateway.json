@@ -1,0 +1,15 @@
+{
+  "name": "GAIA State Gateway",
+  "week": 28,
+  "inputs": ["state-access.schema", "state-boundary.rules", "core/index.json"],
+  "process": [
+    "validate_access_request",
+    "enforce_permissions",
+    "log_access_event"
+  ],
+  "outputs": ["authorized_state_access"],
+  "constraints": {
+    "no_implicit_writes": true,
+    "human_writes_supreme": true
+  }
+}

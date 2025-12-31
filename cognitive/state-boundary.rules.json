@@ -1,0 +1,18 @@
+{
+  "name": "State Boundary Rules",
+  "version": "1.0",
+  "rules": [
+    {
+      "entity": "core",
+      "restriction": "no_state_mutation"
+    },
+    {
+      "entity": "cognitive",
+      "restriction": "definitions_only"
+    },
+    {
+      "entity": "domain_modules",
+      "restriction": "domain_scoped_writes_only"
+    }
+  ]
+}

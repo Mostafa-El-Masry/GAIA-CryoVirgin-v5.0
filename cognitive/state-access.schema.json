@@ -1,0 +1,23 @@
+{
+  "name": "State Access Schema",
+  "version": "1.0",
+  "description": "Defines read/write permissions for system state",
+  "entities": {
+    "core": {
+      "read": true,
+      "write": false
+    },
+    "cognitive": {
+      "read": true,
+      "write": false
+    },
+    "domain_modules": {
+      "read": true,
+      "write": true
+    },
+    "human": {
+      "read": true,
+      "write": true
+    }
+  }
+}
