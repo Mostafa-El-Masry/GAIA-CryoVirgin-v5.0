@@ -8,10 +8,7 @@
     "ethics-gate",
     "trust-gate"
   ],
-  "outputs": [
-    "simulation_result",
-    "blocked_simulation"
-  ],
+  "outputs": ["simulation_result", "blocked_simulation"],
   "constraints": {
     "simulation_precedes_execution": true
   }
