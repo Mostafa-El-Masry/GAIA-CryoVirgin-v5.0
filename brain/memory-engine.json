@@ -1,0 +1,16 @@
+{
+  "name": "GAIA Memory Engine",
+  "week": 18,
+  "inputs": ["memory-unit.schema", "weekly-review", "decision-log"],
+  "process": [
+    "score_importance",
+    "apply_compression_rules",
+    "generate_summaries",
+    "update_long_term_memory"
+  ],
+  "outputs": ["compressed_memory", "long_term_memory"],
+  "constraints": {
+    "no_raw_dumping": true,
+    "signal_over_volume": true
+  }
+}

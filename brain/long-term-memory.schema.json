@@ -1,0 +1,13 @@
+{
+  "name": "Long Term Memory Schema",
+  "version": "1.0",
+  "description": "Compressed, high-signal memories retained indefinitely",
+  "fields": {
+    "memory_key": "string",
+    "summary": "string",
+    "frequency": "integer",
+    "last_seen": "ISO-8601",
+    "domains": "array of strings",
+    "action_bias": "string"
+  }
+}

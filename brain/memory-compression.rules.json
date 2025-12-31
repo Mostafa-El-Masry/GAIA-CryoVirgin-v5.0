@@ -1,0 +1,18 @@
+{
+  "name": "Memory Compression Rules",
+  "version": "1.0",
+  "rules": [
+    {
+      "condition": "importance_score < 3",
+      "action": "discard_after_7_days"
+    },
+    {
+      "condition": "repeated_event",
+      "action": "merge_and_increment_weight"
+    },
+    {
+      "condition": "high_importance_and_repeated",
+      "action": "promote_to_long_term"
+    }
+  ]
+}

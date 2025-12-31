@@ -1,0 +1,14 @@
+{
+  "name": "Memory Unit Schema",
+  "version": "1.0",
+  "description": "Defines how raw events are stored before compression",
+  "fields": {
+    "memory_id": "string",
+    "timestamp": "ISO-8601",
+    "source": "string",
+    "category": "string",
+    "raw_content": "string",
+    "importance_score": "integer",
+    "linked_domains": "array of strings"
+  }
+}
