@@ -1,0 +1,10 @@
+{
+  "name": "Permission Scaling Rules",
+  "version": "1.0",
+  "rules": {
+    "default_trust_level": "TL-0",
+    "trust_level_never_auto_increases": true,
+    "trust_level_can_only_change_with_human_action": true,
+    "rollback_resets_trust_level": true
+  }
+}

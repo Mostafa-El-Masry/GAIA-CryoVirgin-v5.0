@@ -1,0 +1,11 @@
+{
+  "name": "Trust Level Schema",
+  "version": "1.0",
+  "fields": {
+    "trust_level_id": "string",
+    "name": "string",
+    "description": "string",
+    "capabilities_allowed": "array of strings",
+    "requires_human_confirmation": "boolean"
+  }
+}

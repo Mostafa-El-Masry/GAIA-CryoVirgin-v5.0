@@ -1,0 +1,27 @@
+{
+  "name": "Trust Levels",
+  "version": "1.0",
+  "levels": [
+    {
+      "trust_level_id": "TL-0",
+      "name": "Observe Only",
+      "description": "No execution, no recommendations",
+      "capabilities_allowed": ["observe", "log"],
+      "requires_human_confirmation": true
+    },
+    {
+      "trust_level_id": "TL-1",
+      "name": "Advisory",
+      "description": "May suggest actions",
+      "capabilities_allowed": ["suggest"],
+      "requires_human_confirmation": true
+    },
+    {
+      "trust_level_id": "TL-2",
+      "name": "Assisted Execution",
+      "description": "May execute with confirmation",
+      "capabilities_allowed": ["execute_with_confirmation"],
+      "requires_human_confirmation": true
+    }
+  ]
+}

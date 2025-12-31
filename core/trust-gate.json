@@ -1,0 +1,16 @@
+{
+  "name": "Trust Gate",
+  "week": 37,
+  "inputs": [
+    "trust-level.schema",
+    "trust-levels",
+    "permission-scaling-rules",
+    "recovery-gate",
+    "ethics-gate"
+  ],
+  "outputs": ["authorized_capabilities", "blocked_capabilities"],
+  "constraints": {
+    "trust_never_overrides_ethics": true,
+    "trust_never_overrides_human_authority": true
+  }
+}
