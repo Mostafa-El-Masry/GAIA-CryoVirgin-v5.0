@@ -1,0 +1,9 @@
+{
+  "name": "Recommendation Output",
+  "structure": {
+    "recommendation": "string",
+    "confidence_level": "low|medium|high",
+    "reasoning_summary": "string",
+    "risk_notes": "string"
+  }
+}

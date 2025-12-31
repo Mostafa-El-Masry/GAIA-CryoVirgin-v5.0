@@ -1,0 +1,9 @@
+{
+  "name": "Recommendation Scope",
+  "allowed_domains": [
+    "workflow_optimization",
+    "priority_reordering",
+    "risk_mitigation"
+  ],
+  "forbidden_domains": ["identity", "values", "autonomy", "goal_creation"]
+}

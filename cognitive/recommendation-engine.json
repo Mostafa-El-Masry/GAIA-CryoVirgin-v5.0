@@ -1,0 +1,7 @@
+{
+  "name": "Bounded Recommendation Engine",
+  "week": 49,
+  "execution_allowed": false,
+  "binding": false,
+  "requires_human_review": true
+}
