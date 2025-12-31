@@ -1,0 +1,12 @@
+{
+  "name": "Self Audit Schema",
+  "version": "1.0",
+  "fields": {
+    "audit_id": "string",
+    "audit_type": "intent | memory | ethics | execution",
+    "scope": "string",
+    "detected_issues": "array of strings",
+    "severity": "low | medium | high | critical",
+    "timestamp": "ISO-8601"
+  }
+}

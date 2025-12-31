@@ -1,0 +1,10 @@
+{
+  "name": "Consistency Rules",
+  "version": "1.0",
+  "rules": {
+    "no_conflicting_stable_intents": true,
+    "memory_must_respect_ethics": true,
+    "execution_requires_intent_and_confirmation": true,
+    "forgotten_data_must_not_influence_decisions": true
+  }
+}

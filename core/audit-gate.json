@@ -1,0 +1,15 @@
+{
+  "name": "Audit Gate",
+  "week": 35,
+  "inputs": [
+    "self-audit.schema",
+    "consistency-rules",
+    "memory-gate",
+    "ethics-gate",
+    "intent-gate"
+  ],
+  "outputs": ["audit_report", "critical_alert"],
+  "constraints": {
+    "critical_findings_require_human_review": true
+  }
+}
