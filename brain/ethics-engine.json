@@ -1,0 +1,20 @@
+{
+  "name": "GAIA Ethics Engine",
+  "week": 23,
+  "inputs": [
+    "ethics.schema",
+    "ethical-constraints",
+    "decision-engine",
+    "autonomy-engine"
+  ],
+  "process": [
+    "evaluate_against_principles",
+    "check_constraint_violations",
+    "escalate_if_required"
+  ],
+  "outputs": ["ethically_validated_decisions"],
+  "constraints": {
+    "ethics_override_all": true,
+    "no_learning_from_violations": true
+  }
+}

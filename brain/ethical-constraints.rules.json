@@ -1,0 +1,18 @@
+{
+  "name": "Ethical Constraints",
+  "version": "1.0",
+  "rules": [
+    {
+      "violation": "human_harm",
+      "action": "block_decision"
+    },
+    {
+      "violation": "coercion_or_manipulation",
+      "action": "block_decision"
+    },
+    {
+      "violation": "non_consensual_impact",
+      "action": "require_explicit_override"
+    }
+  ]
+}

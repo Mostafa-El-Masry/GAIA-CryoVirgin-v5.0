@@ -1,0 +1,12 @@
+{
+  "name": "Ethics Schema",
+  "version": "1.0",
+  "description": "Defines immutable ethical principles for GAIA",
+  "principles": [
+    "do_no_harm",
+    "respect_human_agency",
+    "truth_over_convenience",
+    "long_term_wellbeing_over_short_term_gain",
+    "consent_required_for_impactful_actions"
+  ]
+}
