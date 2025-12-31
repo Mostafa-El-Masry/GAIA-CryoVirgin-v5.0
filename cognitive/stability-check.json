@@ -1,0 +1,9 @@
+{
+  "name": "Stability Check",
+  "checks": [
+    "decision_consistency",
+    "priority_order_integrity",
+    "no_identity_drift"
+  ],
+  "pass_required": true
+}

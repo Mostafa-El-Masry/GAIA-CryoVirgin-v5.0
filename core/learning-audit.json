@@ -1,0 +1,7 @@
+{
+  "name": "Learning Audit Framework",
+  "week": 45,
+  "audit_triggers": ["memory_write", "scope_violation", "manual_request"],
+  "audit_levels": ["structural", "behavioral"],
+  "mandatory": true
+}

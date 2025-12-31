@@ -1,0 +1,11 @@
+{
+  "name": "Rollback Procedure",
+  "version": "1.0",
+  "steps": [
+    "identify_delta",
+    "validate_previous_state",
+    "revert_change",
+    "confirm_stability"
+  ],
+  "rollback_scope": "single_delta_only"
+}
