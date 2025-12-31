@@ -1,7 +1,12 @@
 import type { DayKey, MonthKey, WealthInstrument } from "./types";
 import { getTodayInKuwait } from "./summary";
+import { bankRateForYear } from "./bankRates";
 
-function parseDayKey(day: DayKey): { year: number; month: number; day: number } {
+function parseDayKey(day: DayKey): {
+  year: number;
+  month: number;
+  day: number;
+} {
   const [y, m, d] = day.split("-").map((v) => parseInt(v, 10));
   return {
     year: Number.isFinite(y) ? y : 1970,
@@ -21,15 +26,37 @@ function monthsBetween(start: DayKey, end: DayKey): number {
 }
 
 export function estimateMonthlyInterest(inst: WealthInstrument): number {
-  if (!Number.isFinite(inst.principal) || !Number.isFinite(inst.annualRatePercent)) {
-    return 0;
+  if (!Number.isFinite(inst.principal)) return 0;
+  const todayKey = getTodayInKuwait();
+  // determine effective annual rate for the current month (considers renewals)
+  const baseRate = Number(inst.annualRatePercent) || 0;
+  const termMonths = Math.max(0, inst.termMonths || 0);
+  if (!inst.startDate || termMonths <= 0) {
+    const annualRate = baseRate / 100;
+    return inst.principal * (annualRate / 12);
   }
-  const annualRate = inst.annualRatePercent / 100;
-  const monthlyRate = annualRate / 12;
-  return inst.principal * monthlyRate;
+  const elapsed = monthsBetween(inst.startDate, todayKey);
+  if (elapsed < 1) {
+    const annualRate = baseRate / 100;
+    return inst.principal * (annualRate / 12);
+  }
+  const renewalIndex = Math.floor(elapsed / termMonths);
+  if (renewalIndex <= 0) {
+    const annualRate = baseRate / 100;
+    return inst.principal * (annualRate / 12);
+  }
+  const start = parseDayKey(inst.startDate);
+  const renewalMonths = termMonths * renewalIndex;
+  const totalMonths = start.year * 12 + (start.month - 1) + renewalMonths;
+  const renewalYear = Math.floor(totalMonths / 12);
+  const effAnnual = bankRateForYear(renewalYear) / 100;
+  return inst.principal * (effAnnual / 12);
 }
 
-export function remainingTermMonths(inst: WealthInstrument, today?: DayKey): number {
+export function remainingTermMonths(
+  inst: WealthInstrument,
+  today?: DayKey
+): number {
   const todayKey = today ?? getTodayInKuwait();
   const elapsed = Math.max(0, monthsBetween(inst.startDate, todayKey));
   const remaining = Math.max(0, inst.termMonths - elapsed);
@@ -39,16 +66,44 @@ export function remainingTermMonths(inst: WealthInstrument, today?: DayKey): num
 export function estimateTotalInterestOverHorizon(
   inst: WealthInstrument,
   horizonMonths: number,
-  today?: DayKey,
+  today?: DayKey
 ): number {
   const todayKey = today ?? getTodayInKuwait();
+  if (!Number.isFinite(inst.principal)) return 0;
   const elapsed = Math.max(0, monthsBetween(inst.startDate, todayKey));
   const remaining = Math.max(0, inst.termMonths - elapsed);
-  const horizonLimit = Math.max(0, Math.min(remaining, horizonMonths));
-  const delay = elapsed === 0 ? 1 : 0;
-  const months = Math.max(0, horizonLimit - delay);
-  const monthly = estimateMonthlyInterest(inst);
-  return monthly * months;
+  const monthsToConsider = Math.max(0, Math.min(remaining, horizonMonths));
+
+  // Sum monthly interest for each month in the horizon, using effective rate per month
+  let total = 0;
+  for (let m = 0; m < monthsToConsider; m += 1) {
+    // compute monthKey for month m from todayKey
+    const d = new Date(`${todayKey}T00:00:00Z`);
+    d.setUTCMonth(d.getUTCMonth() + m);
+    const monthKey = d.toISOString().slice(0, 10);
+
+    // determine effective rate for this month
+    const baseRate = Number(inst.annualRatePercent) || 0;
+    const termMonths = Math.max(0, inst.termMonths || 0);
+    if (!inst.startDate || termMonths <= 0) continue;
+    const elapsedMonth = monthsBetween(inst.startDate, monthKey);
+    if (elapsedMonth < 1) {
+      total += inst.principal * (baseRate / 100 / 12);
+      continue;
+    }
+    const renewalIndex = Math.floor(elapsedMonth / termMonths);
+    if (renewalIndex <= 0) {
+      total += inst.principal * (baseRate / 100 / 12);
+      continue;
+    }
+    const start = parseDayKey(inst.startDate);
+    const renewalMonths = termMonths * renewalIndex;
+    const totalMonths = start.year * 12 + (start.month - 1) + renewalMonths;
+    const renewalYear = Math.floor(totalMonths / 12);
+    const effAnnual = bankRateForYear(renewalYear) / 100;
+    total += inst.principal * (effAnnual / 12);
+  }
+  return total;
 }
 
 export function monthLabel(monthKey: MonthKey): string {

@@ -19,7 +19,10 @@ const DEFAULT_STATE: WealthState = {
 const SAMPLE_ACCOUNT_IDS = ["cash-main", "cd-egp-long-term", "invest-future"];
 const SAMPLE_FLOW_IDS = ["flow-salary-1", "flow-expense-1"];
 
-function mergeById<T extends { id: string }>(primary: T[], secondary: T[]): T[] {
+function mergeById<T extends { id: string }>(
+  primary: T[],
+  secondary: T[]
+): T[] {
   const map = new Map<string, T>();
   secondary.forEach((item) => map.set(item.id, item));
   primary.forEach((item) => map.set(item.id, item));
@@ -30,7 +33,10 @@ function isZeroInterestFlow(flow: WealthFlow): boolean {
   return flow.kind === "interest" && (Number(flow.amount) || 0) <= 0;
 }
 
-function cleanFlows(flows: WealthFlow[]): { cleaned: WealthFlow[]; removedIds: string[] } {
+function cleanFlows(flows: WealthFlow[]): {
+  cleaned: WealthFlow[];
+  removedIds: string[];
+} {
   const removedIds: string[] = [];
   const cleaned = flows.filter((flow) => {
     if (isZeroInterestFlow(flow)) {
@@ -42,7 +48,10 @@ function cleanFlows(flows: WealthFlow[]): { cleaned: WealthFlow[]; removedIds: s
   return { cleaned, removedIds };
 }
 
-function cleanState(state: WealthState): { cleaned: WealthState; removedFlowIds: string[] } {
+function cleanState(state: WealthState): {
+  cleaned: WealthState;
+  removedFlowIds: string[];
+} {
   const { cleaned, removedIds } = cleanFlows(state.flows);
   return { cleaned: { ...state, flows: cleaned }, removedFlowIds: removedIds };
 }
@@ -94,7 +103,9 @@ function readLegacyLocal(): WealthState | null {
 
 function hasAnyData(state: WealthState | null): boolean {
   if (!state) return false;
-  return Boolean(state.accounts.length || state.instruments.length || state.flows.length);
+  return Boolean(
+    state.accounts.length || state.instruments.length || state.flows.length
+  );
 }
 
 export async function importLegacyWealthStateToSupabase(): Promise<{
@@ -112,7 +123,7 @@ export async function importLegacyWealthStateToSupabase(): Promise<{
   if (!legacy) {
     return { ok: false, message: "No legacy local data found." };
   }
-  const { cleaned } = cleanState(legacy);
+  const { cleaned } = cleanState(legacy as WealthState);
   const ok = await pushRemoteWealthAll(cleaned);
   if (!ok) {
     return { ok: false, message: "Supabase sync failed. Check RLS policies." };
@@ -150,13 +161,16 @@ export async function loadWealthStateWithRemote(): Promise<WealthState> {
   const remote = await fetchRemoteWealthAll();
   if (!remote) return cleanedLocal;
 
-  const { cleaned: cleanedRemote, removedFlowIds: removedRemoteFlowIds } = cleanState(remote);
+  const { cleaned: cleanedRemote, removedFlowIds: removedRemoteFlowIds } =
+    cleanState(remote);
   if (removedRemoteFlowIds.length) {
     await deleteRemoteFlows(removedRemoteFlowIds);
   }
 
   const cleaned: WealthState = {
-    accounts: cleanedRemote.accounts.filter((a) => !SAMPLE_ACCOUNT_IDS.includes(a.id)),
+    accounts: cleanedRemote.accounts.filter(
+      (a) => !SAMPLE_ACCOUNT_IDS.includes(a.id)
+    ),
     instruments: cleanedRemote.instruments,
     flows: cleanedRemote.flows.filter((f) => !SAMPLE_FLOW_IDS.includes(f.id)),
   };
@@ -169,7 +183,7 @@ export async function loadWealthStateWithRemote(): Promise<WealthState> {
   if (remoteIsEmpty) {
     const legacy = readLegacyLocal();
     if (hasAnyData(legacy)) {
-      const { cleaned: cleanedLegacy } = cleanState(legacy);
+      const { cleaned: cleanedLegacy } = cleanState(legacy as WealthState);
       const ok = await pushRemoteWealthAll(cleanedLegacy);
       if (ok) {
         setLegacyMigrationFlag();
@@ -182,7 +196,9 @@ export async function loadWealthStateWithRemote(): Promise<WealthState> {
   // If Supabase is empty but local has data, keep local and push up.
   if (
     remoteIsEmpty &&
-    (cleanedLocal.accounts.length || cleanedLocal.instruments.length || cleanedLocal.flows.length)
+    (cleanedLocal.accounts.length ||
+      cleanedLocal.instruments.length ||
+      cleanedLocal.flows.length)
   ) {
     await pushRemoteWealthAll(cleanedLocal);
     saveLocal(cleanedLocal, true);
@@ -208,7 +224,9 @@ export async function loadWealthStateWithRemote(): Promise<WealthState> {
   return merged;
 }
 
-export async function saveWealthStateWithRemote(state: WealthState): Promise<void> {
+export async function saveWealthStateWithRemote(
+  state: WealthState
+): Promise<void> {
   const { cleaned, removedFlowIds } = cleanState(state);
   if (hasSupabaseConfig()) {
     const remoteFlowIds = await fetchRemoteFlowIds();

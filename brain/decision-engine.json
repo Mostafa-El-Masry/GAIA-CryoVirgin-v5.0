@@ -1,0 +1,16 @@
+{
+  "name": "GAIA Decision Engine",
+  "week": 17,
+  "inputs": ["decision.schema", "priority-weights", "constraints"],
+  "process": [
+    "score_each_option",
+    "apply_priority_weights",
+    "penalize_time_and_energy_overuse",
+    "select_highest_weighted_option"
+  ],
+  "outputs": ["selected_decision"],
+  "constraints": {
+    "no_emotional_bias": true,
+    "no_short_term_comfort_override": true
+  }
+}

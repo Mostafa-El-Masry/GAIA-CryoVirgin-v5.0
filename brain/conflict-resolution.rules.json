@@ -1,0 +1,18 @@
+{
+  "name": "Conflict Resolution Rules",
+  "version": "1.0",
+  "rules": [
+    {
+      "conflict": "time_vs_money",
+      "resolution": "prefer_time_integrity"
+    },
+    {
+      "conflict": "comfort_vs_growth",
+      "resolution": "prefer_growth"
+    },
+    {
+      "conflict": "short_term_vs_long_term",
+      "resolution": "prefer_long_term"
+    }
+  ]
+}

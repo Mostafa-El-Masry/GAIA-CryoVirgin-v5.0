@@ -16,6 +16,12 @@ import {
   savePlanDefinitions,
 } from "../lib/levels";
 import { getExchangeRate } from "../lib/exchangeRate";
+import {
+  loadRates,
+  saveRates,
+  YearRate,
+  bankRateForYear as getBankRateForYear,
+} from "../lib/bankRates";
 
 const surface = "wealth-surface text-[var(--gaia-text-default)]";
 const BIRTH_DATE_UTC = new Date(Date.UTC(1991, 7, 10));
@@ -266,8 +272,7 @@ function convertToPlanCurrency(
 }
 
 function bankRateForYear(year: number): number {
-  const drop = Math.max(0, year - BANK_RATE_BASE_YEAR);
-  return Math.max(MIN_ANNUAL_RATE, BANK_RATE_BASE_PERCENT - drop);
+  return getBankRateForYear(year);
 }
 
 function initialRateForInstrument(inst: WealthInstrument): number {
@@ -524,6 +529,14 @@ export default function WealthLevelsPage() {
   const [animateNumbers, setAnimateNumbers] = useState(false);
   const planCurrency = "EGP";
   const todayKey = getTodayInKuwait();
+
+  const [fiveYearRates, setFiveYearRates] = useState<YearRate[]>(() =>
+    loadRates()
+  );
+
+  useEffect(() => {
+    setFiveYearRates(loadRates());
+  }, []);
 
   const refreshSnapshot = (nextState: WealthState | null) => {
     if (!nextState) return;
@@ -1018,9 +1031,9 @@ export default function WealthLevelsPage() {
                         <td className="px-4 py-2 text-[11px]">
                           {targetAge != null ? targetAge : "-"}
                         </td>
-                      <td className="px-4 py-2 text-[11px] text-slate-300 max-w-[360px] truncate">
-                        {plan.description}
-                      </td>
+                        <td className="px-4 py-2 text-[11px] text-slate-300 max-w-[360px] truncate">
+                          {plan.description}
+                        </td>
                       </tr>
                       {showPlanProjectionInline && isCurrent ? (
                         <tr className="border-t border-slate-800">
@@ -1176,6 +1189,89 @@ export default function WealthLevelsPage() {
                                         renew at the bank rate (17% in 2025, -1%
                                         per year to a 10% floor).
                                       </p>
+                                      <div className="mt-3">
+                                        <p className="text-[10px] font-semibold uppercase tracking-wide">
+                                          Bank rate (next 5 years)
+                                        </p>
+                                        <div className="mt-2 grid grid-cols-5 gap-2">
+                                          {fiveYearRates.map((r, i) => (
+                                            <div
+                                              key={r.year}
+                                              className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-200 flex flex-col items-start"
+                                            >
+                                              <div className="text-[11px] text-slate-400">
+                                                {r.year}
+                                              </div>
+                                              <select
+                                                value={String(r.rate)}
+                                                onChange={(e) => {
+                                                  const val = Number(
+                                                    e.target.value
+                                                  );
+                                                  setFiveYearRates((prev) => {
+                                                    const next = prev.slice();
+                                                    next[i] = {
+                                                      year: r.year,
+                                                      rate: Number.isFinite(val)
+                                                        ? val
+                                                        : 0,
+                                                    };
+                                                    return next;
+                                                  });
+                                                }}
+                                                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-sm text-white"
+                                              >
+                                                {Array.from(
+                                                  { length: 15 },
+                                                  (_, k) => {
+                                                    const val = 17 - k * 0.5;
+                                                    return (
+                                                      <option
+                                                        key={String(val)}
+                                                        value={String(val)}
+                                                      >
+                                                        {val % 1 === 0
+                                                          ? `${val.toFixed(0)}`
+                                                          : `${val.toFixed(1)}`}
+                                                      </option>
+                                                    );
+                                                  }
+                                                )}
+                                              </select>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        <div className="mt-2 flex gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              saveRates(fiveYearRates);
+                                              refreshSnapshot(state);
+                                              // reload so projections and other pages pick up new rates
+                                              if (
+                                                typeof window !== "undefined"
+                                              ) {
+                                                window.location.reload();
+                                              }
+                                            }}
+                                            className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-3 py-1.5 text-[11px] font-semibold text-emerald-100"
+                                          >
+                                            Save rates
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const defaults = loadRates();
+                                              setFiveYearRates(defaults);
+                                              saveRates(defaults);
+                                              refreshSnapshot(state);
+                                            }}
+                                            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-200"
+                                          >
+                                            Reset
+                                          </button>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>

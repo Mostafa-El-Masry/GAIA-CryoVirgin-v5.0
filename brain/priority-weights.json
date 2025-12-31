@@ -1,0 +1,16 @@
+{
+  "name": "Priority Weights",
+  "version": "1.0",
+  "weights": {
+    "health": 5,
+    "wealth": 5,
+    "time_integrity": 4,
+    "skill_growth": 4,
+    "relationships": 3,
+    "comfort": 1
+  },
+  "rules": {
+    "weights_are_adjustable": false,
+    "health_and_wealth_are_non_negotiable": true
+  }
+}

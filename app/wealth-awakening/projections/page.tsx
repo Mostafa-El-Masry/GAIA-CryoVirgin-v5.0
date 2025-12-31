@@ -11,6 +11,12 @@ import {
   monthLabel,
 } from "../lib/projections";
 import { getTodayInKuwait } from "../lib/summary";
+import {
+  loadRates,
+  YearRate,
+  bankRateForYear as getBankRateForYear,
+} from "../lib/bankRates";
+import { subscribe } from "@/lib/user-storage";
 
 const HORIZON_OPTIONS = [12, 24, 36] as const;
 const BIRTH_DATE_UTC = new Date(Date.UTC(1991, 7, 10));
@@ -39,7 +45,11 @@ function computeEndDate(startDate: string, termMonths: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function parseDayKey(day: string): { year: number; month: number; day: number } {
+function parseDayKey(day: string): {
+  year: number;
+  month: number;
+  day: number;
+} {
   const [y, m, d] = day.split("-").map((v) => parseInt(v, 10));
   return {
     year: Number.isFinite(y) ? y : 1970,
@@ -55,8 +65,7 @@ function monthsBetween(start: string, end: string): number {
 }
 
 function bankRateForYear(year: number): number {
-  const drop = Math.max(0, year - BANK_RATE_BASE_YEAR);
-  return Math.max(MIN_ANNUAL_RATE, BANK_RATE_BASE_PERCENT - drop);
+  return getBankRateForYear(year);
 }
 
 function initialRateForInstrument(inst: WealthInstrument): number {
@@ -175,22 +184,6 @@ const PROJECTION_COLUMN_WIDTHS: Record<ProjectionColumnKey, string> = {
 
 export default function WealthProjectionsPage() {
   const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
-  if (!canAccess("projections")) {
-    return (
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-slate-100">
-        <section className={`${surface} p-8`}>
-          <h1 className="text-xl font-semibold text-white">Future projections locked</h1>
-          <p className="mt-2 text-sm text-slate-300">
-            Complete more Academy lessons in Apollo to unlock this part of Wealth.
-          </p>
-          <p className="mt-2 text-xs text-slate-400">
-            Lessons completed: <span className="font-semibold text-white">{totalLessonsCompleted}</span>{" "}
-            - Wealth stage <span className="font-semibold text-white">{stage}</span>/5
-          </p>
-        </section>
-      </main>
-    );
-  }
 
   const [state, setState] = useState<WealthState | null>(null);
   const [horizon, setHorizon] = useState<(typeof HORIZON_OPTIONS)[number]>(12);
@@ -227,6 +220,14 @@ export default function WealthProjectionsPage() {
     instruments[0]?.currency ||
     "KWD";
   const columnCount = projectionColumns.length;
+  const [fiveYearRates, setFiveYearRates] = useState<YearRate[]>(() =>
+    loadRates()
+  );
+
+  useEffect(() => {
+    setFiveYearRates(loadRates());
+  }, []);
+
   const ageProjectionRows = useMemo(() => {
     if (instruments.length === 0) return [] as AgeProjectionRow[];
     const todayDate = new Date(`${today}T00:00:00Z`);
@@ -249,28 +250,34 @@ export default function WealthProjectionsPage() {
 
     const totalPrincipal = projectionInstruments.reduce(
       (sum, inst) => sum + inst.principal,
-      0,
+      0
     );
     if (totalPrincipal <= 0) return [] as AgeProjectionRow[];
     const baseRate =
       projectionInstruments.reduce(
         (sum, inst) => sum + inst.principal * inst.annualRatePercent,
-        0,
+        0
       ) / totalPrincipal;
     let reinvestBucket = 0;
 
     const startDate = new Date(
-      Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1),
+      Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1)
     );
     const endDate = new Date(
-      Date.UTC(BIRTH_DATE_UTC.getUTCFullYear() + 60, BIRTH_DATE_UTC.getUTCMonth(), 1),
+      Date.UTC(
+        BIRTH_DATE_UTC.getUTCFullYear() + 60,
+        BIRTH_DATE_UTC.getUTCMonth(),
+        1
+      )
     );
     const rowsByYear = new Map<number, AgeProjectionRow>();
 
     for (
       let cursor = new Date(startDate);
       cursor <= endDate;
-      cursor = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1))
+      cursor = new Date(
+        Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1)
+      )
     ) {
       const year = cursor.getUTCFullYear();
       const monthKey = cursor.toISOString().slice(0, 10);
@@ -291,11 +298,12 @@ export default function WealthProjectionsPage() {
       const monthAge = calculateAge(cursor, BIRTH_DATE_UTC);
       const startPrincipal = projectionInstruments.reduce(
         (sum, inst) => sum + inst.principal,
-        0,
+        0
       );
       const startBalance = startPrincipal + reinvestBucket;
       const bucketTotal = reinvestBucket + monthlyRevenue;
-      const investable = Math.floor(bucketTotal / REINVEST_STEP) * REINVEST_STEP;
+      const investable =
+        Math.floor(bucketTotal / REINVEST_STEP) * REINVEST_STEP;
       reinvestBucket = bucketTotal - investable;
       if (investable > 0) {
         projectionInstruments.push({
@@ -356,7 +364,8 @@ export default function WealthProjectionsPage() {
     }
 
     return Array.from(rowsByYear.values());
-  }, [instruments, today]);
+  }, [instruments, today, fiveYearRates]);
+  // Recompute projections when bank rates change
 
   const byCurrency = useMemo(() => {
     const map = new Map<
@@ -378,7 +387,7 @@ export default function WealthProjectionsPage() {
       map.set(inst.currency, entry);
     }
     return map;
-  }, [instruments, horizon, today]);
+  }, [instruments, horizon, today, fiveYearRates]);
 
   if (!state) {
     return (
@@ -392,7 +401,7 @@ export default function WealthProjectionsPage() {
 
   const getCellClasses = (
     key: ProjectionColumnKey,
-    isMonth: boolean,
+    isMonth: boolean
   ): string => {
     const align = key === "year" || key === "age" ? "" : "text-right";
     const base = isMonth ? "py-2" : "py-3";
@@ -450,7 +459,7 @@ export default function WealthProjectionsPage() {
 
   const renderMonthCell = (
     key: ProjectionColumnKey,
-    month: AgeProjectionRow["months"][number],
+    month: AgeProjectionRow["months"][number]
   ) => {
     switch (key) {
       case "year":
@@ -476,9 +485,20 @@ export default function WealthProjectionsPage() {
     }
   };
 
+  useEffect(() => {
+    const unsub = subscribe(() => {
+      try {
+        setFiveYearRates(loadRates());
+      } catch {
+        // ignore
+      }
+    });
+    return unsub;
+  }, []);
+
   const handleColumnDrop = (
     sourceKey: ProjectionColumnKey,
-    targetKey: ProjectionColumnKey,
+    targetKey: ProjectionColumnKey
   ) => {
     if (sourceKey === targetKey) return;
     setProjectionColumns((prev) => {
@@ -489,6 +509,30 @@ export default function WealthProjectionsPage() {
     });
   };
 
+  if (!canAccess("projections")) {
+    return (
+      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-slate-100">
+        <section className={`${surface} p-8`}>
+          <h1 className="text-xl font-semibold text-white">
+            Future projections locked
+          </h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Complete more Academy lessons in Apollo to unlock this part of
+            Wealth.
+          </p>
+          <p className="mt-2 text-xs text-slate-400">
+            Lessons completed:{" "}
+            <span className="font-semibold text-white">
+              {totalLessonsCompleted}
+            </span>{" "}
+            - Wealth stage{" "}
+            <span className="font-semibold text-white">{stage}</span>/5
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-slate-100">
       <header className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -496,10 +540,13 @@ export default function WealthProjectionsPage() {
           <p className="text-xs font-semibold uppercase tracking-wide text-emerald-300/80">
             Wall Street Drive
           </p>
-          <h1 className="mt-1 text-3xl font-semibold text-white">Future projections</h1>
+          <h1 className="mt-1 text-3xl font-semibold text-white">
+            Future projections
+          </h1>
           <p className="mt-2 max-w-3xl text-sm text-slate-300">
-            Rough, calm projections of your interest income if nothing changes. No step-downs or
-            complex compounding - just a simple view over the next 12-36 months.
+            Rough, calm projections of your interest income if nothing changes.
+            No step-downs or complex compounding - just a simple view over the
+            next 12-36 months.
           </p>
         </div>
         <div className="mt-3 flex items-center gap-2 md:mt-0">
@@ -522,14 +569,31 @@ export default function WealthProjectionsPage() {
         </div>
       </header>
 
+      <section className="mt-4 grid gap-4 md:grid-cols-5">
+        {fiveYearRates.map((r) => (
+          <article
+            key={r.year}
+            className={`${surface} flex flex-col items-start justify-center p-3 text-sm`}
+          >
+            <div className="text-[11px] text-slate-400">{r.year}</div>
+            <div className="mt-1 text-2xl font-semibold text-white">
+              {r.rate}%
+            </div>
+            <div className="mt-1 text-[11px] text-slate-400">
+              Projected bank rate
+            </div>
+          </article>
+        ))}
+      </section>
+
       <section className="grid gap-4 md:grid-cols-3">
         <article className={`${surface} p-4`}>
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             Simple, on-purpose rough
           </h2>
           <p className="mt-2 text-xs text-slate-300">
-            These projections assume your principal, rates, and payout rules stay the same.
-            They&apos;re meant for a feeling, not a contract.
+            These projections assume your principal, rates, and payout rules
+            stay the same. They&apos;re meant for a feeling, not a contract.
           </p>
         </article>
 
@@ -547,7 +611,9 @@ export default function WealthProjectionsPage() {
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                     {currency}
                   </span>
-                  <span className="text-[11px] text-slate-500">Horizon: {horizon} months</span>
+                  <span className="text-[11px] text-slate-500">
+                    Horizon: {horizon} months
+                  </span>
                 </div>
                 <p className="mt-1 text-sm font-semibold text-white">
                   {formatCurrency(agg.monthlyInterest, currency)} / month
@@ -563,7 +629,8 @@ export default function WealthProjectionsPage() {
             ))}
             {byCurrency.size === 0 && (
               <p className="text-xs text-slate-400">
-                No investments defined yet. Add certificates first, then revisit projections.
+                No investments defined yet. Add certificates first, then revisit
+                projections.
               </p>
             )}
           </div>
@@ -571,10 +638,12 @@ export default function WealthProjectionsPage() {
       </section>
 
       <section className={`${surface} p-5 md:p-6`}>
-        <h2 className="text-sm font-semibold text-white">Investment breakdown</h2>
+        <h2 className="text-sm font-semibold text-white">
+          Investment breakdown
+        </h2>
         <p className="mt-1 text-xs text-slate-400">
-          For each investment, see the approximate monthly interest and how much it could pay you
-          over the selected horizon, within its term.
+          For each investment, see the approximate monthly interest and how much
+          it could pay you over the selected horizon, within its term.
         </p>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-xs text-slate-200">
@@ -594,14 +663,23 @@ export default function WealthProjectionsPage() {
             <tbody>
               {instruments.map((inst: WealthInstrument) => {
                 const monthly = estimateMonthlyInterest(inst);
-                const total = estimateTotalInterestOverHorizon(inst, horizon, today);
+                const total = estimateTotalInterestOverHorizon(
+                  inst,
+                  horizon,
+                  today
+                );
                 const endMonth = instrumentEndMonth(inst);
                 const endDate = computeEndDate(inst.startDate, inst.termMonths);
                 return (
-                  <tr key={inst.id} className="border-b border-slate-800 last:border-b-0">
+                  <tr
+                    key={inst.id}
+                    className="border-b border-slate-800 last:border-b-0"
+                  >
                     <td className="py-2 pr-3 align-top">
                       <div className="flex flex-col">
-                        <span className="font-medium text-white">{inst.name}</span>
+                        <span className="font-medium text-white">
+                          {inst.name}
+                        </span>
                         <span className="mt-0.5 text-[11px] text-slate-500">
                           Ends around {monthLabel(endMonth)}
                         </span>
@@ -636,8 +714,12 @@ export default function WealthProjectionsPage() {
               })}
               {instruments.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="py-4 text-center text-xs text-slate-400">
-                    No investments defined yet, so there is nothing to project yet.
+                  <td
+                    colSpan={9}
+                    className="py-4 text-center text-xs text-slate-400"
+                  >
+                    No investments defined yet, so there is nothing to project
+                    yet.
                   </td>
                 </tr>
               )}
@@ -645,30 +727,36 @@ export default function WealthProjectionsPage() {
           </table>
         </div>
         <p className="mt-3 text-[11px] text-slate-500">
-          Later versions of GAIA can add more precise formulas, step-down rules, and multi-currency
-          conversions. For Awakening, the goal is a gentle, human-scale feeling of what your current
-          certificates are doing for you.
+          Later versions of GAIA can add more precise formulas, step-down rules,
+          and multi-currency conversions. For Awakening, the goal is a gentle,
+          human-scale feeling of what your current certificates are doing for
+          you.
         </p>
       </section>
 
       <section className={`${surface} p-5 md:p-6`}>
-        <h2 className="text-sm font-semibold text-white">Age projection to 60</h2>
+        <h2 className="text-sm font-semibold text-white">
+          Age projection to 60
+        </h2>
         <p className="mt-1 text-xs text-slate-400">
-          Assumes certificates lock for their term and renew at the bank rate (17% in 2025, -1% per
-          year to a 10% floor). Revenue is reinvested in chunks of {REINVEST_STEP}.
+          Assumes certificates lock for their term and renew at the bank rate
+          (17% in 2025, -1% per year to a 10% floor). Revenue is reinvested in
+          chunks of {REINVEST_STEP}.
         </p>
         <div className="mt-4 overflow-x-hidden">
           <table className="min-w-full table-fixed border-separate border-spacing-y-2 text-left text-xs text-white">
             <colgroup>
               {projectionColumns.map((key) => (
-                <col key={key} style={{ width: PROJECTION_COLUMN_WIDTHS[key] }} />
+                <col
+                  key={key}
+                  style={{ width: PROJECTION_COLUMN_WIDTHS[key] }}
+                />
               ))}
             </colgroup>
             <thead>
               <tr className="border-b border-slate-800 text-[11px] uppercase tracking-wide text-white">
                 {projectionColumns.map((key) => {
-                  const isRight =
-                    key !== "year" && key !== "age";
+                  const isRight = key !== "year" && key !== "age";
                   return (
                     <th
                       key={key}
@@ -687,7 +775,9 @@ export default function WealthProjectionsPage() {
                         event.preventDefault();
                         const source =
                           draggingColumn ||
-                          (event.dataTransfer.getData("text/plain") as ProjectionColumnKey);
+                          (event.dataTransfer.getData(
+                            "text/plain"
+                          ) as ProjectionColumnKey);
                         if (source) {
                           handleColumnDrop(source, key);
                         }
@@ -698,9 +788,9 @@ export default function WealthProjectionsPage() {
                         setDraggingColumn(null);
                         setDragOverColumn(null);
                       }}
-                      className={`py-2 ${isRight ? "px-2 text-right" : "pr-2"} ${
-                        dragOverColumn === key ? "bg-blue-600/10" : ""
-                      }`}
+                      className={`py-2 ${
+                        isRight ? "px-2 text-right" : "pr-2"
+                      } ${dragOverColumn === key ? "bg-blue-600/10" : ""}`}
                       title="Drag to reorder columns"
                     >
                       {PROJECTION_COLUMN_LABELS[key]}
@@ -735,7 +825,10 @@ export default function WealthProjectionsPage() {
                       return (
                         <td
                           key={key}
-                          className={`${getCellClasses(key, false)} ${rounding}`}
+                          className={`${getCellClasses(
+                            key,
+                            false
+                          )} ${rounding}`}
                         >
                           {renderYearCell(key, row)}
                         </td>
@@ -747,7 +840,8 @@ export default function WealthProjectionsPage() {
                       <td colSpan={columnCount} className="p-0">
                         <div
                           className={`overflow-hidden transition-[max-height,opacity] duration-[700ms] ease-in-out ${
-                            expandedYear === row.year && collapsingYear !== row.year
+                            expandedYear === row.year &&
+                            collapsingYear !== row.year
                               ? "max-h-[720px] opacity-100"
                               : "max-h-0 opacity-0"
                           }`}
@@ -757,7 +851,9 @@ export default function WealthProjectionsPage() {
                               {projectionColumns.map((key) => (
                                 <col
                                   key={key}
-                                  style={{ width: PROJECTION_COLUMN_WIDTHS[key] }}
+                                  style={{
+                                    width: PROJECTION_COLUMN_WIDTHS[key],
+                                  }}
                                 />
                               ))}
                             </colgroup>
@@ -771,13 +867,17 @@ export default function WealthProjectionsPage() {
                                     const rounding =
                                       colIdx === 0
                                         ? "rounded-l-xl"
-                                        : colIdx === projectionColumns.length - 1
+                                        : colIdx ===
+                                          projectionColumns.length - 1
                                         ? "rounded-r-xl"
                                         : "";
                                     return (
                                       <td
                                         key={key}
-                                        className={`${getCellClasses(key, true)} ${rounding}`}
+                                        className={`${getCellClasses(
+                                          key,
+                                          true
+                                        )} ${rounding}`}
                                       >
                                         {renderMonthCell(key, month)}
                                       </td>
@@ -795,7 +895,10 @@ export default function WealthProjectionsPage() {
               ))}
               {ageProjectionRows.length === 0 && (
                 <tr>
-                  <td colSpan={columnCount} className="py-4 text-center text-xs text-slate-400">
+                  <td
+                    colSpan={columnCount}
+                    className="py-4 text-center text-xs text-slate-400"
+                  >
                     No investment data to project by age yet.
                   </td>
                 </tr>

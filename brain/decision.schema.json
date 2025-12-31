@@ -1,0 +1,16 @@
+{
+  "name": "Decision Schema",
+  "version": "1.0",
+  "description": "Schema for evaluating and prioritizing decisions",
+  "fields": {
+    "decision_id": "string",
+    "context": "string",
+    "options": "array of strings",
+    "constraints": "array of strings",
+    "time_cost": "integer",
+    "energy_cost": "integer",
+    "risk_level": "integer",
+    "expected_return": "integer",
+    "selected_option": "string"
+  }
+}
