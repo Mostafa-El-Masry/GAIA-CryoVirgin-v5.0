@@ -228,6 +228,28 @@ export default function WealthProjectionsPage() {
     setFiveYearRates(loadRates());
   }, []);
 
+  useEffect(() => {
+    const unsub = subscribe(() => {
+      try {
+        setFiveYearRates(loadRates());
+      } catch (err) {
+        // Log error to help debugging while avoiding crash
+        // eslint-disable-next-line no-console
+        console.error("loadRates failed:", err);
+      }
+    });
+
+    return () => {
+      if (typeof unsub === "function") {
+        unsub();
+      } else if (unsub && typeof (unsub as any).unsubscribe === "function") {
+        (unsub as any).unsubscribe();
+      }
+    };
+    // Intentionally leaving deps array empty to match previous behavior
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const ageProjectionRows = useMemo(() => {
     if (instruments.length === 0) return [] as AgeProjectionRow[];
     const todayDate = new Date(`${today}T00:00:00Z`);
@@ -484,17 +506,6 @@ export default function WealthProjectionsPage() {
         return "";
     }
   };
-
-  useEffect(() => {
-    const unsub = subscribe(() => {
-      try {
-        setFiveYearRates(loadRates());
-      } catch {
-        // ignore
-      }
-    });
-    return unsub;
-  }, []);
 
   const handleColumnDrop = (
     sourceKey: ProjectionColumnKey,
