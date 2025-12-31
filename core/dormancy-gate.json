@@ -1,0 +1,16 @@
+{
+  "name": "Dormancy Gate",
+  "week": 40,
+  "inputs": [
+    "dormancy-state.schema",
+    "dormancy-policy",
+    "stewardship",
+    "readiness-gate",
+    "governance-gate"
+  ],
+  "outputs": ["entered_dormancy", "woken_by_human"],
+  "constraints": {
+    "dormancy_blocks_all_capability_changes": true,
+    "wake_requires_human_authority": true
+  }
+}

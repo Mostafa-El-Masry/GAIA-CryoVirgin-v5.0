@@ -1,0 +1,10 @@
+{
+  "name": "Dormancy Policy",
+  "version": "1.0",
+  "policies": {
+    "no_execution_during_dormancy": true,
+    "memory_persistence_allowed": true,
+    "audit_suspension_allowed": true,
+    "human_can_force_wake": true
+  }
+}

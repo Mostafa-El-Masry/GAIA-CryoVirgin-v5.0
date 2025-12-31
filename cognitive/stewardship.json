@@ -1,0 +1,12 @@
+{
+  "name": "System Stewardship",
+  "version": "1.0",
+  "steward": "human",
+  "responsibilities": [
+    "authorize_wake",
+    "approve_updates",
+    "review_logs",
+    "maintain_ethics"
+  ],
+  "handoff_allowed": true
+}

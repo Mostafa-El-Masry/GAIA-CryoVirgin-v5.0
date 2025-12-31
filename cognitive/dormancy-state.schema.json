@@ -1,0 +1,12 @@
+{
+  "name": "Dormancy State Schema",
+  "version": "1.0",
+  "fields": {
+    "dormancy_id": "string",
+    "reason": "string",
+    "entered_at": "ISO-8601",
+    "expected_duration_days": "number | null",
+    "allowed_operations": "array of strings",
+    "wake_conditions": "array of strings"
+  }
+}
