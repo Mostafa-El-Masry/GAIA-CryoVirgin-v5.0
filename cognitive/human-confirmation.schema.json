@@ -1,0 +1,13 @@
+{
+  "name": "Human Confirmation Schema",
+  "version": "1.0",
+  "fields": {
+    "confirmation_id": "string",
+    "requested_action": "string",
+    "context_summary": "string",
+    "urgency": "low | medium | high",
+    "response_required": "approve | deny | modify",
+    "timestamp_requested": "ISO-8601",
+    "timestamp_resolved": "ISO-8601 | null"
+  }
+}

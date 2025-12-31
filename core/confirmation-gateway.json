@@ -1,0 +1,16 @@
+{
+  "name": "Confirmation Gateway",
+  "week": 30,
+  "inputs": [
+    "human-confirmation.schema",
+    "confirmation-channels",
+    "execution-gate",
+    "feedback-log"
+  ],
+  "rules": {
+    "high_urgency_requires_explicit_approval": true,
+    "no_response_equals_denial": true,
+    "modifications_restart_confirmation": true
+  },
+  "outputs": ["confirmed_action", "denied_action"]
+}
