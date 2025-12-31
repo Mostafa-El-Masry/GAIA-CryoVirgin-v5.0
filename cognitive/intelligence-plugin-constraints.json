@@ -1,0 +1,11 @@
+{
+  "name": "Intelligence Plug-In Constraints",
+  "version": "1.0",
+  "rules": {
+    "plugins_have_no_direct_execution": true,
+    "plugins_cannot_modify_core": true,
+    "plugins_subject_to_ethics_gate": true,
+    "plugins_subject_to_trust_gate": true,
+    "plugins_must_be_removable": true
+  }
+}

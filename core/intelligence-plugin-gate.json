@@ -1,0 +1,15 @@
+{
+  "name": "Intelligence Plug-In Gate",
+  "week": 41,
+  "inputs": [
+    "intelligence-plugin.schema",
+    "intelligence-plugin-constraints",
+    "ethics-gate",
+    "trust-gate",
+    "governance-gate"
+  ],
+  "outputs": ["plugin_allowed", "plugin_blocked"],
+  "constraints": {
+    "core_remains_intelligence_agnostic": true
+  }
+}

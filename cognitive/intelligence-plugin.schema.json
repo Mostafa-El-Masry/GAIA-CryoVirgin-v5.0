@@ -1,0 +1,13 @@
+{
+  "name": "Intelligence Plug-In Schema",
+  "version": "1.0",
+  "fields": {
+    "plugin_id": "string",
+    "name": "string",
+    "domain": "string",
+    "capabilities_exposed": "array of strings",
+    "requires_trust_level": "string",
+    "requires_human_confirmation": "boolean",
+    "sandboxed": "boolean"
+  }
+}
