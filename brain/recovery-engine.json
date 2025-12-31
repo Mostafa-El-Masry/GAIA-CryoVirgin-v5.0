@@ -1,0 +1,16 @@
+{
+  "name": "GAIA Recovery Engine",
+  "week": 21,
+  "inputs": ["failure-event", "active-strategies", "weekly-review"],
+  "process": [
+    "classify_failure",
+    "select_protocol",
+    "execute_recovery_actions",
+    "log_recovery"
+  ],
+  "outputs": ["recovery-log", "updated_status"],
+  "constraints": {
+    "no_catastrophic_reset": true,
+    "recovery_over_punishment": true
+  }
+}

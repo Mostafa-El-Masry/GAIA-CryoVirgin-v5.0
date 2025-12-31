@@ -1,0 +1,14 @@
+{
+  "name": "Failure Event Schema",
+  "version": "1.0",
+  "description": "Defines recoverable failure events",
+  "fields": {
+    "failure_id": "string",
+    "source": "string",
+    "domain": "string",
+    "severity": "low | medium | high",
+    "timestamp": "ISO-8601",
+    "triggering_condition": "string",
+    "immediate_impact": "string"
+  }
+}
