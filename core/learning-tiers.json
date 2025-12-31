@@ -1,0 +1,25 @@
+{
+  "name": "Learning Tiers",
+  "tiers": [
+    {
+      "id": 0,
+      "name": "Transient",
+      "description": "Temporary learning, auto-expiring"
+    },
+    {
+      "id": 1,
+      "name": "Observed",
+      "description": "Learning under evaluation"
+    },
+    {
+      "id": 2,
+      "name": "Conditionally Accepted",
+      "description": "Learning usable but reversible"
+    },
+    {
+      "id": 3,
+      "name": "Locked",
+      "description": "Stable learning, protected"
+    }
+  ]
+}

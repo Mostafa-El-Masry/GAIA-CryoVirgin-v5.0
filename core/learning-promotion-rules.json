@@ -1,0 +1,14 @@
+{
+  "name": "Learning Promotion Rules",
+  "promotion_requirements": {
+    "Transient_to_Observed": ["initial_validation"],
+    "Observed_to_Conditionally_Accepted": [
+      "audit_passed",
+      "stability_confirmed"
+    ],
+    "Conditionally_Accepted_to_Locked": [
+      "multiple_cycles_stable",
+      "no_rollback_events"
+    ]
+  }
+}

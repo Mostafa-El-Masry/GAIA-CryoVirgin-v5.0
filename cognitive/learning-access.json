@@ -1,0 +1,5 @@
+{
+  "name": "Learning Access Rules",
+  "usable_tiers": ["Conditionally Accepted", "Locked"],
+  "blocked_tiers": ["Transient", "Observed"]
+}
