@@ -1,0 +1,16 @@
+{
+  "name": "GAIA Bias Adjustment Engine",
+  "week": 19,
+  "inputs": ["decision-log", "weekly-review", "bias-record"],
+  "process": [
+    "detect_bias_patterns",
+    "calculate_bias_severity",
+    "adjust_priority_weights",
+    "log_bias_update"
+  ],
+  "outputs": ["updated_priority_weights", "bias_log"],
+  "constraints": {
+    "adjustments_are_gradual": true,
+    "no_manual_override": true
+  }
+}

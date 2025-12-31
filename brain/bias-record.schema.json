@@ -1,0 +1,14 @@
+{
+  "name": "Bias Record Schema",
+  "version": "1.0",
+  "description": "Tracks detected cognitive and behavioral bias",
+  "fields": {
+    "bias_id": "string",
+    "detected_from": "string",
+    "affected_domain": "string",
+    "direction": "overweight | underweight",
+    "severity": "integer",
+    "first_detected": "ISO-8601",
+    "last_detected": "ISO-8601"
+  }
+}

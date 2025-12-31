@@ -1,0 +1,21 @@
+{
+  "name": "Bias Detection Rules",
+  "version": "1.0",
+  "rules": [
+    {
+      "id": "comfort_bias",
+      "condition": "comfort_selected_3x_over_growth",
+      "action": "flag_overweight_comfort"
+    },
+    {
+      "id": "risk_avoidance_bias",
+      "condition": "low_risk_selected_when_return_high",
+      "action": "flag_underweight_return"
+    },
+    {
+      "id": "time_neglect_bias",
+      "condition": "time_cost_exceeded_repeatedly",
+      "action": "increase_time_penalty"
+    }
+  ]
+}
