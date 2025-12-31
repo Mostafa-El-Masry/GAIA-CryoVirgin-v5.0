@@ -1,0 +1,12 @@
+{
+  "name": "Recovery State Schema",
+  "version": "1.0",
+  "fields": {
+    "state_id": "string",
+    "trigger_event": "string",
+    "severity": "medium | high | critical",
+    "entered_at": "ISO-8601",
+    "allowed_operations": "array of strings",
+    "requires_human_intervention": "boolean"
+  }
+}

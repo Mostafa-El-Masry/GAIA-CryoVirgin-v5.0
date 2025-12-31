@@ -1,0 +1,10 @@
+{
+  "name": "Rollback Policy",
+  "version": "1.0",
+  "policies": {
+    "rollback_on_critical_audit": true,
+    "rollback_on_ethics_violation": true,
+    "rollback_scope": "last_known_safe_state",
+    "no_forward_execution_during_rollback": true
+  }
+}

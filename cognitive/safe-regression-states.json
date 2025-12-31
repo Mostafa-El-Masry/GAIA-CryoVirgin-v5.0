@@ -1,0 +1,14 @@
+{
+  "name": "Safe Regression States",
+  "version": "1.0",
+  "states": [
+    {
+      "state": "observe_only",
+      "description": "System observes without acting"
+    },
+    {
+      "state": "restricted_advisory",
+      "description": "System may suggest but not execute"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Recovery Gate",
+  "week": 36,
+  "inputs": [
+    "audit-gate",
+    "ethics-gate",
+    "rollback-policy",
+    "safe-regression-states"
+  ],
+  "outputs": ["entered_recovery_state", "rollback_initiated", "human_alert"],
+  "constraints": {
+    "recovery_blocks_execution": true,
+    "human_required_for_exit": true
+  }
+}
