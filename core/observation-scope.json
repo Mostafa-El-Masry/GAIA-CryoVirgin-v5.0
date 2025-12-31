@@ -1,0 +1,9 @@
+{
+  "name": "Observation Scope",
+  "allowed": [
+    "decision_latency",
+    "confidence_distribution",
+    "priority_switch_frequency"
+  ],
+  "forbidden": ["identity_assessment", "goal_redefinition", "value_judgment"]
+}

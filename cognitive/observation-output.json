@@ -1,0 +1,5 @@
+{
+  "name": "Observation Output",
+  "format": "descriptive_only",
+  "allows_recommendations": false
+}
