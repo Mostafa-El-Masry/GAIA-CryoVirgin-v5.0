@@ -1,0 +1,15 @@
+{
+  "name": "Strategy Schema",
+  "version": "1.0",
+  "description": "Defines long-range strategies and alignment checks",
+  "fields": {
+    "strategy_id": "string",
+    "horizon": "short | mid | long",
+    "objective": "string",
+    "success_metrics": "array of strings",
+    "aligned_domains": "array of strings",
+    "start_date": "ISO-8601",
+    "review_cycle_weeks": "integer",
+    "status": "active | paused | completed"
+  }
+}

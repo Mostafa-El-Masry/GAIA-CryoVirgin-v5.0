@@ -1,0 +1,16 @@
+{
+  "name": "GAIA Strategy Engine",
+  "week": 20,
+  "inputs": ["active-strategies", "decision-log", "priority-weights"],
+  "process": [
+    "check_alignment",
+    "adjust_decision_scores",
+    "monitor_strategy_health",
+    "schedule_reviews"
+  ],
+  "outputs": ["aligned_decisions", "strategy_flags"],
+  "constraints": {
+    "long_term_precedence": true,
+    "no_goal_proliferation": true
+  }
+}
