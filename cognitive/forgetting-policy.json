@@ -1,0 +1,9 @@
+{
+  "name": "Forgetting Policy",
+  "version": "1.0",
+  "policies": {
+    "temporary_memory_expiry_days": 30,
+    "unreaffirmed_intents_expiry_days": 60,
+    "noise_data_purge_required": true
+  }
+}

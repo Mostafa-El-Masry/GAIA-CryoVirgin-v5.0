@@ -1,0 +1,15 @@
+{
+  "name": "Memory Gate",
+  "week": 34,
+  "inputs": [
+    "memory-eligibility.schema",
+    "memory-eligibility-rules",
+    "forgetting-policy",
+    "ethics-gate"
+  ],
+  "outputs": ["stored_memory", "temporary_memory", "discarded_memory"],
+  "constraints": {
+    "forbidden_memory_never_stored": true,
+    "forgetting_is_mandatory": true
+  }
+}

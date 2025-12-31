@@ -1,0 +1,14 @@
+{
+  "name": "Memory Eligibility Rules",
+  "version": "1.0",
+  "rules": {
+    "single_events_default_temporary": true,
+    "patterns_require_thresholds": true,
+    "human_confirmed_intents_eligible": true,
+    "ethical_violations_always_persist": true,
+    "forbidden_memory_types": [
+      "private_human_secrets",
+      "emotional_manipulation_data"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Memory Eligibility Schema",
+  "version": "1.0",
+  "fields": {
+    "memory_id": "string",
+    "memory_type": "event | pattern | intent | rule",
+    "source": "string",
+    "created_at": "ISO-8601",
+    "eligibility_status": "eligible | temporary | forbidden",
+    "review_after_days": "number | null"
+  }
+}
