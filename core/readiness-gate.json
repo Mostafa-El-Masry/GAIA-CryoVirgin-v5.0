@@ -1,0 +1,17 @@
+{
+  "name": "Readiness Gate",
+  "week": 39,
+  "inputs": [
+    "readiness-evaluation.schema",
+    "readiness-criteria",
+    "capability-freeze-line",
+    "trust-gate",
+    "audit-gate",
+    "ethics-gate",
+    "recovery-gate"
+  ],
+  "outputs": ["capability_ready", "capability_frozen"],
+  "constraints": {
+    "freeze_overrides_all_other_gates": true
+  }
+}

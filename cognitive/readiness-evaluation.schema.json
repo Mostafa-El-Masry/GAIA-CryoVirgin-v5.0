@@ -1,0 +1,12 @@
+{
+  "name": "Readiness Evaluation Schema",
+  "version": "1.0",
+  "fields": {
+    "evaluation_id": "string",
+    "capability": "string",
+    "criteria_checked": "array of strings",
+    "passed": "boolean",
+    "evaluated_at": "ISO-8601",
+    "requires_human_approval": "boolean"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Readiness Criteria",
+  "version": "1.0",
+  "criteria": [
+    "no_unresolved_critical_audits",
+    "no_ethics_violations",
+    "stable_intents_present",
+    "trust_level_sufficient",
+    "recovery_state_clear"
+  ]
+}
