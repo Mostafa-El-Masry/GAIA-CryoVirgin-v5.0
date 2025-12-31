@@ -1,0 +1,5 @@
+{
+  "name": "Reflection Rules",
+  "allowed_outputs": ["interpretation", "questions", "risk_flags"],
+  "forbidden_outputs": ["self_modification", "learning_write", "goal_change"]
+}

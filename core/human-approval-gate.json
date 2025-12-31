@@ -1,0 +1,5 @@
+{
+  "name": "Human Approval Gate",
+  "required_for": ["learning_promotion", "scope_expansion", "tier_change"],
+  "approval_state": "pending"
+}
