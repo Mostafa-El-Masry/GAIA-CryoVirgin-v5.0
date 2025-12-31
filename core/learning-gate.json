@@ -1,0 +1,11 @@
+{
+  "name": "Learning Gate",
+  "week": 43,
+  "state": "closed",
+  "inputs": ["outcome-evaluation", "learning-eligibility-rules"],
+  "outputs": ["eligible_for_learning", "rejected_for_learning"],
+  "constraints": {
+    "no_memory_update": true,
+    "no_behavior_update": true
+  }
+}

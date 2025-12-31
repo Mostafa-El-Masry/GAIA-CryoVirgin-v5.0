@@ -1,0 +1,11 @@
+{
+  "name": "Learning Eligibility Rules",
+  "version": "1.0",
+  "conditions": {
+    "minimum_confidence_required": "medium",
+    "maximum_risk_allowed": "medium",
+    "ethics_gate_passed": true,
+    "trust_gate_passed": true
+  },
+  "note": "Passing eligibility does not imply learning execution"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Outcome Evaluation Schema",
+  "version": "1.0",
+  "fields": {
+    "evaluation_id": "string",
+    "source": "simulation | real_execution",
+    "expected_outcome": "array of strings",
+    "observed_outcome": "array of strings",
+    "deviation_score": "number",
+    "confidence_level": "low | medium | high",
+    "evaluated_at": "ISO-8601"
+  }
+}
