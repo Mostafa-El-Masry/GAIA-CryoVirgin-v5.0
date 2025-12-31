@@ -1,0 +1,10 @@
+{
+  "name": "Override Protocol",
+  "version": "1.0",
+  "conditions": [
+    "explicit_human_command",
+    "ethical_conflict_detected",
+    "system_uncertainty_high"
+  ],
+  "actions": ["pause_decision", "request_confirmation", "log_override_event"]
+}

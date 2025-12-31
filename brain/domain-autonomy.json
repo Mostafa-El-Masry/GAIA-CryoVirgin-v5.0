@@ -1,0 +1,14 @@
+{
+  "name": "Domain Autonomy Map",
+  "domains": {
+    "health": "level_1",
+    "wealth": "level_2",
+    "time": "level_2",
+    "learning": "level_3",
+    "relationships": "level_1"
+  },
+  "rules": {
+    "no_self_modification": true,
+    "human_override_always_available": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Autonomy Level Schema",
+  "version": "1.0",
+  "description": "Defines autonomy levels for GAIA decisions",
+  "levels": {
+    "level_0": "no autonomy",
+    "level_1": "suggest only",
+    "level_2": "decide with confirmation",
+    "level_3": "decide and execute"
+  }
+}

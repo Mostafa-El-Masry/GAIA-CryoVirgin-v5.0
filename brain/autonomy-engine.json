@@ -1,0 +1,15 @@
+{
+  "name": "GAIA Autonomy Engine",
+  "week": 22,
+  "inputs": ["domain-autonomy", "decision-engine", "override-protocol"],
+  "process": [
+    "check_domain_level",
+    "enforce_autonomy_constraints",
+    "apply_override_if_needed"
+  ],
+  "outputs": ["authorized_decisions"],
+  "constraints": {
+    "safety_over_efficiency": true,
+    "human_supremacy": true
+  }
+}
