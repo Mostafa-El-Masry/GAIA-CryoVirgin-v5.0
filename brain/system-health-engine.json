@@ -1,0 +1,21 @@
+{
+  "name": "GAIA System Health Engine",
+  "week": 25,
+  "inputs": [
+    "decision-log",
+    "override-log",
+    "ethics-violation-log",
+    "recovery-log"
+  ],
+  "process": [
+    "aggregate_health_signals",
+    "evaluate_rules",
+    "classify_health_status",
+    "trigger_protective_actions"
+  ],
+  "outputs": ["system_health_status", "health_flags"],
+  "constraints": {
+    "stability_over_output": true,
+    "auto_degradation_allowed": true
+  }
+}

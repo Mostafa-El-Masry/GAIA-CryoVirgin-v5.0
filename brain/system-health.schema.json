@@ -1,0 +1,14 @@
+{
+  "name": "System Health Schema",
+  "version": "1.0",
+  "description": "Defines internal system health signals",
+  "fields": {
+    "timestamp": "ISO-8601",
+    "decision_load": "integer",
+    "unresolved_flags": "integer",
+    "override_frequency": "integer",
+    "silence_duration_hours": "integer",
+    "error_rate": "integer",
+    "health_status": "stable | degraded | critical"
+  }
+}

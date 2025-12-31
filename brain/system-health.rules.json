@@ -1,0 +1,22 @@
+{
+  "name": "System Health Rules",
+  "version": "1.0",
+  "rules": [
+    {
+      "condition": "decision_load > 50",
+      "action": "flag_overload"
+    },
+    {
+      "condition": "override_frequency > 5",
+      "action": "reduce_autonomy"
+    },
+    {
+      "condition": "silence_duration_hours > 72",
+      "action": "enter_idle_safe_mode"
+    },
+    {
+      "condition": "error_rate > 10",
+      "action": "mark_health_critical"
+    }
+  ]
+}
