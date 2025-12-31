@@ -1,0 +1,28 @@
+{
+  "name": "GAIA Core Integration Index",
+  "version": "0.1",
+  "description": "Orchestration spine linking cognitive blueprints without embedding logic",
+  "sources": {
+    "cognition_root": "/cognitive"
+  },
+  "load_order": [
+    "cognitive/ethics.schema.json",
+    "cognitive/ethical-constraints.rules.json",
+    "cognitive/autonomy-level.schema.json",
+    "cognitive/domain-autonomy.json",
+    "cognitive/priority-weights.json",
+    "cognitive/decision.schema.json",
+    "cognitive/strategy.schema.json",
+    "cognitive/system-health.schema.json"
+  ],
+  "execution_policy": {
+    "ethics_first": true,
+    "health_before_output": true,
+    "human_override_always_valid": true
+  },
+  "constraints": {
+    "core_contains_no_rules": true,
+    "core_contains_no_state": true,
+    "core_executes_nothing_directly": true
+  }
+}
