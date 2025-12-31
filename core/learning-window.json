@@ -1,0 +1,9 @@
+{
+  "name": "Controlled Learning Window",
+  "week": 44,
+  "status": "restricted",
+  "allowed_sources": ["high_confidence_evaluation"],
+  "max_changes_per_cycle": 1,
+  "rollback_required": true,
+  "audit_required": true
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Memory Write Contract",
+  "version": "1.0",
+  "requirements": {
+    "learning_window_open": true,
+    "eligibility_passed": true,
+    "scope_validated": true,
+    "audit_logged": true
+  },
+  "write_type": "incremental",
+  "reversibility": "mandatory"
+}

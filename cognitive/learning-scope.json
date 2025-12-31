@@ -1,0 +1,6 @@
+{
+  "name": "Learning Scope",
+  "version": "1.0",
+  "allowed_domains": ["decision-weighting", "priority-adjustment"],
+  "forbidden_domains": ["identity", "values", "ethics", "goals"]
+}
