@@ -1,0 +1,13 @@
+{
+  "name": "Intent Record Schema",
+  "version": "1.0",
+  "fields": {
+    "intent_id": "string",
+    "domain": "string",
+    "description": "string",
+    "first_detected": "ISO-8601",
+    "last_reaffirmed": "ISO-8601",
+    "reaffirmation_count": "number",
+    "stability_status": "unstable | emerging | stable"
+  }
+}

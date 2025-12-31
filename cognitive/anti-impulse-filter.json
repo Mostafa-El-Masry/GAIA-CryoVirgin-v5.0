@@ -1,0 +1,15 @@
+{
+  "name": "Anti-Impulse Filter",
+  "version": "1.0",
+  "blocked_conditions": [
+    "single_occurrence",
+    "high_emotion_without_repetition",
+    "contradicts_stable_intent",
+    "outside_execution_window"
+  ],
+  "allowed_conditions": [
+    "reaffirmed_over_time",
+    "matches_stable_intent",
+    "human_confirmed"
+  ]
+}

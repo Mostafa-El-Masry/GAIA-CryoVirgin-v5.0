@@ -1,0 +1,10 @@
+{
+  "name": "Intent Stability Rules",
+  "version": "1.0",
+  "rules": {
+    "minimum_reaffirmations": 3,
+    "minimum_time_span_days": 21,
+    "unstable_intents_cannot_trigger_execution": true,
+    "stable_intents_can_request_execution": true
+  }
+}

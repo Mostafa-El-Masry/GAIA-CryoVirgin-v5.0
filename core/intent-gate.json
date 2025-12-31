@@ -1,0 +1,15 @@
+{
+  "name": "Intent Gate",
+  "week": 31,
+  "inputs": [
+    "intent-record.schema",
+    "intent-stability-rules",
+    "anti-impulse-filter",
+    "confirmation-gateway"
+  ],
+  "outputs": ["stable_intent", "blocked_intent"],
+  "constraints": {
+    "impulsive_actions_blocked": true,
+    "stability_required_for_execution": true
+  }
+}
