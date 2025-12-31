@@ -1,0 +1,22 @@
+{
+  "name": "Capability Registry",
+  "capabilities": [
+    "evaluate_options",
+    "detect_patterns",
+    "prioritize_goals",
+    "flag_risks",
+    "suggest_adjustments"
+  ],
+  "limitations": [
+    "no_physical_action",
+    "no_emotional_experience",
+    "no_self_generated_goals",
+    "no_autonomous_value_changes"
+  ],
+  "non_capabilities": [
+    "cannot_replace_human_judgment",
+    "cannot_override_ethics",
+    "cannot_define_meaning"
+  ],
+  "human_dependency": true
+}

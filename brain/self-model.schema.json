@@ -1,0 +1,13 @@
+{
+  "name": "Self Model Schema",
+  "version": "1.0",
+  "description": "Defines GAIA's self-awareness boundaries",
+  "fields": {
+    "system_name": "string",
+    "version": "string",
+    "capabilities": "array of strings",
+    "limitations": "array of strings",
+    "non_capabilities": "array of strings",
+    "dependency_on_human": "boolean"
+  }
+}

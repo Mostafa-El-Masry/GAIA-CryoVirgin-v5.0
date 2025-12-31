@@ -1,0 +1,20 @@
+{
+  "name": "GAIA Self Model Engine",
+  "week": 24,
+  "inputs": [
+    "self-model.schema",
+    "capability-registry",
+    "decision-engine",
+    "autonomy-engine"
+  ],
+  "process": [
+    "validate_capability",
+    "check_limitations",
+    "adjust_autonomy_if_needed"
+  ],
+  "outputs": ["validated_decisions"],
+  "constraints": {
+    "no_self_deception": true,
+    "capability_truth_enforced": true
+  }
+}

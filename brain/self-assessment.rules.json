@@ -1,0 +1,14 @@
+{
+  "name": "Self Assessment Rules",
+  "version": "1.0",
+  "rules": [
+    {
+      "condition": "decision_outside_capability",
+      "action": "block_and_request_human_input"
+    },
+    {
+      "condition": "high_uncertainty_detected",
+      "action": "downgrade_autonomy_level"
+    }
+  ]
+}
