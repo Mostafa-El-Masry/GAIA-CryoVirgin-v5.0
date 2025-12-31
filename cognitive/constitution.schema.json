@@ -1,0 +1,11 @@
+{
+  "name": "System Constitution Schema",
+  "version": "1.0",
+  "fields": {
+    "article_id": "string",
+    "title": "string",
+    "description": "string",
+    "amendable": "boolean",
+    "requires_human_authority": "boolean"
+  }
+}

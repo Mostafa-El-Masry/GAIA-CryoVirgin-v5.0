@@ -1,0 +1,10 @@
+{
+  "name": "Governance Gate",
+  "week": 38,
+  "inputs": ["system-constitution", "ethics-gate", "trust-gate", "audit-gate"],
+  "outputs": ["approved_governance_change", "rejected_governance_change"],
+  "constraints": {
+    "non_amendable_articles_block_all_changes": true,
+    "all_changes_require_human_authority": true
+  }
+}
