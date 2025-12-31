@@ -1,0 +1,11 @@
+{
+  "name": "Intent Conflict Schema",
+  "version": "1.0",
+  "fields": {
+    "conflict_id": "string",
+    "intents_involved": "array of intent_id",
+    "detected_at": "ISO-8601",
+    "conflict_type": "resource | time | ethical | priority",
+    "resolution_status": "unresolved | deferred | resolved"
+  }
+}

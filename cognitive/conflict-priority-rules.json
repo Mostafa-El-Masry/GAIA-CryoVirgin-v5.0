@@ -1,0 +1,15 @@
+{
+  "name": "Conflict Priority Rules",
+  "version": "1.0",
+  "precedence_order": [
+    "human_safety",
+    "system_integrity",
+    "long_term_stable_intent",
+    "short_term_stable_intent"
+  ],
+  "rules": {
+    "human_safety_overrides_all": true,
+    "system_integrity_overrides_productivity": true,
+    "equal_priority_requires_human_confirmation": true
+  }
+}

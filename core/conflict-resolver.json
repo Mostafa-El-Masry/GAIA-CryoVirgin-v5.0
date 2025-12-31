@@ -1,0 +1,14 @@
+{
+  "name": "Conflict Resolver",
+  "week": 32,
+  "inputs": [
+    "intent-gate",
+    "intent-conflict.schema",
+    "conflict-priority-rules",
+    "conflict-log"
+  ],
+  "outputs": ["resolved_intent", "deferred_intent", "escalated_to_human"],
+  "constraints": {
+    "no_automatic_resolution_for_equal_priority": true
+  }
+}
