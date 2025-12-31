@@ -1,0 +1,10 @@
+{
+  "name": "Ethics Gate",
+  "week": 33,
+  "inputs": ["value-anchors", "conflict-resolver", "intent-gate"],
+  "outputs": ["ethically_approved_action", "ethically_blocked_action"],
+  "constraints": {
+    "absolute_values_cannot_be_overridden": true,
+    "violations_must_be_logged": true
+  }
+}

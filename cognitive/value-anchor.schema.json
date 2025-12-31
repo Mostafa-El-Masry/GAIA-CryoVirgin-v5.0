@@ -1,0 +1,10 @@
+{
+  "name": "Value Anchor Schema",
+  "version": "1.0",
+  "fields": {
+    "anchor_id": "string",
+    "value_name": "string",
+    "description": "string",
+    "priority": "absolute | high | medium"
+  }
+}
