@@ -1,0 +1,21 @@
+{
+  "name": "Safe Modes",
+  "version": "1.0",
+  "modes": [
+    {
+      "mode": "idle",
+      "description": "No execution, observation only",
+      "allowed_actions": ["log", "monitor"]
+    },
+    {
+      "mode": "restricted",
+      "description": "Minimal execution with confirmation",
+      "allowed_actions": ["suggest", "request_confirmation"]
+    },
+    {
+      "mode": "lockdown",
+      "description": "System frozen except human override",
+      "allowed_actions": ["log", "alert_human"]
+    }
+  ]
+}

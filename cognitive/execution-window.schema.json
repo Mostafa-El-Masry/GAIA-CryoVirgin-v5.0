@@ -1,0 +1,13 @@
+{
+  "name": "Execution Window Schema",
+  "version": "1.0",
+  "description": "Defines when execution is permitted",
+  "fields": {
+    "window_id": "string",
+    "start_time": "ISO-8601",
+    "end_time": "ISO-8601",
+    "allowed_domains": "array of strings",
+    "execution_level": "restricted | normal | elevated",
+    "requires_human_confirmation": "boolean"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Event Routing Map",
+  "version": "1.0",
+  "routes": [
+    {
+      "event_type": "decision_request",
+      "route_to": ["ethics", "autonomy", "priority", "decision"]
+    },
+    {
+      "event_type": "failure_event",
+      "route_to": ["recovery", "review"]
+    },
+    {
+      "event_type": "weekly_tick",
+      "route_to": ["review", "memory_compression", "strategy_alignment"]
+    }
+  ]
+}

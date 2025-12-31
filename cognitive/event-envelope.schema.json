@@ -1,0 +1,14 @@
+{
+  "name": "Event Envelope Schema",
+  "version": "1.0",
+  "description": "Standard wrapper for all incoming and internal events",
+  "fields": {
+    "event_id": "string",
+    "event_type": "string",
+    "source": "string",
+    "domain": "string",
+    "timestamp": "ISO-8601",
+    "payload_ref": "string",
+    "severity": "low | medium | high"
+  }
+}

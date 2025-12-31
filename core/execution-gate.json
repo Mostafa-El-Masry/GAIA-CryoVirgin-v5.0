@@ -1,0 +1,21 @@
+{
+  "name": "GAIA Execution Gate",
+  "week": 29,
+  "inputs": [
+    "execution-window.schema",
+    "safe-modes",
+    "system-health-log",
+    "core/state-gateway.json"
+  ],
+  "process": [
+    "check_current_window",
+    "evaluate_system_health",
+    "enforce_safe_mode",
+    "authorize_or_block_execution"
+  ],
+  "outputs": ["execution_authorization"],
+  "constraints": {
+    "no_execution_outside_window": true,
+    "lockdown_overrides_all": true
+  }
+}

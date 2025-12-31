@@ -1,0 +1,19 @@
+{
+  "name": "GAIA Core Event Dispatcher",
+  "week": 27,
+  "inputs": [
+    "event-envelope",
+    "cognitive/event-routing.map.json",
+    "core/index.json"
+  ],
+  "process": [
+    "validate_event_envelope",
+    "resolve_routing_path",
+    "forward_event_references"
+  ],
+  "outputs": ["routed_event_chain"],
+  "constraints": {
+    "dispatcher_contains_no_logic": true,
+    "dispatcher_modifies_no_payload": true
+  }
+}
