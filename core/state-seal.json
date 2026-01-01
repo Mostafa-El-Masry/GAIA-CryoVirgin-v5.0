@@ -1,0 +1,6 @@
+{
+  "name": "State Seal",
+  "year": 2026,
+  "sealed_components": ["core", "cognitive"],
+  "seal_type": "read_only_baseline"
+}

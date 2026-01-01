@@ -1,0 +1,6 @@
+{
+  "name": "Year End Summary",
+  "learning_state": "bounded_and_controlled",
+  "autonomy_level": "advisory_only",
+  "human_in_control": true
+}
