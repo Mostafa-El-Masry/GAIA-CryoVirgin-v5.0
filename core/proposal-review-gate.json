@@ -1,0 +1,5 @@
+{
+  "name": "Proposal Review Gate",
+  "required_reviews": ["risk", "scope", "stability"],
+  "approval_required": true
+}

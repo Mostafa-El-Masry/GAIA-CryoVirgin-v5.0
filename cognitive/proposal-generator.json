@@ -1,0 +1,6 @@
+{
+  "name": "Learning Proposal Generator",
+  "auto_generate": false,
+  "requires_human_prompt": true,
+  "learning_write": false
+}

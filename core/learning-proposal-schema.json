@@ -1,0 +1,12 @@
+{
+  "name": "Learning Proposal Schema",
+  "version": "1.0",
+  "fields": {
+    "proposal_id": "string",
+    "trigger_source": "human_request",
+    "affected_domain": "string",
+    "expected_benefit": "string",
+    "risk_assessment": "string",
+    "rollback_plan": "string"
+  }
+}
