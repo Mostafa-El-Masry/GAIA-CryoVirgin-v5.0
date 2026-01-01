@@ -5,7 +5,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Single-user baseline: we derive a user_id from env or default constant.
 // Later, replace with Supabase Auth user id.
-const USER_ID = process.env.TODO_USER_ID || "00000000-0000-0000-0000-000000000001";
+const USER_ID =
+  process.env.TODO_USER_ID || "00000000-0000-0000-0000-000000000001";
 const normalizeTitle = (title?: string) => (title ?? "").trim().toLowerCase();
 const GAME_SERIES_START = new Date("2025-11-15T00:00:00Z");
 const GAME_SERIES_END = new Date("2025-11-30T00:00:00Z");
@@ -22,7 +23,11 @@ type TaskRow = {
 
 function enumerateDates(start: Date, end: Date): string[] {
   const dates: string[] = [];
-  for (let cursor = new Date(start.getTime()); cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+  for (
+    let cursor = new Date(start.getTime());
+    cursor <= end;
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+  ) {
     dates.push(cursor.toISOString().slice(0, 10));
   }
   return dates;
@@ -34,6 +39,9 @@ async function ensureGameSeriesTasks(
   supabase: AdminClient,
   existing: TaskRow[]
 ): Promise<TaskRow[]> {
+  // Do not auto-seed unless explicitly enabled in environment.
+  if (process.env.TODO_AUTO_SEED !== "true") return existing.slice();
+
   const tasks = existing.slice();
   const missingDates: string[] = [];
   for (const date of GAME_SERIES_DATES) {
@@ -46,6 +54,26 @@ async function ensureGameSeriesTasks(
     if (!exists) missingDates.push(date);
   }
   if (missingDates.length === 0) return tasks;
+
+  // Verify the configured user exists to avoid FK violations.
+  try {
+    const { data: userRow, error: userErr } = await supabase
+      .from("auth.users")
+      .select("id")
+      .eq("id", USER_ID)
+      .single();
+    if (userErr || !userRow) {
+      console.warn(
+        "Skipping seed: configured USER_ID not found in auth.users",
+        USER_ID
+      );
+      return tasks;
+    }
+  } catch (err) {
+    console.warn("Skipping seed: unable to verify USER_ID existence", err);
+    return tasks;
+  }
+
   const payloads = missingDates.map((date) => ({
     user_id: USER_ID,
     category: "distraction",
@@ -56,7 +84,10 @@ async function ensureGameSeriesTasks(
     due_date: date,
     repeat: "none",
   }));
-  const { data, error } = await supabase.from("tasks").insert(payloads).select("*");
+  const { data, error } = await supabase
+    .from("tasks")
+    .insert(payloads)
+    .select("*");
   if (error) {
     console.error("Failed to seed distraction tasks:", error);
     return tasks;
@@ -71,7 +102,8 @@ export async function GET() {
     .select("*")
     .eq("user_id", USER_ID)
     .order("created_at", { ascending: true });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
   const seededTasks = await ensureGameSeriesTasks(supabase, tasks || []);
   let statuses: any[] = [];
   if (seededTasks.length > 0) {
@@ -82,7 +114,8 @@ export async function GET() {
         "task_id",
         seededTasks.map((t) => t.id)
       );
-    if (err2) return NextResponse.json({ error: err2.message }, { status: 500 });
+    if (err2)
+      return NextResponse.json({ error: err2.message }, { status: 500 });
     statuses = statusRows || [];
   }
   return NextResponse.json({ tasks: seededTasks, statuses });
@@ -101,8 +134,13 @@ export async function POST(req: Request) {
     due_date: body.due_date ?? null,
     repeat: body.repeat ?? "none",
   };
-  const { data, error } = await supabase.from("tasks").insert(payload).select().single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const { data, error } = await supabase
+    .from("tasks")
+    .insert(payload)
+    .select()
+    .single();
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ task: data });
 }
 
@@ -119,7 +157,8 @@ export async function PATCH(req: Request) {
     .eq("user_id", USER_ID)
     .select()
     .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ task: data });
 }
 
@@ -128,7 +167,12 @@ export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
-  const { error } = await supabase.from("tasks").delete().eq("id", id).eq("user_id", USER_ID);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const { error } = await supabase
+    .from("tasks")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", USER_ID);
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
