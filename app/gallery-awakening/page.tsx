@@ -5,6 +5,7 @@ import { Space_Grotesk } from "next/font/google";
 import { mockMediaItems } from "./mockMedia";
 import type { MediaItem } from "./mediaTypes";
 import { MediaGrid } from "./components/MediaGrid";
+import { MediaLightbox } from "./components/MediaLightbox";
 import { useGalleryData } from "./useGalleryData";
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import { hasR2PublicBase } from "./r2";
@@ -173,6 +174,13 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     });
   };
 
+  const [lightboxActiveId, setLightboxActiveId] = useState<string | null>(null);
+  const openPreview = (item: MediaItem) => {
+    setLightboxActiveId(item.id);
+  };
+  const closePreview = () => setLightboxActiveId(null);
+  const changePreview = (id: string) => setLightboxActiveId(id);
+
   return (
     <main className={`relative min-h-screen ${spaceGrotesk.className} gaia-bg`}>
       <section>
@@ -188,11 +196,20 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
               allowDelete={allowDelete}
               onDeleteItem={handleDeleteItem}
               onRenameItem={handleRenameItem}
+              onPreview={openPreview}
               maxVisibleItems={allowedGalleryMediaCount}
             />
           </section>
         </div>
       </section>
+      {lightboxActiveId ? (
+        <MediaLightbox
+          items={shuffledItems}
+          activeId={lightboxActiveId}
+          onClose={closePreview}
+          onChange={changePreview}
+        />
+      ) : null}
     </main>
   );
 };

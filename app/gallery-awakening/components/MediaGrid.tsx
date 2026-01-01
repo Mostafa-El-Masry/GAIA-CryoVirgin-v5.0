@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useMemo } from 'react';
-import type { MediaItem, MediaType } from '../mediaTypes';
-import { MediaCard } from './MediaCard';
+import React, { useMemo } from "react";
+import type { MediaItem, MediaType } from "../mediaTypes";
+import { MediaCard } from "./MediaCard";
 
 interface MediaGridProps {
   title: string;
@@ -15,6 +15,7 @@ interface MediaGridProps {
   allowDelete?: boolean;
   onDeleteItem?: (id: string) => void;
   onRenameItem?: (id: string, nextTitle: string) => void;
+  onPreview?: (item: MediaItem) => void;
 }
 
 export const MediaGrid: React.FC<MediaGridProps> = ({
@@ -28,6 +29,7 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
   allowDelete = false,
   onDeleteItem,
   onRenameItem,
+  onPreview,
 }) => {
   const filtered = useMemo(() => {
     if (!typeFilter) return items;
@@ -44,8 +46,11 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
       : filtered;
 
   const totalPages =
-    perPage && perPage > 0 ? Math.max(1, Math.ceil(effective.length / perPage)) : 1;
-  const currentPage = perPage && perPage > 0 ? Math.min(page ?? 1, totalPages) : 1;
+    perPage && perPage > 0
+      ? Math.max(1, Math.ceil(effective.length / perPage))
+      : 1;
+  const currentPage =
+    perPage && perPage > 0 ? Math.min(page ?? 1, totalPages) : 1;
   const start = perPage && perPage > 0 ? (currentPage - 1) * perPage : 0;
   const end = perPage && perPage > 0 ? start + perPage : effective.length;
   const paged = effective.slice(start, end);
@@ -60,7 +65,12 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
           <h2 className="text-2xl font-semibold text-base-content">{title}</h2>
         </div>
         <p className="text-xs text-base-content/70">
-          {filtered.length} {typeFilter ? (typeFilter === "image" ? "images" : "videos") : "items"}
+          {filtered.length}{" "}
+          {typeFilter
+            ? typeFilter === "image"
+              ? "images"
+              : "videos"
+            : "items"}
         </p>
       </header>
 
@@ -69,6 +79,7 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
           <MediaCard
             key={item.id}
             item={item}
+            onPreview={() => onPreview?.(item)}
             variant="feed"
             allowDelete={allowDelete}
             onDelete={() => onDeleteItem?.(item.id)}
@@ -93,8 +104,8 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
                   onClick={() => onPageChange(pageNum)}
                   className={`min-w-[32px] rounded-full border px-2 py-1 text-[11px] font-semibold transition ${
                     active
-                      ? 'border-primary bg-primary/15 text-primary'
-                      : 'border-base-300 bg-base-200 text-base-content hover:bg-base-300'
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-base-300 bg-base-200 text-base-content hover:bg-base-300"
                   }`}
                 >
                   {pageNum}
