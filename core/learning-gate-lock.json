@@ -1,0 +1,5 @@
+{
+  "name": "Learning Gate Lock",
+  "learning_allowed": false,
+  "unlock_requires": ["multi_cycle_stability", "human_override"]
+}

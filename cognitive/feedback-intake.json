@@ -1,0 +1,6 @@
+{
+  "name": "Recommendation Feedback Intake",
+  "week": 50,
+  "accepted_feedback_only": true,
+  "auto_learning": false
+}
