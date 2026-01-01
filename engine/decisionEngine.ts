@@ -1,5 +1,5 @@
-import { StructuredInput } from "./inputAdapter";
-import { Context } from "./contextBuilder";
+import type { StructuredInput } from "./inputAdapter";
+import type { Context } from "./contextBuilder";
 
 export interface Decision {
   choice: string;
