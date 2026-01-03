@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 const MOBILE_UA =
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-const PUBLIC_FILE = /\.(?:css|js|json|map|txt|xml|ico|png|jpe?g|gif|svg|webp)$/i;
+const PUBLIC_FILE =
+  /\.(?:css|js|json|map|txt|xml|ico|png|jpe?g|gif|svg|webp)$/i;
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   if (
@@ -31,6 +32,9 @@ export function middleware(request: NextRequest) {
   redirectUrl.searchParams.set("redirect", `${pathname}${search}`);
   return NextResponse.redirect(redirectUrl);
 }
+
+// Keep a compatibility alias in case something imports the middleware symbol
+export const middleware = proxy;
 
 export const config = {
   matcher: "/:path*",

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import SubjectsWrapper from "./components/SubjectsWrapper";
 
 export default function ArchivesPage() {
@@ -9,6 +10,14 @@ export default function ArchivesPage() {
           Eight starter subjects. Mark lessons as “teachable” and push them to
           Academy.
         </p>
+        <div className="mt-3">
+          <Link
+            href="/apollo/archives/Records/HTML"
+            className="text-sm gaia-link"
+          >
+            HTML
+          </Link>
+        </div>
       </header>
       <SubjectsWrapper />
     </main>
