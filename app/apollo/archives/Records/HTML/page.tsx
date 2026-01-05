@@ -1,16 +1,64 @@
 "use client";
 
+import { useEffect } from "react";
 import styles from "./archive.module.css";
 
 export default function HTMLRecord() {
+  useEffect(() => {
+    const main = document.querySelector(`main.${styles.archiveContent}`) || document.querySelector('main');
+    if (!main) return;
+
+    const sections = Array.from(main.querySelectorAll('section'));
+    const listeners: Array<() => void> = [];
+
+    sections.forEach((s) => {
+      const header = s.querySelector('h1, h2, h3, h4, h5, h6') as HTMLElement | null;
+      if (!header) return;
+
+      // hide all sibling nodes except the header
+      const toToggle = Array.from(s.children).filter((c) => c !== header) as HTMLElement[];
+      toToggle.forEach((el) => (el.style.display = 'none'));
+      header.setAttribute('role', 'button');
+      header.setAttribute('tabindex', '0');
+      header.setAttribute('aria-expanded', 'false');
+      header.style.cursor = 'pointer';
+
+      const toggle = () => {
+        const expanded = header.getAttribute('aria-expanded') === 'true';
+        if (expanded) {
+          header.setAttribute('aria-expanded', 'false');
+          toToggle.forEach((el) => (el.style.display = 'none'));
+        } else {
+          header.setAttribute('aria-expanded', 'true');
+          toToggle.forEach((el) => (el.style.display = ''));
+        }
+      };
+
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle();
+        }
+      };
+
+      header.addEventListener('click', toggle);
+      header.addEventListener('keydown', onKey);
+
+      listeners.push(() => {
+        header.removeEventListener('click', toggle);
+        header.removeEventListener('keydown', onKey);
+      });
+    });
+
+    return () => listeners.forEach((fn) => fn());
+  }, []);
+
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 gap-8 relative">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 mt-12 md:mt-16">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8">
         {/* LEFT SIDEBAR */}
-        <aside className="hidden md:block md:absolute md:top-20 md:right-0 md:w-[14vw] self-start">
-          <div
-            className={`bg-white border rounded-lg p-4 shadow-sm md:z-40 ${styles.archiveSidebar}`}
-          >
+        <aside className="hidden md:block sticky top-20 self-start md:col-start-2">
+          <div className={`bg-white rounded-lg p-4 shadow-sm ${styles.archiveSidebar}`}>
             <h3 className="text-sm font-semibold mb-2">HTML Archive</h3>
             <nav className="text-sm leading-7">
               <ul className={`space-y-1 ${styles.sidebarList}`}>
@@ -262,7 +310,7 @@ export default function HTMLRecord() {
         </aside>
         {/* MAIN CONTENT */}
         <main
-          className={`${styles.archiveContent} prose prose-slate max-w-none md:pr-[20vw]`}
+          className={`${styles.archiveContent} prose prose-slate max-w-none mt-[-50vh]`}
         >
           <section id="what-is-html">
             <h1>HTML</h1>
@@ -274,8 +322,7 @@ export default function HTMLRecord() {
               <code className={styles.codeHtml}>{`<!DOCTYPE html>`}</code>
             </pre>
             <p>
-              <strong>Acceleration:</strong> HTML is the foundation every
-              framework compiles back to.
+              HTML is the foundation every framework compiles back to.
             </p>
           </section>
 
@@ -290,8 +337,7 @@ export default function HTMLRecord() {
             </pre>
             <p>This is the complete root of an HTML document.</p>
             <p>
-              <strong>Acceleration:</strong> Browsers parse HTML top-down;
-              missing structure can cause undefined behavior.
+              Browsers parse HTML top-down; missing structure can cause undefined behavior.
             </p>
           </section>
 
@@ -312,8 +358,7 @@ export default function HTMLRecord() {
             </pre>
             <p>The root element wrapping the entire document.</p>
             <p>
-              <strong>Acceleration:</strong> <code>lang</code> is important for
-              accessibility and SEO.
+              <code>lang</code> is important for accessibility and SEO.
             </p>
           </section>
 
@@ -327,8 +372,7 @@ export default function HTMLRecord() {
 </head>`}</code>
             </pre>
             <p>
-              <strong>Acceleration:</strong> Nothing visible belongs here;
-              metadata belongs in the head.
+              Nothing visible belongs here; metadata belongs in the head.
             </p>
           </section>
 
@@ -349,8 +393,7 @@ export default function HTMLRecord() {
 <meta name="description" content="Documentation site" />`}</code>
             </pre>
             <p>
-              <strong>Acceleration:</strong> Metadata affects rendering, SEO,
-              and sharing.
+              Metadata affects rendering, SEO, and sharing.
             </p>
           </section>
 
@@ -369,8 +412,7 @@ export default function HTMLRecord() {
             <p>Semantic layout blocks.</p>
 
             <p>
-              <strong>Acceleration:</strong> Semantics help machines understand
-              intent.
+              Semantics help machines understand intent.
             </p>
           </section>
 
@@ -437,8 +479,7 @@ export default function HTMLRecord() {
             </pre>
 
             <p>
-              <strong>Acceleration:</strong> <code>alt</code> is mandatory for
-              accessibility.
+              <code>alt</code> is mandatory for accessibility.
             </p>
           </section>
 
@@ -528,7 +569,7 @@ export default function HTMLRecord() {
             </pre>
 
             <p>
-              <strong>Acceleration:</strong> Forms existed before JavaScript.
+              Forms existed before JavaScript.
             </p>
           </section>
 
@@ -568,7 +609,7 @@ export default function HTMLRecord() {
             </pre>
 
             <p>
-              <strong>Acceleration:</strong> Safe bridge between HTML and JS.
+              Safe bridge between HTML and JS.
             </p>
           </section>
 
@@ -640,7 +681,7 @@ export default function HTMLRecord() {
             </pre>
 
             <p>
-              <strong>Acceleration:</strong> JSX is JavaScript, not HTML.
+              JSX is JavaScript, not HTML.
             </p>
           </section>
 
@@ -692,7 +733,7 @@ export default function HTMLRecord() {
             <p>The root element is required for mounting frameworks.</p>
 
             <p>
-              <strong>Acceleration:</strong> Pure HTML does not need a root div.
+              Pure HTML does not need a root div.
             </p>
           </section>
 
