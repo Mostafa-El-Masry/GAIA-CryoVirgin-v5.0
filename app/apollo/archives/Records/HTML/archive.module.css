@@ -44,7 +44,8 @@
   overflow-y: auto;
   padding-right: 0.25rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(99,102,241,0.65) transparent;
+  /* Use GAIA theme accent for scrollbar thumb to match site theme */
+  scrollbar-color: var(--gaia-accent, rgba(99,102,241,0.65)) transparent;
 }
 .sidebarList::-webkit-scrollbar {
   width: 10px;
@@ -53,12 +54,12 @@
   background: transparent;
 }
 .sidebarList::-webkit-scrollbar-thumb {
-  background-color: rgba(99,102,241,0.65);
+  background-color: var(--gaia-accent, rgba(99,102,241,0.65));
   border-radius: 9999px;
-  border: 2px solid rgba(255,255,255,0.9);
+  border: 2px solid color-mix(in srgb, var(--gaia-surface) 80%, transparent);
 }
 .sidebarList::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(99,102,241,0.85);
+  background-color: color-mix(in srgb, var(--gaia-accent, rgba(99,102,241,0.85)) 85%, var(--gaia-surface) 15%);
 }
 .sidebarList{
   position: relative;

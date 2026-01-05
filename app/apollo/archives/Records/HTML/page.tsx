@@ -5,11 +5,11 @@ import styles from "./archive.module.css";
 export default function HTMLRecord() {
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_22vw] gap-8">
+      <div className="grid grid-cols-1 gap-8 relative">
         {/* LEFT SIDEBAR */}
-        <aside className="hidden md:block sticky top-20 self-start md:col-start-2">
+        <aside className="hidden md:block md:absolute md:top-20 md:right-0 md:w-[14vw] self-start">
           <div
-            className={`bg-white border rounded-lg p-4 shadow-sm ${styles.archiveSidebar}`}
+            className={`bg-white border rounded-lg p-4 shadow-sm md:z-40 ${styles.archiveSidebar}`}
           >
             <h3 className="text-sm font-semibold mb-2">HTML Archive</h3>
             <nav className="text-sm leading-7">
@@ -262,7 +262,7 @@ export default function HTMLRecord() {
         </aside>
         {/* MAIN CONTENT */}
         <main
-          className={`${styles.archiveContent} prose prose-slate max-w-none`}
+          className={`${styles.archiveContent} prose prose-slate max-w-none md:pr-[20vw]`}
         >
           <section id="what-is-html">
             <h1>HTML</h1>
