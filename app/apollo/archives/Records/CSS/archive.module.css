@@ -1,0 +1,50 @@
+/* Scoped styles for the CSS archive page */
+
+:root {
+  /* Use GAIA theme tokens so archive matches site theme */
+  --archive-bg: var(--gaia-surface-soft);
+  --archive-code-color: var(--gaia-text-strong);
+  --archive-border-weak: color-mix(in srgb, var(--gaia-border) 70%, transparent);
+}
+
+.archiveContent pre {
+  background: var(--archive-bg);
+  color: var(--archive-code-color);
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  overflow: auto;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--gaia-foreground) 6%, transparent);
+  border: 1px solid var(--archive-border-weak);
+}
+
+.codeCss {
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0;
+  border-radius: 0;
+  font-family: var(--gaia-font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* Spacing scale display */
+.spacingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.spacingItem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.5rem;
+  background: color-mix(in srgb, var(--gaia-surface) 92%, transparent 8%);
+  color: var(--gaia-text-default);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--gaia-border) 30%, transparent 70%);
+  border: 1px solid color-mix(in srgb, var(--gaia-border) 65%, transparent 35%);
+}

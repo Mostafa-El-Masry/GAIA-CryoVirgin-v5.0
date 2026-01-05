@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { MediaItem } from "../mediaTypes";
 import { formatMediaTitle } from "../formatMediaTitle";
 import { getR2Url, getR2PreviewUrl } from "../r2";
@@ -51,13 +51,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
     onChange(ordered[nextIndex].id);
   };
 
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  // Keep lightbox in-flow so it scrolls with the page (do not lock body overflow)
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 10);
@@ -97,10 +91,66 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
     ? getR2Url(current.r2Path)
     : normalizedLocal || "/placeholder-gallery-image.png";
 
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState<number | null>(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onTime = () => setCurrentTime(v.currentTime || 0);
+    const onDur = () => setDuration(v.duration || null);
+    const onPlay = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
+    v.addEventListener("timeupdate", onTime);
+    v.addEventListener("loadedmetadata", onDur);
+    v.addEventListener("play", onPlay);
+    v.addEventListener("pause", onPause);
+    return () => {
+      v.removeEventListener("timeupdate", onTime);
+      v.removeEventListener("loadedmetadata", onDur);
+      v.removeEventListener("play", onPlay);
+      v.removeEventListener("pause", onPause);
+    };
+  }, [current?.id]);
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play();
+      setPlaying(true);
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    const v = videoRef.current;
+    if (!v || !duration) return;
+    const rect = (e.target as HTMLDivElement).getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const frac = Math.max(0, Math.min(1, x / rect.width));
+    v.currentTime = frac * duration;
+    setCurrentTime(v.currentTime || 0);
+  };
+
+  const requestFull = async () => {
+    try {
+      const el = document.fullscreenElement
+        ? document.exitFullscreen()
+        : (videoRef.current?.parentElement ?? null)?.requestFullscreen();
+      await el;
+    } catch {
+      // ignore
+    }
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center bg-black/80 px-2 py-2 backdrop-blur-sm"
-      onClick={onClose}
+      className="relative z-50 w-full flex items-center justify-center bg-black/80 px-2 py-8 backdrop-blur-sm"
       role="presentation"
     >
       <button
@@ -128,13 +178,15 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {current.type === "image" ? (
-          <img
-            src={src}
-            alt={displayTitle}
-            className={`mx-auto max-h-[75vh] max-w-full rounded-xl object-contain transform transition duration-200 ${
-              entered ? "scale-100 opacity-100" : "scale-95 opacity-0"
-            }`}
-          />
+          <div className="mx-auto w-full max-w-[65vh] rounded-xl bg-white p-6 shadow-lg">
+            <img
+              src={src}
+              alt={displayTitle}
+              className={`mx-auto max-h-[75vh] max-w-full rounded object-contain transform transition duration-200 ${
+                entered ? "scale-100 opacity-100" : "scale-95 opacity-0"
+              }`}
+            />
+          </div>
         ) : current.type === "video" ? (
           current.embedUrl ? (
             <iframe
@@ -145,16 +197,86 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
               allowFullScreen
             />
           ) : (
-            <video
-              src={src}
-              className={`mx-auto max-h-[75vh] max-w-full rounded-xl bg-black object-contain transform transition duration-200 ${
-                entered ? "scale-100 opacity-100" : "scale-95 opacity-0"
-              }`}
-              controls
-              playsInline
-              preload="metadata"
-              poster={poster}
-            />
+            <div className="mx-auto w-full max-w-[90vw]">
+              <div
+                className={`relative mx-auto max-h-[75vh] max-w-full rounded-xl bg-black`}
+              >
+                <video
+                  ref={videoRef}
+                  src={src}
+                  className={`w-full max-h-[75vh] rounded-xl bg-black object-contain transform transition duration-200 ${
+                    entered ? "scale-100 opacity-100" : "scale-95 opacity-0"
+                  }`}
+                  controls={false}
+                  playsInline
+                  preload="metadata"
+                  poster={poster}
+                />
+
+                {/* Play overlay */}
+                {!playing && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePlay();
+                    }}
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 flex h-20 w-20 items-center justify-center rounded-full bg-black/60 text-white shadow-lg"
+                    aria-label="Play video"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-10 w-10 fill-current">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </button>
+                )}
+
+                {/* Bottom controls */}
+                <div className="absolute left-0 right-0 bottom-0 z-40 w-full p-3">
+                  <div
+                    className="mx-auto h-2 w-full cursor-pointer rounded bg-white/30"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSeek(e as any);
+                    }}
+                    aria-hidden
+                  >
+                    <div
+                      className="h-2 rounded bg-sky-500"
+                      style={{
+                        width: duration
+                          ? `${(currentTime / duration) * 100}%`
+                          : "0%",
+                      }}
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-sm text-white">
+                    <div>{displayTitle}</div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePlay();
+                        }}
+                        className="rounded bg-white/10 px-2 py-1 text-white"
+                      >
+                        {playing ? "Pause" : "Play"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          requestFull();
+                        }}
+                        className="rounded bg-white/10 px-2 py-1 text-white"
+                      >
+                        Full
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )
         ) : null}
         <figcaption className="text-sm text-base-content">
