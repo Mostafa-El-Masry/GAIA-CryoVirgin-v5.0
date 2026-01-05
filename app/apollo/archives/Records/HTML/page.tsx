@@ -1,235 +1,718 @@
+"use client";
+
+import styles from "./archive.module.css";
+
 export default function HTMLRecord() {
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8 space-y-6">
-      <h1 className="text-2xl font-semibold">
-        HTML + JSX — UNIFIED KNOWLEDGE MAP
-      </h1>
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_22vw] gap-8">
+        {/* LEFT SIDEBAR */}
+        <aside className="hidden md:block sticky top-20 self-start md:col-start-2">
+          <div
+            className={`bg-white border rounded-lg p-4 shadow-sm ${styles.archiveSidebar}`}
+          >
+            <h3 className="text-sm font-semibold mb-2">HTML Archive</h3>
+            <nav className="text-sm leading-7">
+              <ul className={`space-y-1 ${styles.sidebarList}`}>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#what-is-html"
+                  >
+                    What is HTML
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#document-root"
+                  >
+                    Document Root
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#doctype"
+                  >
+                    DOCTYPE
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#html-element"
+                  >
+                    html Element
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#head-element"
+                  >
+                    head Element
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#body-element"
+                  >
+                    body Element
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#metadata"
+                  >
+                    Metadata
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#structure-elements"
+                  >
+                    Structure Elements
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#text-elements"
+                  >
+                    Text Elements
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#media-elements"
+                  >
+                    Media
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#links"
+                  >
+                    Links
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#lists"
+                  >
+                    Lists
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#tables"
+                  >
+                    Tables
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#forms"
+                  >
+                    Forms
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#inputs"
+                  >
+                    Inputs
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#attributes"
+                  >
+                    Attributes
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#data-attributes"
+                  >
+                    Data Attributes
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#template-element"
+                  >
+                    Template Element
+                  </a>
+                </li>
+                <li>
+                  <a className="text-slate-700 hover:text-sky-600" href="#slot">
+                    Slot (Web Components)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#custom-elements"
+                  >
+                    Custom Elements
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#accessibility"
+                  >
+                    Accessibility
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#progressive-enhancement"
+                  >
+                    Progressive Enhancement
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#semantics"
+                  >
+                    Semantics
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#address"
+                  >
+                    Address
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#html-vs-jsx"
+                  >
+                    HTML vs JSX
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#comments"
+                  >
+                    Comments
+                  </a>
+                </li>
+                <li>
+                  <a className="text-slate-700 hover:text-sky-600" href="#time">
+                    Time
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#html-entities"
+                  >
+                    HTML Entities
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#root-mounting"
+                  >
+                    Root &amp; Mounting
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#base-url"
+                  >
+                    Base URL
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="#performance"
+                  >
+                    Performance
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </aside>
+        {/* MAIN CONTENT */}
+        <main
+          className={`${styles.archiveContent} prose prose-slate max-w-none`}
+        >
+          <section id="what-is-html">
+            <h1>HTML</h1>
+            <p>
+              HTML (HyperText Markup Language) defines the structure and meaning
+              of web documents — hierarchy and relationships, not presentation.
+            </p>
+            <pre>
+              <code className={styles.codeHtml}>{`<!DOCTYPE html>`}</code>
+            </pre>
+            <p>
+              <strong>Acceleration:</strong> HTML is the foundation every
+              framework compiles back to.
+            </p>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">1. Document & Root Structure</h2>
-        <p className="text-sm">
-          Concept — The outer shell of a document; metadata vs visible content.
-        </p>
-        <p className="text-sm font-medium">Plain HTML</p>
-        <ul className="list-disc pl-6">
-          <li>&lt;!DOCTYPE html&gt;</li>
-          <li>&lt;html lang="en"&gt;</li>
-          <li>&lt;head&gt; (meta, title, links)</li>
-          <li>&lt;body&gt; (everything visible)</li>
-        </ul>
-        <p className="text-sm font-medium">JSX / Next.js</p>
-        <ul className="list-disc pl-6">
-          <li>
-            No &lt;!DOCTYPE&gt; in components — layouts handle document root.
-          </li>
-          <li>
-            Use <code>layout.tsx</code> and metadata APIs for head content.
-          </li>
-        </ul>
-      </section>
+          <section id="document-root">
+            <h2>Document Root</h2>
+            <pre>
+              <code className={styles.codeHtml}>{`<!DOCTYPE html>
+<html lang="en">
+  <head></head>
+  <body></body>
+</html>`}</code>
+            </pre>
+            <p>This is the complete root of an HTML document.</p>
+            <p>
+              <strong>Acceleration:</strong> Browsers parse HTML top-down;
+              missing structure can cause undefined behavior.
+            </p>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">2. Text & Headings</h2>
-        <p className="text-sm">
-          Headings define hierarchy: keep levels logical and do not skip.
-        </p>
-        <pre className="bg-gray-100 p-3 rounded">
-          <code>{`<h1>Main Title</h1>
-<h2>Subtitle</h2>
-<p>Body text...</p>`}</code>
-        </pre>
-      </section>
+          <section id="doctype">
+            <h2>DOCTYPE</h2>
+            <pre>
+              <code className={styles.codeHtml}>{`<!DOCTYPE html>`}</code>
+            </pre>
+            <p>Declares standards mode.</p>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">3. Links & Navigation</h2>
-        <p className="text-sm">
-          HTML anchors vs Next.js <code>Link</code> for SPA routing.
-        </p>
-        <pre className="bg-gray-100 p-3 rounded">
-          <code>{`<!-- HTML -->
-<a href="/about">About</a>
+          <section id="html-element">
+            <h2>&lt;html&gt;</h2>
+            <pre>
+              <code
+                className={styles.codeHtml}
+              >{`<html lang="en"></html>`}</code>
+            </pre>
+            <p>The root element wrapping the entire document.</p>
+            <p>
+              <strong>Acceleration:</strong> <code>lang</code> is important for
+              accessibility and SEO.
+            </p>
+          </section>
 
-// Next.js
-import Link from 'next/link'
-<Link href="/about">About</Link>`}</code>
-        </pre>
-      </section>
+          <section id="head-element">
+            <h2>&lt;head&gt;</h2>
+            <pre>
+              <code className={styles.codeHtml}>{`<head>
+  <meta charset="UTF-8" />
+  <title>Page Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>`}</code>
+            </pre>
+            <p>
+              <strong>Acceleration:</strong> Nothing visible belongs here;
+              metadata belongs in the head.
+            </p>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">Demo Section: Images</h2>
-        <p className="text-sm">
-          Element matched: <code>img</code> (media)
-        </p>
-        <h3 className="font-medium">1. Plain HTML</h3>
-        <pre className="bg-gray-100 p-3 rounded">
-          <code>{`<img src="/images/avatar.jpg" alt="User avatar" width="150" height="150">`}</code>
-        </pre>
-        <h3 className="font-medium">2. JSX / Next.js (basic)</h3>
-        <pre className="bg-gray-100 p-3 rounded">
-          <code>{`<img src="/images/avatar.jpg" alt="User avatar" width={150} height={150} />`}</code>
-        </pre>
-        <h3 className="font-medium">3. JSX / Next.js (optimized)</h3>
-        <pre className="bg-gray-100 p-3 rounded">
-          <code>{`import Image from 'next/image'
+          <section id="body-element">
+            <h2>&lt;body&gt;</h2>
+            <pre>
+              <code className={styles.codeHtml}>{`<body>
+  <h1>Hello World</h1>
+</body>`}</code>
+            </pre>
+            <p>Contains all visible content.</p>
+          </section>
 
-<Image src="/images/avatar.jpg" alt="User avatar" width={150} height={150} />`}</code>
-        </pre>
-        <p className="text-sm">
-          Notes: Next.js <code>Image</code> adds optimization (lazy,
-          responsive). Always provide <code>alt</code> and dimensions for layout
-          stability.
-        </p>
-      </section>
+          <section id="metadata">
+            <h2>Metadata</h2>
+            <pre>
+              <code className={styles.codeHtml}>{`<meta charset="UTF-8" />
+<meta name="description" content="Documentation site" />`}</code>
+            </pre>
+            <p>
+              <strong>Acceleration:</strong> Metadata affects rendering, SEO,
+              and sharing.
+            </p>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">Demo Section: Headings</h2>
-        <p className="text-sm">
-          Headings are identical in JSX; preserve semantic hierarchy.
-        </p>
-        <pre className="bg-gray-100 p-3 rounded">
-          <code>{`<h1>Main Title</h1>
-<h2>Subtitle</h2>`}</code>
-        </pre>
-      </section>
+          <section id="structure-elements">
+            <h2>Structure Elements</h2>
 
-      <section>
-        <h2 className="text-lg font-medium">Demo Section: Links</h2>
-        <p className="text-sm">
-          Use <code>Link</code> for client-side navigation; anchors still apply
-          for external links.
-        </p>
-        <pre className="bg-gray-100 p-3 rounded">
-          <code>{`<a href="/about">About Us</a>
+            <pre>
+              <code className="code-html">{`<header></header>
+<nav></nav>
+<main></main>
+<section></section>
+<article></article>
+<footer></footer>`}</code>
+            </pre>
 
-import Link from 'next/link'
-<Link href="/about">About Us</Link>`}</code>
-        </pre>
-      </section>
+            <p>Semantic layout blocks.</p>
 
-      <section>
-        <h2 className="text-lg font-medium">Demo Section: Form Input</h2>
-        <p className="text-sm">
-          JSX uses <code>htmlFor</code> and requires self-closing inputs.
-        </p>
-        <pre className="bg-gray-100 p-3 rounded">
-          <code>{`<!-- HTML -->
-<form>
-  <label for="email">Email</label>
-  <input type="email" id="email" name="email" required>
-</form>
+            <p>
+              <strong>Acceleration:</strong> Semantics help machines understand
+              intent.
+            </p>
+          </section>
 
-// JSX
-<form>
-  <label htmlFor="email">Email</label>
-  <input type="email" id="email" name="email" required />
+          <section id="void-elements">
+            <h2>Void (Self-Closing) Elements</h2>
+
+            <pre>
+              <code className="code-html">{`<img src="image.jpg" alt="Description">
+<br>
+<hr>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="style.css">
+<input type="text">`}</code>
+            </pre>
+
+            <p>Elements that do not have a closing tag.</p>
+          </section>
+
+          <section id="text-elements">
+            <h2>Text Elements</h2>
+
+            <pre>
+              <code className="code-html">{`<h1>Heading</h1>
+<p>Paragraph</p>
+<span>Inline text</span>
+<strong>Strong</strong>
+<em>Emphasis</em>`}</code>
+            </pre>
+          </section>
+
+          <section id="comments">
+            <h2>Comments</h2>
+
+            <p>Place after: Text Elements</p>
+
+            <pre>
+              <code className="code-html">{`<!-- This is an HTML comment -->`}</code>
+            </pre>
+          </section>
+
+          <section id="time">
+            <h2>Time</h2>
+
+            <pre>
+              <code className="code-html">{`<time datetime="2026-01-01">January 1, 2026</time>`}</code>
+            </pre>
+          </section>
+
+          <section id="html-entities">
+            <h2>HTML Entities</h2>
+
+            <pre>
+              <code className="code-html">{`&amp; &lt; &gt; &copy; &nbsp;`}</code>
+            </pre>
+          </section>
+
+          <section id="media-elements">
+            <h2>Media</h2>
+
+            <pre>
+              <code className="code-html">{`<img src="image.jpg" alt="Description" />
+<video controls></video>
+<audio controls></audio>`}</code>
+            </pre>
+
+            <p>
+              <strong>Acceleration:</strong> <code>alt</code> is mandatory for
+              accessibility.
+            </p>
+          </section>
+
+          <section id="iframe">
+            <h2>iframe</h2>
+
+            <pre>
+              <code className="code-html">{`<iframe src="https://example.com" loading="lazy"></iframe>`}</code>
+            </pre>
+          </section>
+
+          <section id="figure-figcaption">
+            <h2>Figure &amp; Figcaption</h2>
+
+            <pre>
+              <code className="code-html">{`<figure>
+  <img src="image.jpg" alt="">
+  <figcaption>Caption text</figcaption>
+</figure>`}</code>
+            </pre>
+          </section>
+
+          <section id="links">
+            <h2>Links</h2>
+
+            <pre>
+              <code className="code-html">{`<a href="/about">About</a>`}</code>
+            </pre>
+          </section>
+
+          <section id="script-loading">
+            <h2>Script Loading &amp; Placement</h2>
+
+            <pre>
+              <code className="code-html">{`<script src="app.js"></script>
+<script src="app.js" defer></script>
+<script src="app.js" async></script>`}</code>
+            </pre>
+
+            <p>
+              Placement affects parsing and execution; use <code>defer</code> or{" "}
+              <code>async</code> when appropriate.
+            </p>
+          </section>
+
+          <section id="lists">
+            <h2>Lists</h2>
+
+            <pre>
+              <code className="code-html">{`<ul>
+	<li>Item</li>
+</ul>`}</code>
+            </pre>
+          </section>
+
+          <section id="details-summary">
+            <h2>Details / Summary (Native Disclosure)</h2>
+
+            <pre>
+              <code className="code-html">{`<details>
+  <summary>More info</summary>
+  <p>Hidden content</p>
+</details>`}</code>
+            </pre>
+          </section>
+
+          <section id="tables">
+            <h2>Tables</h2>
+
+            <pre>
+              <code className="code-html">{`<table>
+	<tr>
+		<th>Name</th>
+	</tr>
+</table>`}</code>
+            </pre>
+          </section>
+
+          <section id="forms">
+            <h2>Forms</h2>
+
+            <pre>
+              <code className="code-html">{`<form>
+	<input />
+	<button>Submit</button>
 </form>`}</code>
-        </pre>
-      </section>
+            </pre>
 
-      <section>
-        <h2 className="text-lg font-medium">4. Media — Images (summary)</h2>
-        <p className="text-sm">
-          Images load from URLs; alt for accessibility; optimize for performance
-          to avoid CLS.
-        </p>
-      </section>
+            <p>
+              <strong>Acceleration:</strong> Forms existed before JavaScript.
+            </p>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">5. Media — Video & Audio</h2>
-        <p className="text-sm">
-          Use native <code>video</code> and <code>audio</code> with{" "}
-          <code>source</code>; JSX requires self-closing <code>source</code>{" "}
-          tags.
-        </p>
-      </section>
+          <section id="dialog">
+            <h2>Dialog</h2>
 
-      <section>
-        <h2 className="text-lg font-medium">6. Lists</h2>
-        <p className="text-sm">
-          Use semantic lists; when rendering from arrays, include{" "}
-          <code>key</code> on list items.
-        </p>
-      </section>
+            <pre>
+              <code className="code-html">{`<dialog open>
+  <p>Dialog content</p>
+</dialog>`}</code>
+            </pre>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">7. Layout & Semantic Structure</h2>
-        <p className="text-sm">
-          Prefer semantic elements (<code>header</code>, <code>nav</code>,{" "}
-          <code>main</code>, <code>section</code>, <code>aside</code>,{" "}
-          <code>footer</code>).
-        </p>
-      </section>
+          <section id="inputs">
+            <h2>Inputs</h2>
 
-      <section>
-        <h2 className="text-lg font-medium">8. Forms & Inputs</h2>
-        <p className="text-sm">
-          Understand native form behavior before adding React-controlled logic.
-        </p>
-      </section>
+            <pre>
+              <code className="code-html">{`<input type="text" />
+<input type="email" />
+<input type="password" />`}</code>
+            </pre>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">9. Attributes vs Props</h2>
-        <ul className="list-disc pl-6">
-          <li>
-            <code>class</code> → <code>className</code>
-          </li>
-          <li>
-            <code>for</code> → <code>htmlFor</code>
-          </li>
-          <li>
-            Boolean attributes become props (e.g. <code>disabled</code>).
-          </li>
-        </ul>
-      </section>
+          <section id="attributes">
+            <h2>Attributes</h2>
 
-      <section>
-        <h2 className="text-lg font-medium">10. Comments & Whitespace</h2>
-        <p className="text-sm">
-          HTML comments: <code>&lt;!-- --&gt;</code>; JSX comments:{" "}
-          <code>{`{/* ... */}`}</code>.
-        </p>
-      </section>
+            <pre>
+              <code className="code-html">{`<div id="app" class="container"></div>`}</code>
+            </pre>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">11. Validity & Errors</h2>
-        <p className="text-sm">
-          Browsers are forgiving; JSX is strict — fix nesting and self-closing
-          errors early.
-        </p>
-      </section>
+          <section id="data-attributes">
+            <h2>Data Attributes</h2>
 
-      <section>
-        <h2 className="text-lg font-medium">Accessibility (non-negotiable)</h2>
-        <ul className="list-disc pl-6">
-          <li>
-            Use semantic elements and meaningful <code>alt</code> text.
-          </li>
-          <li>
-            Pair <code>label</code> with inputs and preserve keyboard order.
-          </li>
-        </ul>
-      </section>
+            <pre>
+              <code className="code-html">{`<div data-user-id="42"></div>`}</code>
+            </pre>
 
-      <section>
-        <h2 className="text-lg font-medium">Mental test: “Do I know HTML?”</h2>
-        <ul className="list-disc pl-6">
-          <li>Explain a page structure by inspection.</li>
-          <li>Rebuild a page without CSS and keep semantic order.</li>
-        </ul>
-      </section>
+            <p>
+              <strong>Acceleration:</strong> Safe bridge between HTML and JS.
+            </p>
+          </section>
 
-      <section>
-        <h2 className="text-lg font-medium">Consolidated Cheat Sheet</h2>
-        <ul className="list-disc pl-6">
-          <li>
-            Think HTML first → translate to JSX → apply Next.js enhancements.
-          </li>
-          <li>Remember attribute mappings and self-closing rules.</li>
-          <li>
-            Use <code>next/image</code> and <code>Link</code> where appropriate.
-          </li>
-        </ul>
-      </section>
-    </main>
+          <section id="template-element">
+            <h2>Template Element</h2>
+
+            <pre>
+              <code className="code-html">{`<template id="card-template">
+  <div class="card">
+    <h3></h3>
+    <p></p>
+  </div>
+</template>`}</code>
+            </pre>
+          </section>
+
+          <section id="slot">
+            <h2>Slot (Web Components)</h2>
+
+            <pre>
+              <code className="code-html">{`<slot name="header"></slot>`}</code>
+            </pre>
+          </section>
+
+          <section id="accessibility">
+            <h2>Accessibility</h2>
+
+            <pre>
+              <code className="code-html">{`<button aria-label="Close"></button>`}</code>
+            </pre>
+          </section>
+
+          <section id="progressive-enhancement">
+            <h2>Progressive Enhancement Markers</h2>
+
+            <pre>
+              <code className="code-html">{`<main role="main"></main>`}</code>
+            </pre>
+          </section>
+
+          <section id="semantics">
+            <h2>Semantics</h2>
+
+            <p>Semantics describe meaning, not appearance.</p>
+          </section>
+
+          <section id="address">
+            <h2>Address</h2>
+
+            <pre>
+              <code className="code-html">{`<address>
+  Written by Someone<br>
+  example@email.com
+</address>`}</code>
+            </pre>
+          </section>
+
+          <section id="html-vs-jsx">
+            <h2>HTML vs JSX</h2>
+
+            <pre>
+              <code className="code-html">{`<!-- HTML -->
+<input class="box" />`}</code>
+            </pre>
+
+            <pre>
+              <code className="code-html">{`{/* JSX */}
+<input className="box" />`}</code>
+            </pre>
+
+            <p>
+              <strong>Acceleration:</strong> JSX is JavaScript, not HTML.
+            </p>
+          </section>
+
+          <section id="base-url">
+            <h2>Base URL</h2>
+
+            <pre>
+              <code className="code-html">{`<base href="https://example.com/">`}</code>
+            </pre>
+          </section>
+
+          <section id="style-injection">
+            <h2>Style Injection (Inline &amp; Internal CSS)</h2>
+
+            <pre>
+              <code className="code-html">{`<style>
+  body {
+    background: black;
+    color: white;
+  }
+</style>`}</code>
+            </pre>
+
+            <p>
+              Inline and internal styles affect only the document context
+              they're placed in.
+            </p>
+          </section>
+
+          <section id="print-media-queries">
+            <h2>Print / Media Queries Hook</h2>
+
+            <pre>
+              <code className="code-html">{`<link rel="stylesheet" media="print" href="print.css">`}</code>
+            </pre>
+          </section>
+
+          <section id="root-mounting">
+            <h2>Root &amp; Mounting</h2>
+
+            <pre>
+              <code className="code-html">{`<div id="root"></div>`}</code>
+            </pre>
+
+            <pre>
+              <code className="code-html">{`ReactDOM.createRoot(document.getElementById('root'))`}</code>
+            </pre>
+
+            <p>The root element is required for mounting frameworks.</p>
+
+            <p>
+              <strong>Acceleration:</strong> Pure HTML does not need a root div.
+            </p>
+          </section>
+
+          <section id="custom-elements">
+            <h2>Custom Elements (Web Components)</h2>
+
+            <pre>
+              <code className="code-html">{`<user-card></user-card>`}</code>
+            </pre>
+          </section>
+
+          <section id="performance">
+            <h2>Performance</h2>
+
+            <p>
+              Clean HTML improves loading, SEO, accessibility, and hydration.
+            </p>
+          </section>
+        </main>
+      </div>
+    </div>
   );
 }
