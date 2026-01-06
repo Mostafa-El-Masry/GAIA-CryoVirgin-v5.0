@@ -20,11 +20,12 @@ export default function Intro() {
     { href: "/wealth", label: "Wealth" },
     { href: "/dashboard", label: "Dashboard" },
     { href: "/core-brain", label: "Core Brain" },
-    { href: "/interlog", label: "Intro" },
+    { href: "/brain", label: "Brain" },
   ];
   const more = [
     { href: "/media-tools", label: "Media Tools" },
     { href: "/settings", label: "Settings" },
+    { href: "/interlog", label: "Intro" },
   ];
   const items = [...left, ...right, ...more];
   const linkNotes: Record<string, string> = {
@@ -38,6 +39,7 @@ export default function Intro() {
     Intro: "Orientation and basics",
     "Media Tools": "Utilities and exports",
     Settings: "Themes and preferences",
+    Brain: "GAIA's decision and dictation UI",
   };
 
   const [radius, setRadius] = useState<number>(180);
@@ -64,7 +66,11 @@ export default function Intro() {
           <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
-                <img src="/gaia-intro-1.png" alt="GAIA" className="h-9 w-auto" />
+                <img
+                  src="/gaia-intro-1.png"
+                  alt="GAIA"
+                  className="h-9 w-auto"
+                />
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">
@@ -116,49 +122,72 @@ export default function Intro() {
             <img src="/gaia-intro-1.png" alt="GAIA" className="h-96 w-auto" />
           </div>
 
-          {items.map((l, i) => {
-            const angle = (i / items.length) * 360;
-            const transform = `translate(-50%,-50%) rotate(${angle}deg) translate(0,-${radius}px) rotate(-${angle}deg)`;
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                aria-label={l.label}
-                title={l.label}
-                className="gaia-glass gaia-border absolute left-1/2 top-1/2 flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-center backdrop-blur transition-transform transform-gpu hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gaia-accent active:scale-[.99] text-[var(--gaia-text-default)] no-underline"
-                style={{ transform }}
-              >
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
-                  <svg
-                    className="h-4 w-4 text-[var(--gaia-text-muted)]"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden
-                  >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="9"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      opacity="0.18"
-                    />
-                    <path
-                      d="M8 12h8"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-                <span className="text-sm font-medium leading-tight sm:text-base">
-                  {l.label}
-                </span>
-              </Link>
-            );
-          })}
+          {(() => {
+            const ringCount = items.length > 8 ? 2 : 1;
+            const firstRingCount =
+              ringCount === 2 ? Math.ceil(items.length / 2) : items.length;
+            return items.map((l, i) => {
+              const ringIndex = i < firstRingCount ? 0 : 1;
+              const ringOffset = ringIndex === 0 ? 0 : firstRingCount;
+              const ringSize =
+                ringIndex === 0
+                  ? firstRingCount
+                  : items.length - firstRingCount;
+              const angle = ((i - ringOffset) / ringSize) * 360;
+              const ringRadius = ringIndex === 0 ? radius : radius + 160;
+              const transform = `translate(-50%,-50%) rotate(${angle}deg) translate(0,-${ringRadius}px) rotate(-${angle}deg)`;
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  aria-label={l.label}
+                  title={l.label}
+                  className="gaia-glass gaia-border absolute left-1/2 top-1/2 flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-center backdrop-blur transition-transform transform-gpu hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gaia-accent active:scale-[.99] text-[var(--gaia-text-default)] no-underline"
+                  style={{ transform }}
+                >
+                  <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                    <svg
+                      className="h-4 w-4 text-[var(--gaia-text-muted)]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="9"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        opacity="0.18"
+                      />
+                      <path
+                        d="M8 12h8"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span className="text-sm font-medium leading-tight sm:text-base">
+                    {l.label}
+                  </span>
+                </Link>
+              );
+            });
+          })()}
+          {/* DEBUG: show computed items (remove after verification) */}
+          <div className="pointer-events-none fixed right-4 bottom-4 z-50 hidden md:block">
+            <div className="rounded bg-white/90 p-2 text-xs text-black/90 shadow">
+              <strong className="block text-[11px]">
+                Intro items ({items.length}):
+              </strong>
+              <div className="whitespace-pre">
+                {items.map((it) => it.label).join(", ")}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>

@@ -1,20 +1,30 @@
-// app/dashboard/hooks/useDailyRitualGate.ts
-"use client";
+import { useMemo } from "react";
+import { gaiaBrain } from "@/gaia-brain";
+import { useHealthStore } from "@/app/health-awakening/lib/healthStore";
+import { useTimelineStore } from "@/app/timeline/lib/store";
+import { useAuth } from "@/app/context/AuthContext";
 
-import { useEffect, useState } from "react";
-import { todayKey } from "@/utils/dates";
-
-// Simplified gate: no local storage, just mark ready immediately.
 export function useDailyRitualGate() {
-  const [today, setToday] = useState<string>(() => todayKey());
-  const [completedToday, setCompletedToday] = useState<boolean>(true);
-  const [ready, setReady] = useState<boolean>(false);
+  const health = useHealthStore();
+  const timeline = useTimelineStore();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    setToday(todayKey());
-    setCompletedToday(true);
-    setReady(true);
-  }, []);
+  const decision = useMemo(() => {
+    return gaiaBrain("ritual", {
+      user,
+      health,
+      timeline,
+    });
+  }, [user, health, timeline]);
 
-  return { today, completedToday, ready };
+  const d = decision as any;
+  const completedToday = Boolean(d?.completedToday ?? false);
+  const ready = Boolean(d?.allowed ?? false);
+
+  return {
+    completedToday,
+    ready,
+    allowed: d?.allowed,
+    reason: d?.reason,
+  };
 }

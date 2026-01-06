@@ -1,85 +1,44 @@
-// app/hooks/useGaiaFeatureUnlocks.ts
-"use client";
-
 import { useMemo } from "react";
-import { useAcademyProgress } from "@/app/apollo/academy/useAcademyProgress";
-
-export type GaiaFeatureId =
-  | "wealth"
-  | "health"
-  | "timeline"
-  | "accounts"
-  | "guardian"
-  | "eleuthia"
-  | "settings"
-  | "gallery";
-
-const UNLOCK_ALL_FEATURES = true;
+import { gaiaBrain } from "@/gaia-brain";
+import { useTimelineStore } from "@/app/timeline/lib/store";
+import { useAuth } from "@/app/context/AuthContext";
 
 export function useGaiaFeatureUnlocks() {
-  const { state } = useAcademyProgress();
+  const timeline = useTimelineStore();
+  const { user } = useAuth();
 
-  const { totalLessonsCompleted, featureUnlocks, allowedGalleryMediaCount } =
-    useMemo(() => {
-      const trackIds = Object.keys(state.byTrack) as Array<
-        keyof typeof state.byTrack
-      >;
+  const decision = useMemo(() => {
+    return gaiaBrain("progression", {
+      user,
+      timeline,
+    });
+  }, [user, timeline]);
 
-      let total = 0;
-      for (const id of trackIds) {
-        total += state.byTrack[id]?.completedLessonIds.length ?? 0;
-      }
+  const d = decision as any;
 
-      const baseUnlocks: Record<GaiaFeatureId, boolean> = {
-        wealth: total >= 1,
-        health: total >= 2,
-        timeline: total >= 3,
-        accounts: total >= 4,
-        guardian: total >= 5,
-        eleuthia: total >= 6,
-        settings: total >= 7,
-        gallery: total >= 11,
-      };
+  const isFeatureUnlocked = (key: string) => Boolean(d?.allowed);
+  const totalLessonsCompleted = (d && (d.totalLessonsCompleted ?? 0)) as number;
 
-      const baseAllowedGalleryMediaCount = total > 10 ? total - 10 : 0;
+  const featureUnlocks = {
+    gallery: isFeatureUnlocked("gallery"),
+  };
 
-      if (UNLOCK_ALL_FEATURES) {
-        const unlockedAll: Record<GaiaFeatureId, boolean> = {
-          wealth: true,
-          health: true,
-          timeline: true,
-          accounts: true,
-          guardian: true,
-          eleuthia: true,
-          settings: true,
-          gallery: true,
-        };
+  const wealthUnlocked = isFeatureUnlocked("wealth");
+  const wealthStage = d?.wealthStage ?? 0;
+  const accountsUnlocked = isFeatureUnlocked("accounts");
 
-        return {
-          totalLessonsCompleted: Math.max(total, 12),
-          featureUnlocks: unlockedAll,
-          allowedGalleryMediaCount: Number.MAX_SAFE_INTEGER,
-        };
-      }
-
-      return {
-        totalLessonsCompleted: total,
-        featureUnlocks: baseUnlocks,
-        allowedGalleryMediaCount: baseAllowedGalleryMediaCount,
-      };
-    }, [state.byTrack]);
-
-  const isFeatureUnlocked = (id: GaiaFeatureId) => featureUnlocks[id];
-  const wealthUnlocked = featureUnlocks.wealth;
-  const wealthStage = Math.min(totalLessonsCompleted, 10);
-
-  return { 
-    state, 
-    totalLessonsCompleted, 
-    featureUnlocks, 
-    isFeatureUnlocked, 
-    allowedGalleryMediaCount,
+  return {
+    // backward-compatible shape expected by callers
+    isFeatureUnlocked,
+    totalLessonsCompleted,
+    allowedGalleryMediaCount: 0,
+    featureUnlocks,
     wealthUnlocked,
-    wealthStage
+    wealthStage,
+    accountsUnlocked,
+    state: d?.state ?? {},
+    // also provide older fields
+    allowed: d?.allowed,
+    reason: d?.reason,
   };
 }
