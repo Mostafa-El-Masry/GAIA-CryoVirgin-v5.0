@@ -13,7 +13,7 @@ type LessonGateProps = {
 
 export default function LessonGate({
   children,
-  minLessons = 3,
+  minLessons = 0,
   featureLabel,
   fallback,
 }: LessonGateProps) {

@@ -10,7 +10,7 @@ type ApolloStudyGateProps = {
   fallback?: ReactNode;
 };
 
-const MIN_LESSONS = 3;
+const MIN_LESSONS = 0;
 
 export default function ApolloStudyGate({
   children,

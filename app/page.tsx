@@ -31,6 +31,7 @@ export default function HomePage() {
   const linkNotes: Record<string, string> = {
     Gallery: "Story vault and media drops",
     Apollo: "AI workspace and tools",
+    Brain: "GAIA's decision and dictation UI",
     ELEUTHIA: "Guided creation studio",
     Timeline: "Session log and notes",
     Health: "Vitals and recovery",
@@ -44,6 +45,7 @@ export default function HomePage() {
   const links: NavLink[] = [
     { href: "/gallery-awakening", label: "Gallery", permission: "gallery" },
     { href: "/apollo", label: "Apollo", permission: "apollo" },
+    { href: "/gaia-brain", label: "Brain", permission: "core" },
     { href: "/ELEUTHIA", label: "ELEUTHIA", permission: "eleuthia" },
     { href: "/timeline", label: "Timeline", permission: "timeline" },
     { href: "/health-awakening", label: "Health", permission: "health" },

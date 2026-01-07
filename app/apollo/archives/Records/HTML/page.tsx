@@ -320,6 +320,14 @@ export default function HTMLRecord() {
                     CSS
                   </a>
                 </li>
+                <li>
+                  <a
+                    className="text-slate-700 hover:text-sky-600"
+                    href="/apollo/archives/Records/JavaScript"
+                  >
+                    JavaScript
+                  </a>
+                </li>
               </ul>
             </nav>
           </div>

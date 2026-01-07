@@ -24,11 +24,9 @@ export default function PermissionGate({
   const normalised = normaliseEmail(email);
   const isAdmin = isCreatorAdmin(normalised);
 
-  const hasAccess = useMemo(() => {
-    if (isAdmin) return true;
-    if (!normalised) return false;
-    return Boolean(permissions[permission]);
-  }, [isAdmin, normalised, permission, permissions]);
+  // Temporarily disable permission gating across the app so all areas are
+  // accessible during review. Restore original logic to re-enable locks.
+  const hasAccess = true;
 
   if (hasAccess) {
     return <>{children}</>;

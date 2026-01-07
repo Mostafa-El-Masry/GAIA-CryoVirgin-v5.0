@@ -11,7 +11,11 @@ import { DEFAULT_THEME, THEMES, type Theme } from "./DesignSystem/theme";
 export const metadata: Metadata = {
   title: "GAIA",
   description: "GAIA v2.0 · Phase 5",
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default async function RootLayout({

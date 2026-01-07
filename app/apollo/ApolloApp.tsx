@@ -18,8 +18,9 @@ export default function ApolloApp() {
               Ask, capture, and keep your study flow
             </h1>
             <p className="max-w-3xl text-sm sm:text-base text-slate-600">
-              Use this surface to ask focused questions and move the best bits into your archive.
-              Academy handles lessons; Apollo keeps your running notes tidy.
+              Use this surface to ask focused questions and move the best bits
+              into your archive. Academy handles lessons; Apollo keeps your
+              running notes tidy.
             </p>
           </div>
           <span className="inline-flex items-center rounded-full border border-emerald-100 bg-white px-3 py-1 shadow-sm text-xs font-semibold text-emerald-700">
@@ -37,7 +38,9 @@ export default function ApolloApp() {
               Capture answers, then archive the signal
             </h2>
             <p className="text-xs sm:text-[13px] text-white/80 max-w-xl">
-              Ask targeted questions, highlight the useful parts, and send them straight into your Apollo archive so you keep a clean record alongside Academy.
+              Ask targeted questions, highlight the useful parts, and send them
+              straight into your Apollo archive so you keep a clean record
+              alongside Academy.
             </p>
           </div>
           <div className="flex flex-col sm:items-end gap-2">
@@ -58,7 +61,9 @@ export default function ApolloApp() {
 
         <section className="rounded-3xl border border-slate-200 bg-white/90 px-4 sm:px-6 py-4 shadow-sm space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <h2 className="text-lg font-semibold text-slate-900">Paths into Apollo</h2>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Paths into Apollo
+            </h2>
             <span className="text-xs text-slate-500">
               Open tools for where you are in the flow
             </span>
@@ -92,152 +97,98 @@ export default function ApolloApp() {
               }
             />
 
-            <PermissionGate permission="archives" fallback={null}>
-              <ApolloStudyGate
-                featureLabel="Archives"
-                fallback={
-                  <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                      Locked
-                    </p>
-                    <h3 className="mt-1 text-lg font-semibold text-slate-900">
-                      Archives unlock after 3 lessons.
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      Finish a few Academy lessons to save notes and transcripts here.
-                    </p>
-                    <a
-                      href="/apollo/academy"
-                      className="mt-3 inline-flex items-center rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
-                    >
-                      Go to Academy
-                    </a>
-                  </div>
-                }
-              >
-                <LinkCard
-                  href="/apollo/archives"
-                  title="Archives"
-                  description="Your saved notes and useful answers from Apollo."
-                  icon={
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <rect
-                        x="3"
-                        y="4"
-                        width="18"
-                        height="4"
-                        rx="1"
-                        ry="1"
-                        strokeWidth="1.5"
-                      />
-                      <path
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M21 8v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"
-                      />
-                      <path
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M10 12h4"
-                      />
-                    </svg>
-                  }
-                />
-              </ApolloStudyGate>
-            </PermissionGate>
+            <LinkCard
+              href="/apollo/archives"
+              title="Archives"
+              description="Your saved notes and useful answers from Apollo."
+              icon={
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <rect
+                    x="3"
+                    y="4"
+                    width="18"
+                    height="4"
+                    rx="1"
+                    ry="1"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 8v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"
+                  />
+                  <path
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10 12h4"
+                  />
+                </svg>
+              }
+            />
 
-            <PermissionGate permission="labs" fallback={null}>
-              <ApolloStudyGate
-                featureLabel="Labs"
-                fallback={
-                  <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                      Locked
-                    </p>
-                    <h3 className="mt-1 text-lg font-semibold text-slate-900">
-                      Labs unlock after 3 lessons.
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      Ship a few Academy lessons first, then you can build and archive experiments.
-                    </p>
-                    <a
-                      href="/apollo/academy"
-                      className="mt-3 inline-flex items-center rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
-                    >
-                      Go to Academy
-                    </a>
-                  </div>
-                }
-              >
-                <LinkCard
-                  href="/apollo/labs"
-                  title="Labs"
-                  description="Experiments and prototyping space for ideas."
-                  icon={
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8 13v3a4 4 0 0 0 8 0v-3"
-                      />
-                      <path
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 8h6l1 3H8l1-3z"
-                      />
-                      <path
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 3v5"
-                      />
-                    </svg>
-                  }
-                />
-              </ApolloStudyGate>
-            </PermissionGate>
+            <LinkCard
+              href="/apollo/labs"
+              title="Labs"
+              description="Experiments and prototyping space for ideas."
+              icon={
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8 13v3a4 4 0 0 0 8 0v-3"
+                  />
+                  <path
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 8h6l1 3H8l1-3z"
+                  />
+                  <path
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 3v5"
+                  />
+                </svg>
+              }
+            />
           </div>
         </section>
 
-        <PermissionGate permission="apollo" fallback={null}>
-          <ApolloStudyGate featureLabel="Ask ChatGPT">
-            <section
-              id="ask"
-              className="rounded-3xl border border-slate-200 bg-white/90 p-4 sm:p-6 shadow-sm space-y-3"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Ask & capture
-                  </p>
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    Work with ChatGPT, then archive the signal
-                  </h2>
-                </div>
-                <span className="text-xs text-slate-500">
-                  Focused Q&amp;A for your current lessons
-                </span>
-              </div>
-              <AskPanel />
-            </section>
-          </ApolloStudyGate>
-        </PermissionGate>
+        <section
+          id="ask"
+          className="rounded-3xl border border-slate-200 bg-white/90 p-4 sm:p-6 shadow-sm space-y-3"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                Ask & capture
+              </p>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Work with ChatGPT, then archive the signal
+              </h2>
+            </div>
+            <span className="text-xs text-slate-500">
+              Focused Q&amp;A for your current lessons
+            </span>
+          </div>
+          <AskPanel />
+        </section>
       </main>
     </div>
   );
