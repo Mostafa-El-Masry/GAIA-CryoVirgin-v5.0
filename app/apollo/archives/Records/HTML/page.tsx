@@ -325,9 +325,10 @@ export default function HTMLRecord() {
                     className="text-slate-700 hover:text-sky-600"
                     href="/apollo/archives/Records/JavaScript"
                   >
-                    JavaScript
+                    JavaScript Archive
                   </a>
                 </li>
+                {/* removed duplicate JavaScript link */}
               </ul>
             </nav>
           </div>
