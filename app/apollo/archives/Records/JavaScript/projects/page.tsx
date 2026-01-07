@@ -72,7 +72,7 @@ export default function JSProjectsArchive() {
         </aside>
 
         <main
-          className={`${styles.archiveContent} prose prose-slate max-w-none`}
+          className={`prose prose-slate max-w-none mt-[-35vh] md:col-start-1 self-start`}
         >
           <section id="level-1">
             <h1>🟢 LEVEL 1 — Core JavaScript Basics (1–20)</h1>

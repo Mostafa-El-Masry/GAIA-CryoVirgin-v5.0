@@ -155,7 +155,7 @@ export default function CSSRecord() {
         </aside>
 
         <main
-          className={`${styles.archiveContent} prose prose-slate max-w-none mt-[-50vh]`}
+          className={`${styles.archiveContent} prose prose-slate max-w-none mt-[-40vh]`}
         >
           <CSSContent />
         </main>

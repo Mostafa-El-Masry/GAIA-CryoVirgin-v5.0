@@ -22,7 +22,7 @@ export default function ArchivesPage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-slate-700"
+                  className="h-6 w-6 text-amber-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -31,13 +31,13 @@ export default function ArchivesPage() {
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M15 6 L9 12 L15 18"
+                    d="M8 7l-4 5 4 5"
                   />
                   <path
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M9 6 L15 12 L9 18"
+                    d="M16 7l4 5-4 5"
                   />
                 </svg>
               </div>
@@ -129,7 +129,32 @@ export default function ArchivesPage() {
             >
               <span className="flex items-center gap-3">
                 <div className="h-7 w-7 flex items-center justify-center">
-                  <HugeiconsIcon icon={CheckListIcon} size={16} />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 text-slate-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 3h6v4H9z"
+                    />
+                    <path
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M7 11h10M7 15h6"
+                    />
+                    <path
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 19l2 2 4-4"
+                    />
+                  </svg>
                 </div>
                 <span className="text-2xl">JS Projects</span>
               </span>
