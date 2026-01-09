@@ -81,6 +81,13 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   if (!current) return null;
 
   const displayTitle = formatMediaTitle(current.title);
@@ -150,7 +157,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
 
   return (
     <div
-      className="relative z-50 w-full flex items-center justify-center bg-black/80 px-2 py-8 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm overflow-y-auto"
       role="presentation"
     >
       <button
@@ -174,7 +181,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
       </button>
 
       <figure
-        className="m-0 flex max-h-[90vh] max-w-[90vw] flex-col items-center justify-center gap-3 text-center"
+        className="m-0 flex max-h-[100vh] max-w-[90vw] flex-col items-center justify-center gap-3 text-center px-2 py-8"
         onClick={(e) => e.stopPropagation()}
       >
         {current.type === "image" ? (

@@ -31,7 +31,7 @@ export function useGaiaFeatureUnlocks() {
     // backward-compatible shape expected by callers
     isFeatureUnlocked,
     totalLessonsCompleted,
-    allowedGalleryMediaCount: 0,
+    allowedGalleryMediaCount: 999,
     featureUnlocks,
     wealthUnlocked,
     wealthStage,

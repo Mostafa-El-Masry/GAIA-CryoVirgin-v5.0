@@ -27,6 +27,11 @@ type GalleryAwakeningContentProps = {
 const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   allowedGalleryMediaCount,
 }) => {
+  const [isHydrated, setIsHydrated] = React.useState(false);
+  React.useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   const { items } = useGalleryData(mockMediaItems);
   const { profile, status } = useAuthSnapshot();
   const permissions = useCurrentPermissions();
@@ -181,6 +186,10 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   const closePreview = () => setLightboxActiveId(null);
   const changePreview = (id: string) => setLightboxActiveId(id);
 
+  if (!isHydrated) {
+    return null;
+  }
+
   return (
     <main className={`relative min-h-screen ${spaceGrotesk.className} gaia-bg`}>
       <section>
@@ -217,28 +226,6 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
 const GalleryAwakeningPage: React.FC = () => {
   const { totalLessonsCompleted, allowedGalleryMediaCount, featureUnlocks } =
     useGaiaFeatureUnlocks();
-  const galleryUnlocked = featureUnlocks.gallery;
-
-  if (!galleryUnlocked) {
-    return (
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-xl">
-          <h1 className="mb-2 text-2xl font-bold text-[var(--gaia-text-strong)]">
-            Gallery locked Aú keep learning
-          </h1>
-          <p className="mb-4 text-sm text-[var(--gaia-text-muted)]">
-            Complete more Academy lessons in Apollo to slowly unlock your
-            Gallery. Each lesson from level 11 onward unlocks one more memory
-            (image or video).
-          </p>
-          <p className="text-xs text-[var(--gaia-text-muted)]">
-            Lessons completed so far:{" "}
-            <span className="font-semibold">{totalLessonsCompleted}</span>
-          </p>
-        </section>
-      </main>
-    );
-  }
 
   return (
     <GalleryAwakeningContent

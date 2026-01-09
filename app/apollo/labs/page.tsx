@@ -1,5 +1,7 @@
 // using plain anchor tags for external static project links
 
+import Link from "next/link";
+
 export default function ApolloLabsPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 space-y-6">
@@ -17,7 +19,7 @@ export default function ApolloLabsPage() {
       </header>
       <section className="mt-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <a
+          <Link
             href="/JS-Projects/Counter-App/index.html"
             className="block"
             target="_blank"
@@ -61,7 +63,7 @@ export default function ApolloLabsPage() {
                 </div>
               </div>
             </article>
-          </a>
+          </Link>
         </div>
       </section>
     </main>

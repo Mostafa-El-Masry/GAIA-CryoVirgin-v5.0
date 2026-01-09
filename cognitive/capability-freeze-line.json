@@ -1,9 +1,0 @@
-{
-  "name": "Capability Freeze Line",
-  "version": "1.0",
-  "rules": {
-    "no_new_capabilities_without_readiness_pass": true,
-    "freeze_on_any_failed_criteria": true,
-    "freeze_requires_human_review_to_lift": true
-  }
-}
