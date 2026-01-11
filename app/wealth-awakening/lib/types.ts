@@ -101,6 +101,9 @@ export interface WealthLevelDefinition {
   minSavings?: number;
   minMonthlyRevenue?: number;
   description: string;
+  survivability?: string;
+  allowedEnrichment?: string;
+  calendarsUnlocked?: string;
 }
 
 export interface WealthLevelsSnapshot {

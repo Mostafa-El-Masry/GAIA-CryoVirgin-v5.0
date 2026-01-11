@@ -937,9 +937,7 @@ export default function WealthLevelsPage() {
                 <th className="px-4 py-2">Target monthly revenue</th>
                 <th className="px-4 py-2">Est. year</th>
                 <th className="px-4 py-2">Est. age</th>
-                <th className="px-4 py-2">
-                  Status Trying To Achieve by this Plan
-                </th>
+                <th className="px-4 py-2">Narrative</th>
               </tr>
             </thead>
             <tbody>
@@ -1510,6 +1508,24 @@ export default function WealthLevelsPage() {
                                         {formatPercent(
                                           snapshot.coveragePercent
                                         )}
+                                      </dd>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <dt>Survivability</dt>
+                                      <dd className="font-semibold text-white">
+                                        {currentPlan?.survivability ?? "-"}
+                                      </dd>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <dt>Allowed Enrichment Spending</dt>
+                                      <dd className="font-semibold text-white">
+                                        {currentPlan?.allowedEnrichment ?? "-"}
+                                      </dd>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <dt>Calendars unlocked</dt>
+                                      <dd className="font-semibold text-white">
+                                        {currentPlan?.calendarsUnlocked ?? "-"}
                                       </dd>
                                     </div>
                                   </dl>

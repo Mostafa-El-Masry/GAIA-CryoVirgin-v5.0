@@ -25,103 +25,143 @@ const FX_STORAGE_KEY = "wealth_awakening_fx_egp_per_kwd";
 export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
   {
     id: "L1",
-    name: "Poor",
-    shortLabel: "Plan J - Poor",
+    name: "Level 1 — Suffocating",
+    shortLabel: "Level 1 — Suffocating",
     order: 1,
     minSavings: 50000,
-    minMonthlyRevenue: 0,
-    description:
-      "Barely surviving. Living paycheck to paycheck, no emergency savings.",
+    minMonthlyRevenue: 1000,
+    description: `This level is about not collapsing.
+You are not building a life yet — you are protecting it.
+Discipline here is quiet and invisible.`,
+    survivability: "❌ Suffocating",
+    allowedEnrichment: "0% (Every pound is defensive.)",
+    calendarsUnlocked: "❌ None",
   },
   {
     id: "L2",
-    name: "Struggling",
-    shortLabel: "Plan I - Struggling",
+    name: "Level 2 — Choking",
+    shortLabel: "Level 2 — Choking",
     order: 2,
-    minSavings: 200000,
-    minMonthlyRevenue: 0,
-    description:
-      "Can cover small emergencies, but one big issue is dangerous.",
+    minSavings: 120000,
+    minMonthlyRevenue: 2000,
+    description: `Your body comes first.
+Stabilizing food and insulin reduces chaos everywhere else.
+This is the first act of self-respect.`,
+    survivability: "❌ Suffocating",
+    allowedEnrichment: "5% (≈100 EGP)",
+    calendarsUnlocked: "✅ Food & Insulin Calendar",
   },
   {
     id: "L3",
-    name: "Survivor",
-    shortLabel: "Plan H - Survivor",
+    name: "Level 3 — Escaping Poverty",
+    shortLabel: "Level 3 — Escaping Poverty",
     order: 3,
-    minSavings: 500000,
-    minMonthlyRevenue: 0,
-    description:
-      "Has basic savings, maybe can invest small. Still vulnerable to shocks.",
+    minSavings: 250000,
+    minMonthlyRevenue: 4000,
+    description: `You are still poor, but no longer stagnant.
+You invest in skills because future income is the exit.
+Hope becomes structured.`,
+    survivability: "❌ Unsafe",
+    allowedEnrichment: "10% (≈400 EGP)",
+    calendarsUnlocked: "✅ Learning Calendar",
   },
   {
     id: "L4",
-    name: "Stable",
-    shortLabel: "Plan G - Stable",
+    name: "Level 4 — Pressure Zone",
+    shortLabel: "Level 4 — Pressure Zone",
     order: 4,
-    minSavings: 1000000,
-    minMonthlyRevenue: 0,
-    description:
-      "First big milestone. Can survive without income for a while.",
+    minSavings: 400000,
+    minMonthlyRevenue: 8000,
+    description: `Strength becomes necessary, not optional.
+Your body stops being neglected.
+Energy starts to rise.`,
+    survivability: "⚠️ Near survival",
+    allowedEnrichment: "15% (≈1,200 EGP)",
+    calendarsUnlocked: "✅ Workout / Physical Training Calendar",
   },
   {
     id: "L5",
-    name: "Comfortable",
-    shortLabel: "Plan F - Comfortable",
+    name: "Level 5 — Bare Survival",
+    shortLabel: "Level 5 — Bare Survival",
     order: 5,
-    minSavings: 2500000,
-    minMonthlyRevenue: 0,
-    description:
-      "Can invest meaningfully. Lifestyle upgrades possible.",
+    minSavings: 700000,
+    minMonthlyRevenue: 16000,
+    description: `You protect rest like income.
+Burnout is no longer allowed.
+Life becomes sustainable.`,
+    survivability: "✅ Surviving",
+    allowedEnrichment: "20% (≈3,200 EGP)",
+    calendarsUnlocked: "✅ Sleep & Recovery Calendar",
   },
   {
     id: "L6",
-    name: "Secure",
-    shortLabel: "Plan E - Secure",
+    name: "Level 6 — First Enjoyment",
+    shortLabel: "Level 6 — First Enjoyment",
     order: 6,
-    minSavings: 5000000,
-    minMonthlyRevenue: 0,
-    description:
-      "Serious buffer. Investment income can match a middle-class salary.",
+    minSavings: 1200000,
+    minMonthlyRevenue: 32000,
+    description: `You stop surviving your thoughts.
+Healing becomes intentional.
+You begin living inside your body, not outside it.`,
+    survivability: "🌱 Begin to enjoy",
+    allowedEnrichment: "30% (≈9,600 EGP)",
+    calendarsUnlocked: "✅ Mental Health / Emotional Regulation Calendar",
   },
   {
     id: "L7",
-    name: "Prosperous",
-    shortLabel: "Plan D - Prosperous",
+    name: "Level 7 — Comfortable",
+    shortLabel: "Level 7 — Comfortable",
     order: 7,
-    minSavings: 10000000,
-    minMonthlyRevenue: 0,
-    description:
-      "Financial independence in Egypt. Returns can cover most lifestyles.",
+    minSavings: 2500000,
+    minMonthlyRevenue: 64000,
+    description: `Your mind expands beyond urgency.
+You read to grow, not escape.
+Wisdom starts compounding.`,
+    survivability: "✅ Comfortable",
+    allowedEnrichment: "40% (≈25,600 EGP)",
+    calendarsUnlocked: "✅ Reading & Deep Thinking Calendar",
   },
   {
     id: "L8",
-    name: "Rich",
-    shortLabel: "Plan C - Rich",
+    name: "Level 8 — Secure",
+    shortLabel: "Level 8 — Secure",
     order: 8,
-    minSavings: 25000000,
-    minMonthlyRevenue: 0,
-    description:
-      "Considered rich by Egyptian standards. Property, cars, travel comfortably.",
+    minSavings: 5000000,
+    minMonthlyRevenue: 128000,
+    description: `You invest in people intentionally.
+Boundaries replace obligation.
+Connection becomes nourishing.`,
+    survivability: "🟢 Very secure",
+    allowedEnrichment: "50% (≈64,000 EGP)",
+    calendarsUnlocked: "✅ Relationships & Social Health Calendar",
   },
   {
     id: "L9",
-    name: "Very rich",
-    shortLabel: "Plan B - Very rich",
+    name: "Level 9 — Quiet Wealth",
+    shortLabel: "Level 9 — Quiet Wealth",
     order: 9,
-    minSavings: 100000000,
-    minMonthlyRevenue: 0,
-    description:
-      "Upper-class. Multiple assets and aggressive investing.",
+    minSavings: 10000000,
+    minMonthlyRevenue: 256000,
+    description: `You ask “why” more than “how much.”
+Your actions start to ripple outward.
+Life gains depth.`,
+    survivability: "🟢 Abundant",
+    allowedEnrichment: "55% (≈140,800 EGP)",
+    calendarsUnlocked: "✅ Purpose / Meaning / Contribution Calendar",
   },
   {
     id: "L10",
-    name: "Wealthy",
-    shortLabel: "Plan A - Wealthy",
+    name: "Level 10 — Sovereign",
+    shortLabel: "Level 10 — Sovereign",
     order: 10,
-    minSavings: 100000000,
-    minMonthlyRevenue: 0,
-    description:
-      "Beyond personal needs. Generational wealth or investor scale.",
+    minSavings: 20000000,
+    minMonthlyRevenue: 512000,
+    description: `You are no longer waiting for life to begin.
+You are shaping it.
+Money serves meaning.`,
+    survivability: "🟢 Untouchable",
+    allowedEnrichment: "60% (≈307,200 EGP)",
+    calendarsUnlocked: "✅ Legacy / Creation / Long-Term Vision Calendar",
   },
 ];
 
@@ -144,7 +184,7 @@ function getCachedEgpPerKwd(): number | null {
 function resolveConversionRate(
   primaryCurrency: string,
   planCurrency: string,
-  fxRate?: number,
+  fxRate?: number
 ): number {
   if (primaryCurrency === planCurrency) return 1;
   if (planCurrency === "EGP" && primaryCurrency === "KWD") {
@@ -160,7 +200,7 @@ function getConversionRateForCurrency(
   fromCurrency: string,
   planCurrency: string,
   primaryCurrency: string,
-  fxRate?: number,
+  fxRate?: number
 ): number | null {
   if (fromCurrency === planCurrency) return 1;
   if (fromCurrency === primaryCurrency) {
@@ -176,7 +216,7 @@ function getConversionRateForCurrency(
 }
 
 function mergePlanDefinitions(
-  overrides: WealthLevelDefinition[] | null,
+  overrides: WealthLevelDefinition[] | null
 ): WealthLevelDefinition[] {
   if (!Array.isArray(overrides) || overrides.length === 0) {
     return [...DEFAULT_PLAN_DEFINITIONS].sort((a, b) => a.order - b.order);
@@ -190,7 +230,10 @@ function mergePlanDefinitions(
 
     return {
       ...def,
-      name: typeof override.name === "string" && override.name.trim() ? override.name : def.name,
+      name:
+        typeof override.name === "string" && override.name.trim()
+          ? override.name
+          : def.name,
       shortLabel:
         typeof override.shortLabel === "string" &&
         override.shortLabel.trim() &&
@@ -204,7 +247,7 @@ function mergePlanDefinitions(
       minSavings: normalizeNumber(override.minSavings, def.minSavings ?? 0),
       minMonthlyRevenue: normalizeNumber(
         override.minMonthlyRevenue,
-        def.minMonthlyRevenue ?? 0,
+        def.minMonthlyRevenue ?? 0
       ),
     };
   }).sort((a, b) => a.order - b.order);
@@ -216,13 +259,13 @@ export function getPlanDefinitions(): WealthLevelDefinition[] {
   }
   const stored = readJSON<WealthLevelDefinition[] | null>(
     PLANS_STORAGE_KEY,
-    null,
+    null
   );
   return mergePlanDefinitions(stored);
 }
 
 export function savePlanDefinitions(
-  levels: WealthLevelDefinition[],
+  levels: WealthLevelDefinition[]
 ): WealthLevelDefinition[] {
   const merged = mergePlanDefinitions(levels);
   writeJSON(PLANS_STORAGE_KEY, merged);
@@ -248,7 +291,7 @@ function flowsForMonth(flows: WealthFlow[], monthKey: MonthKey): WealthFlow[] {
 
 export function buildLevelsSnapshot(
   overview: WealthOverview,
-  options: PlanSnapshotOptions = {},
+  options: PlanSnapshotOptions = {}
 ): WealthLevelsSnapshot {
   const today = getTodayInKuwait();
   const monthKey = toMonthKey(today);
@@ -257,7 +300,7 @@ export function buildLevelsSnapshot(
   const conversionRate = resolveConversionRate(
     overview.primaryCurrency,
     planCurrency,
-    options.fxRate,
+    options.fxRate
   );
   const toPlanCurrency = (value: number) => value * conversionRate;
 
@@ -266,9 +309,9 @@ export function buildLevelsSnapshot(
   // Estimate monthly expenses in primary currency
   const monthlyExpensesPrimary = sumBy(
     flowsThisMonth.filter(
-      (f) => f.kind === "expense" && f.currency === overview.primaryCurrency,
+      (f) => f.kind === "expense" && f.currency === overview.primaryCurrency
     ),
-    (f) => f.amount,
+    (f) => f.amount
   );
   const monthlyExpenses = toPlanCurrency(monthlyExpensesPrimary);
 
@@ -279,7 +322,7 @@ export function buildLevelsSnapshot(
       inst.currency,
       planCurrency,
       overview.primaryCurrency,
-      options.fxRate,
+      options.fxRate
     );
     if (!rate) continue;
     totalInstrumentSavings += inst.principal * rate;
@@ -290,24 +333,21 @@ export function buildLevelsSnapshot(
   const totalSavings = totalInstrumentSavings;
 
   const monthsOfExpensesSaved =
-    monthlyExpenses > 0
-      ? totalSavings / monthlyExpenses
-      : null;
+    monthlyExpenses > 0 ? totalSavings / monthlyExpenses : null;
 
   const coveragePercent =
-    monthlyExpenses > 0
-      ? (monthlyPassiveIncome / monthlyExpenses) * 100
-      : null;
+    monthlyExpenses > 0 ? (monthlyPassiveIncome / monthlyExpenses) * 100 : null;
 
-  const snapshotBase: Omit<WealthLevelsSnapshot, "levels" | "currentLevelId" | "nextLevelId"> =
-    {
-      totalSavings,
-      monthsOfExpensesSaved,
-      monthlyPassiveIncome:
-        monthlyPassiveIncome > 0 ? monthlyPassiveIncome : 0,
-      estimatedMonthlyExpenses: monthlyExpenses > 0 ? monthlyExpenses : null,
-      coveragePercent,
-    };
+  const snapshotBase: Omit<
+    WealthLevelsSnapshot,
+    "levels" | "currentLevelId" | "nextLevelId"
+  > = {
+    totalSavings,
+    monthsOfExpensesSaved,
+    monthlyPassiveIncome: monthlyPassiveIncome > 0 ? monthlyPassiveIncome : 0,
+    estimatedMonthlyExpenses: monthlyExpenses > 0 ? monthlyExpenses : null,
+    coveragePercent,
+  };
 
   // Determine current plan by target thresholds (upper bounds).
   let current: WealthLevelDefinition | null = null;

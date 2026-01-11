@@ -1,5 +1,10 @@
 import { getSupabaseClient, hasSupabaseClient } from "./supabaseClient";
-import type { WealthAccount, WealthInstrument, WealthFlow, WealthState } from "./types";
+import type {
+  WealthAccount,
+  WealthInstrument,
+  WealthFlow,
+  WealthState,
+} from "./types";
 
 export function hasSupabaseConfig(): boolean {
   return hasSupabaseClient();
@@ -115,8 +120,12 @@ export async function fetchRemoteWealthAll(): Promise<WealthState | null> {
       return null;
     }
 
-    const accounts: WealthAccount[] = (accRes.data ?? []).map(mapAccountFromRow);
-    const instruments: WealthInstrument[] = (instRes.data ?? []).map(mapInstrumentFromRow);
+    const accounts: WealthAccount[] = (accRes.data ?? []).map(
+      mapAccountFromRow
+    );
+    const instruments: WealthInstrument[] = (instRes.data ?? []).map(
+      mapInstrumentFromRow
+    );
     const flows: WealthFlow[] = (flowRes.data ?? []).map(mapFlowFromRow);
 
     return { accounts, instruments, flows };
@@ -126,7 +135,9 @@ export async function fetchRemoteWealthAll(): Promise<WealthState | null> {
   }
 }
 
-export async function pushRemoteWealthAll(state: WealthState): Promise<boolean> {
+export async function pushRemoteWealthAll(
+  state: WealthState
+): Promise<boolean> {
   const supabase = getSupabaseClient();
   if (!supabase) return false;
 
@@ -136,26 +147,38 @@ export async function pushRemoteWealthAll(state: WealthState): Promise<boolean> 
     const flowsRows = state.flows.map(mapFlowToRow);
 
     const accRes = accountsRows.length
-      ? await supabase.from("wealth_accounts").upsert(accountsRows, { onConflict: "id" })
+      ? await supabase
+          .from("wealth_accounts")
+          .upsert(accountsRows, { onConflict: "id" })
       : { error: null };
     if (accRes.error) {
-      console.warn("[Wealth] Supabase upsert error", { accError: accRes.error });
+      console.warn("[Wealth] Supabase upsert error", {
+        accError: accRes.error,
+      });
       return false;
     }
 
     const instRes = instrumentsRows.length
-      ? await supabase.from("wealth_instruments").upsert(instrumentsRows, { onConflict: "id" })
+      ? await supabase
+          .from("wealth_instruments")
+          .upsert(instrumentsRows, { onConflict: "id" })
       : { error: null };
     if (instRes.error) {
-      console.warn("[Wealth] Supabase upsert error", { instError: instRes.error });
+      console.warn("[Wealth] Supabase upsert error", {
+        instError: instRes.error,
+      });
       return false;
     }
 
     const flowRes = flowsRows.length
-      ? await supabase.from("wealth_flows").upsert(flowsRows, { onConflict: "id" })
+      ? await supabase
+          .from("wealth_flows")
+          .upsert(flowsRows, { onConflict: "id" })
       : { error: null };
     if (flowRes.error) {
-      console.warn("[Wealth] Supabase upsert error", { flowError: flowRes.error });
+      console.warn("[Wealth] Supabase upsert error", {
+        flowError: flowRes.error,
+      });
       return false;
     }
 
@@ -197,6 +220,46 @@ export async function deleteRemoteFlows(flowIds: string[]): Promise<boolean> {
     return true;
   } catch (err) {
     console.warn("[Wealth] Supabase flow delete exception", err);
+    return false;
+  }
+}
+
+export async function fetchRemoteInstrumentIds(): Promise<string[] | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  try {
+    const res = await supabase.from("wealth_instruments").select("id");
+    if (res.error) {
+      console.warn("[Wealth] Supabase instrument id fetch error", res.error);
+      return null;
+    }
+    return (res.data ?? []).map((row) => String(row.id));
+  } catch (err) {
+    console.warn("[Wealth] Supabase instrument id fetch exception", err);
+    return null;
+  }
+}
+
+export async function deleteRemoteInstruments(
+  instrumentIds: string[]
+): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return false;
+  if (!instrumentIds.length) return true;
+
+  try {
+    const res = await supabase
+      .from("wealth_instruments")
+      .delete()
+      .in("id", instrumentIds);
+    if (res.error) {
+      console.warn("[Wealth] Supabase instrument delete error", res.error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn("[Wealth] Supabase instrument delete exception", err);
     return false;
   }
 }

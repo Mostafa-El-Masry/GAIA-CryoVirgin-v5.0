@@ -3,8 +3,10 @@ import {
   hasSupabaseConfig,
   fetchRemoteWealthAll,
   fetchRemoteFlowIds,
+  fetchRemoteInstrumentIds,
   pushRemoteWealthAll,
   deleteRemoteFlows,
+  deleteRemoteInstruments,
 } from "./remoteWealth";
 
 const LOCAL_KEY = "gaia_wealth_awakening_state_v2";
@@ -229,14 +231,27 @@ export async function saveWealthStateWithRemote(
 ): Promise<void> {
   const { cleaned, removedFlowIds } = cleanState(state);
   if (hasSupabaseConfig()) {
+    // Delete removed flows
     const remoteFlowIds = await fetchRemoteFlowIds();
-    const keepIds = new Set(cleaned.flows.map((flow) => flow.id));
-    const missingIds = remoteFlowIds
-      ? remoteFlowIds.filter((id) => !keepIds.has(id))
+    const keepFlowIds = new Set(cleaned.flows.map((flow) => flow.id));
+    const missingFlowIds = remoteFlowIds
+      ? remoteFlowIds.filter((id) => !keepFlowIds.has(id))
       : [];
-    const deleteIds = Array.from(new Set([...missingIds, ...removedFlowIds]));
-    if (deleteIds.length) {
-      await deleteRemoteFlows(deleteIds);
+    const deleteFlowIds = Array.from(
+      new Set([...missingFlowIds, ...removedFlowIds])
+    );
+    if (deleteFlowIds.length) {
+      await deleteRemoteFlows(deleteFlowIds);
+    }
+
+    // Delete removed instruments
+    const remoteInstrumentIds = await fetchRemoteInstrumentIds();
+    const keepInstrumentIds = new Set(cleaned.instruments.map((i) => i.id));
+    const missingInstrumentIds = remoteInstrumentIds
+      ? remoteInstrumentIds.filter((id) => !keepInstrumentIds.has(id))
+      : [];
+    if (missingInstrumentIds.length) {
+      await deleteRemoteInstruments(missingInstrumentIds);
     }
     const ok = await pushRemoteWealthAll(cleaned);
     if (!ok) {
