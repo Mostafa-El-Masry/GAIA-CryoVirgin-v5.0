@@ -72,8 +72,11 @@ const LoginClient: React.FC<LoginClientProps> = ({
         return;
       }
 
-      // Use replace to avoid back button issues on mobile
-      router.push('/');
+      // Allow auth state to sync before redirecting
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Use replace instead of push for mobile compatibility
+      router.replace('/');
     } catch (err: any) {
       setError(err?.message ?? 'Failed to sign in.');
     } finally {
@@ -193,7 +196,9 @@ const LoginClient: React.FC<LoginClientProps> = ({
         // ignore
       }
 
-      router.push('/');
+      // Allow state to sync before redirecting
+      await new Promise(resolve => setTimeout(resolve, 100));
+      router.replace('/');
     } catch (err: any) {
       setError(err?.message ?? 'Failed to continue as guest.');
     } finally {
