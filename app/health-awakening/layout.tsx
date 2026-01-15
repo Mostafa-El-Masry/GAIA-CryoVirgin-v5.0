@@ -1,11 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
 import PermissionGate from "@/components/permissions/PermissionGate";
 import LessonGate from "@/components/permissions/LessonGate";
+import AuthGate from "@/components/AuthGate";
 import HealthShell from "./components/HealthShell";
-
-export const metadata = {
-  title: "Health Awakening | GAIA",
-};
 
 export default function HealthAwakeningLayout({
   children,
@@ -16,14 +15,16 @@ export default function HealthAwakeningLayout({
   const forceUnlock = true;
 
   if (forceUnlock) {
-    return <HealthShell>{children}</HealthShell>;
+    return <AuthGate><HealthShell>{children}</HealthShell></AuthGate>;
   }
 
   return (
-    <PermissionGate permission="health">
-      <LessonGate featureLabel="Health">
-        <HealthShell>{children}</HealthShell>
-      </LessonGate>
-    </PermissionGate>
+    <AuthGate>
+      <PermissionGate permission="health">
+        <LessonGate featureLabel="Health">
+          <HealthShell>{children}</HealthShell>
+        </LessonGate>
+      </PermissionGate>
+    </AuthGate>
   );
 }

@@ -72,7 +72,8 @@ const LoginClient: React.FC<LoginClientProps> = ({
         return;
       }
 
-      router.replace('/');
+      // Use replace to avoid back button issues on mobile
+      router.push('/');
     } catch (err: any) {
       setError(err?.message ?? 'Failed to sign in.');
     } finally {
@@ -192,7 +193,7 @@ const LoginClient: React.FC<LoginClientProps> = ({
         // ignore
       }
 
-      router.replace('/');
+      router.push('/');
     } catch (err: any) {
       setError(err?.message ?? 'Failed to continue as guest.');
     } finally {

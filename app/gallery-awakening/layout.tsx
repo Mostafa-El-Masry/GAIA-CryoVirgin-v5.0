@@ -1,13 +1,12 @@
-import type { ReactNode } from "react";
+"use client";
 
-export const metadata = {
-  title: "Gallery Awakening | GAIA",
-};
+import type { ReactNode } from "react";
+import AuthGate from "@/components/AuthGate";
 
 export default function GalleryAwakeningLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  return children;
+  return <AuthGate>{children}</AuthGate>;
 }

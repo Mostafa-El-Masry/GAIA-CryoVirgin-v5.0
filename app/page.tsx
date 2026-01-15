@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import NoScroll from "@/components/NoScroll";
 import UserDropdown from "@/components/UserDropdown";
+import AuthGate from "@/components/AuthGate";
 import { useAuthSnapshot } from "@/lib/auth-client";
 import { isCreatorAdmin, useCurrentPermissions } from "@/lib/permissions";
 import type { PermissionKey } from "@/config/permissions";
@@ -90,7 +91,8 @@ export default function HomePage() {
       });
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden text-[var(--gaia-text-default)]">
+    <AuthGate>
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden text-[var(--gaia-text-default)]">
       <NoScroll />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,var(--gaia-ink-faint),transparent_45%),radial-gradient(circle_at_80%_0%,var(--gaia-ink-faint),transparent_55%),radial-gradient(circle_at_50%_85%,var(--gaia-ink-faint),transparent_60%)]" />
 
@@ -238,5 +240,6 @@ export default function HomePage() {
         </div>
       </div>
     </main>
+    </AuthGate>
   );
 }
