@@ -72,8 +72,7 @@ const LoginClient: React.FC<LoginClientProps> = ({
         return;
       }
 
-      router.refresh();
-      router.push('/');
+      router.replace('/');
     } catch (err: any) {
       setError(err?.message ?? 'Failed to sign in.');
     } finally {
@@ -193,7 +192,7 @@ const LoginClient: React.FC<LoginClientProps> = ({
         // ignore
       }
 
-      router.push('/');
+      router.replace('/');
     } catch (err: any) {
       setError(err?.message ?? 'Failed to continue as guest.');
     } finally {
