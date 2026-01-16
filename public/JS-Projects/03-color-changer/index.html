@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Color Changer</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body
+    class="min-h-screen flex items-center justify-center bg-slate-100 transition-colors duration-300"
+  >
+    <main
+      class="bg-white w-full max-w-md p-6 rounded-lg shadow space-y-6 text-center"
+    >
+      <h1 class="text-2xl font-bold">Color Changer</h1>
+
+      <div class="space-y-2">
+        <p class="text-sm text-gray-600">Current Color</p>
+        <div
+          id="colorBox"
+          class="h-20 rounded flex items-center justify-center font-mono text-sm border"
+        >
+          #ffffff
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <button
+          id="randomBtn"
+          class="bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600"
+        >
+          Random Color
+        </button>
+
+        <button
+          id="resetBtn"
+          class="bg-gray-300 text-gray-800 py-2 rounded hover:bg-gray-400"
+        >
+          Reset
+        </button>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
