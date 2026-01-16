@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomodoro Timer</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <main class="bg-white max-w-md w-full p-6 rounded-lg shadow space-y-6">
+      <h1 class="text-2xl font-bold text-center">Countdown / Pomodoro Timer</h1>
+
+      <!-- Timer Display -->
+      <div class="bg-gray-50 border rounded p-6 text-center">
+        <p class="text-sm text-gray-500">Time Remaining</p>
+        <p id="timerDisplay" class="text-4xl font-mono font-semibold mt-2">
+          25:00
+        </p>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex justify-between gap-2">
+        <button
+          id="startBtn"
+          class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600"
+        >
+          Start
+        </button>
+        <button
+          id="pauseBtn"
+          class="flex-1 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600"
+        >
+          Pause
+        </button>
+        <button
+          id="resetBtn"
+          class="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600"
+        >
+          Reset
+        </button>
+      </div>
+
+      <!-- Pomodoro Settings -->
+      <div class="space-y-2">
+        <label class="flex justify-between items-center">
+          Work duration (minutes)
+          <input
+            type="number"
+            id="workDuration"
+            min="1"
+            value="25"
+            class="w-16 border rounded px-2 py-1"
+          />
+        </label>
+        <label class="flex justify-between items-center">
+          Break duration (minutes)
+          <input
+            type="number"
+            id="breakDuration"
+            min="1"
+            value="5"
+            class="w-16 border rounded px-2 py-1"
+          />
+        </label>
+        <label class="flex justify-between items-center">
+          Sessions before long break
+          <input
+            type="number"
+            id="sessionsBeforeLong"
+            min="1"
+            value="4"
+            class="w-16 border rounded px-2 py-1"
+          />
+        </label>
+      </div>
+
+      <!-- Session Info -->
+      <div class="bg-gray-50 border rounded p-4 text-center">
+        <p class="text-sm text-gray-500">
+          Session: <span id="currentSession">0</span>
+        </p>
+        <p class="text-sm text-gray-500">
+          Phase: <span id="currentPhase">Work</span>
+        </p>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomodoro Timer</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <main class="bg-white max-w-md w-full p-6 rounded-lg shadow space-y-6">
+      <h1 class="text-2xl font-bold text-center">Countdown / Pomodoro Timer</h1>
+
+      <!-- Timer Display -->
+      <div class="bg-gray-50 border rounded p-6 text-center">
+        <p class="text-sm text-gray-500">Time Remaining</p>
+        <p id="timerDisplay" class="text-4xl font-mono font-semibold mt-2">
+          25:00
+        </p>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex justify-between gap-2">
+        <button
+          id="startBtn"
+          class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600"
+        >
+          Start
+        </button>
+        <button
+          id="pauseBtn"
+          class="flex-1 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600"
+        >
+          Pause
+        </button>
+        <button
+          id="resetBtn"
+          class="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600"
+        >
+          Reset
+        </button>
+      </div>
+
+      <!-- Pomodoro Settings -->
+      <div class="space-y-2">
+        <label class="flex justify-between items-center">
+          Work duration (minutes)
+          <input
+            type="number"
+            id="workDuration"
+            min="1"
+            value="25"
+            class="w-16 border rounded px-2 py-1"
+          />
+        </label>
+        <label class="flex justify-between items-center">
+          Break duration (minutes)
+          <input
+            type="number"
+            id="breakDuration"
+            min="1"
+            value="5"
+            class="w-16 border rounded px-2 py-1"
+          />
+        </label>
+        <label class="flex justify-between items-center">
+          Sessions before long break
+          <input
+            type="number"
+            id="sessionsBeforeLong"
+            min="1"
+            value="4"
+            class="w-16 border rounded px-2 py-1"
+          />
+        </label>
+      </div>
+
+      <!-- Session Info -->
+      <div class="bg-gray-50 border rounded p-4 text-center">
+        <p class="text-sm text-gray-500">
+          Session: <span id="currentSession">0</span>
+        </p>
+        <p class="text-sm text-gray-500">
+          Phase: <span id="currentPhase">Work</span>
+        </p>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
