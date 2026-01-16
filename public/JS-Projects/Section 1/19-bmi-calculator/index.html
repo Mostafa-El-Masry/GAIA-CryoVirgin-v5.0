@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BMI Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <main
+      class="bg-white p-6 rounded-lg shadow w-full max-w-sm space-y-6 text-center"
+    >
+      <h1 class="text-2xl font-bold">BMI Calculator</h1>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700"
+          >Weight (kg)</label
+        >
+        <input
+          type="number"
+          id="weightInput"
+          class="w-full border rounded p-2 mt-1"
+          placeholder="70"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700"
+          >Height (cm)</label
+        >
+        <input
+          type="number"
+          id="heightInput"
+          class="w-full border rounded p-2 mt-1"
+          placeholder="170"
+        />
+      </div>
+
+      <button
+        id="calculateBtn"
+        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        Calculate BMI
+      </button>
+
+      <p class="text-gray-700 mt-4">Your BMI: <span id="bmiResult">0</span></p>
+      <p class="text-gray-700">Category: <span id="bmiCategory">—</span></p>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
