@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Click Tracker</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-slate-100 flex items-center justify-center">
+    <main class="bg-white w-full max-w-lg p-6 rounded-lg shadow space-y-6">
+      <h1 class="text-2xl font-bold text-center">Click Tracker</h1>
+
+      <!-- Buttons -->
+      <div class="grid grid-cols-3 gap-4">
+        <button
+          data-key="A"
+          class="tracker-btn bg-blue-500 text-white py-4 rounded text-lg"
+        >
+          Button A
+        </button>
+        <button
+          data-key="B"
+          class="tracker-btn bg-green-500 text-white py-4 rounded text-lg"
+        >
+          Button B
+        </button>
+        <button
+          data-key="C"
+          class="tracker-btn bg-purple-500 text-white py-4 rounded text-lg"
+        >
+          Button C
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="bg-gray-50 border rounded p-4 space-y-2 text-sm">
+        <p>Total Clicks: <span id="total">0</span></p>
+        <p>Button A: <span id="count-A">0</span></p>
+        <p>Button B: <span id="count-B">0</span></p>
+        <p>Button C: <span id="count-C">0</span></p>
+      </div>
+
+      <!-- Actions -->
+      <button
+        id="reset"
+        class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
+      >
+        Reset
+      </button>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
