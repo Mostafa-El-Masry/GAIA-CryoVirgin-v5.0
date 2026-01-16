@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Switcher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <main
+      class="bg-white p-6 rounded-lg shadow w-full max-w-md space-y-6 text-center"
+    >
+      <h1 class="text-2xl font-bold">Image Switcher</h1>
+
+      <!-- Main Image -->
+      <div class="border rounded overflow-hidden">
+        <img
+          id="mainImage"
+          src="https://picsum.photos/id/1015/400/300"
+          alt="Main"
+          class="w-full h-auto"
+        />
+      </div>
+
+      <!-- Thumbnails -->
+      <div class="flex justify-center gap-2 mt-4">
+        <button
+          class="thumbBtn border rounded overflow-hidden"
+          data-src="https://picsum.photos/id/1015/400/300"
+        >
+          <img
+            src="https://picsum.photos/id/1015/100/75"
+            alt="Thumb 1"
+            class="w-24 h-auto"
+          />
+        </button>
+        <button
+          class="thumbBtn border rounded overflow-hidden"
+          data-src="https://picsum.photos/id/1016/400/300"
+        >
+          <img
+            src="https://picsum.photos/id/1016/100/75"
+            alt="Thumb 2"
+            class="w-24 h-auto"
+          />
+        </button>
+        <button
+          class="thumbBtn border rounded overflow-hidden"
+          data-src="https://picsum.photos/id/1018/400/300"
+        >
+          <img
+            src="https://picsum.photos/id/1018/100/75"
+            alt="Thumb 3"
+            class="w-24 h-auto"
+          />
+        </button>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex justify-between mt-4">
+        <button
+          id="prevBtn"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Prev
+        </button>
+        <button
+          id="nextBtn"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Next
+        </button>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
