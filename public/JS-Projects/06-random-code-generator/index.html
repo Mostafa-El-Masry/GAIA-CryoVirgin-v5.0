@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Random Code Generator</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="min-h-screen flex items-center justify-center bg-slate-100">
+    <main class="bg-white w-full max-w-lg p-6 rounded-lg shadow space-y-6">
+      <h1 class="text-2xl font-bold text-center">Random Code Generator</h1>
+
+      <!-- Current code display -->
+      <div class="bg-slate-50 border rounded p-4 text-center">
+        <p class="text-sm text-gray-500">Generated Code</p>
+        <p id="currentCode" class="text-2xl font-mono font-semibold mt-1">—</p>
+      </div>
+
+      <!-- Settings -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium">Length</label>
+          <input
+            type="number"
+            id="codeLength"
+            min="1"
+            value="8"
+            class="w-16 border rounded px-2 py-1"
+          />
+        </div>
+
+        <div class="flex flex-wrap gap-4">
+          <label class="inline-flex items-center gap-1">
+            <input type="checkbox" id="includeUpper" checked />
+            Uppercase
+          </label>
+          <label class="inline-flex items-center gap-1">
+            <input type="checkbox" id="includeLower" checked />
+            Lowercase
+          </label>
+          <label class="inline-flex items-center gap-1">
+            <input type="checkbox" id="includeNumbers" checked />
+            Numbers
+          </label>
+          <label class="inline-flex items-center gap-1">
+            <input type="checkbox" id="includeSymbols" />
+            Symbols
+          </label>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-2">
+        <button
+          id="generateBtn"
+          class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Generate
+        </button>
+        <button
+          id="clearHistoryBtn"
+          class="flex-1 bg-rose-500 text-white px-4 py-2 rounded hover:bg-rose-600"
+        >
+          Clear History
+        </button>
+      </div>
+
+      <!-- History -->
+      <div class="bg-slate-50 border rounded p-4 max-h-64 overflow-auto">
+        <h2 class="text-sm text-gray-500 mb-2">History (recent first)</h2>
+        <ul id="historyList" class="space-y-1 text-sm font-mono"></ul>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
