@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Strength Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <main class="bg-white p-6 rounded-lg shadow w-full max-w-md space-y-6">
+      <h1 class="text-2xl font-bold text-center">Password Strength Checker</h1>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700"
+          >Enter Password</label
+        >
+        <input
+          type="password"
+          id="passwordInput"
+          class="w-full border rounded p-2 mt-1"
+          placeholder="••••••••"
+        />
+      </div>
+
+      <div class="mt-4">
+        <p id="strengthText" class="text-lg font-semibold">Strength:</p>
+        <div class="h-3 w-full bg-gray-200 rounded mt-1">
+          <div
+            id="strengthBar"
+            class="h-3 w-0 rounded bg-red-500 transition-all"
+          ></div>
+        </div>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
