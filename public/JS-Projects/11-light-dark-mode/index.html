@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Light/Dark Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body
+    class="min-h-screen flex items-center justify-center transition-colors duration-300 bg-white text-gray-900"
+  >
+    <main class="p-6 rounded-lg shadow w-full max-w-md text-center space-y-6">
+      <h1 class="text-2xl font-bold">Light / Dark Mode Switcher</h1>
+
+      <p id="modeText" class="text-lg">Current mode: Light</p>
+
+      <button
+        id="toggleModeBtn"
+        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        Toggle Mode
+      </button>
+
+      <div
+        class="mt-6 p-4 border rounded bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+      >
+        <p>This box also changes colors based on the theme.</p>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
