@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Random Background Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body
+    class="min-h-screen flex flex-col items-center justify-center transition-colors duration-500"
+  >
+    <main
+      class="bg-white p-6 rounded-lg shadow w-full max-w-sm space-y-6 text-center"
+    >
+      <h1 class="text-2xl font-bold">Random Background Generator</h1>
+
+      <button
+        id="changeColorBtn"
+        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        Change Background
+      </button>
+
+      <p class="text-gray-700">
+        Current Color: <span id="currentColor">#ffffff</span>
+      </p>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
