@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <main class="bg-white p-6 rounded-lg shadow w-full max-w-xs space-y-4">
+      <h1 class="text-2xl font-bold text-center">Simple Calculator</h1>
+
+      <div
+        class="bg-gray-50 border rounded p-4 text-right font-mono text-2xl"
+        id="display"
+      >
+        0
+      </div>
+
+      <div class="grid grid-cols-4 gap-2">
+        <button class="btn bg-gray-200 py-2 rounded" data-value="7">7</button>
+        <button class="btn bg-gray-200 py-2 rounded" data-value="8">8</button>
+        <button class="btn bg-gray-200 py-2 rounded" data-value="9">9</button>
+        <button
+          class="btn bg-orange-500 text-white py-2 rounded"
+          data-value="/"
+        >
+          ÷
+        </button>
+
+        <button class="btn bg-gray-200 py-2 rounded" data-value="4">4</button>
+        <button class="btn bg-gray-200 py-2 rounded" data-value="5">5</button>
+        <button class="btn bg-gray-200 py-2 rounded" data-value="6">6</button>
+        <button
+          class="btn bg-orange-500 text-white py-2 rounded"
+          data-value="*"
+        >
+          ×
+        </button>
+
+        <button class="btn bg-gray-200 py-2 rounded" data-value="1">1</button>
+        <button class="btn bg-gray-200 py-2 rounded" data-value="2">2</button>
+        <button class="btn bg-gray-200 py-2 rounded" data-value="3">3</button>
+        <button
+          class="btn bg-orange-500 text-white py-2 rounded"
+          data-value="-"
+        >
+          −
+        </button>
+
+        <button class="btn bg-gray-200 py-2 rounded" data-value="0">0</button>
+        <button class="btn bg-gray-200 py-2 rounded" data-value=".">.</button>
+        <button class="btn bg-red-500 text-white py-2 rounded" data-value="C">
+          C
+        </button>
+        <button
+          class="btn bg-orange-500 text-white py-2 rounded"
+          data-value="+"
+        >
+          +
+        </button>
+
+        <button
+          class="btn col-span-4 bg-green-500 text-white py-2 rounded"
+          data-value="="
+        >
+          =
+        </button>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
