@@ -14,7 +14,10 @@ import {
 } from "../lib/wealthStore";
 import { hasSupabaseConfig } from "../lib/remoteWealth";
 import { getExchangeRate } from "../lib/exchangeRate";
-import { buildInstrumentAutoFlows, mergeInstrumentFlows } from "../lib/instrumentFlows";
+import {
+  buildInstrumentAutoFlows,
+  mergeInstrumentFlows,
+} from "../lib/instrumentFlows";
 import {
   estimateMonthlyInterest,
   estimateTotalInterestOverHorizon,
@@ -75,7 +78,11 @@ function LockedState({
 }
 
 function WealthInstrumentsContent() {
-  const [state, setState] = useState<WealthState | null>(null);
+  const [state, setState] = useState<WealthState>({
+    accounts: [],
+    instruments: [],
+    flows: [],
+  });
   const [editing, setEditing] = useState<WealthInstrument | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -120,16 +127,6 @@ function WealthInstrumentsContent() {
     return map;
   }, [instruments, today]);
 
-  if (!state) {
-    return (
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-slate-100">
-        <section className={`${surface} p-6 text-sm text-slate-300`}>
-          Loading your investments from Supabase...
-        </section>
-      </main>
-    );
-  }
-
   return (
     <main className="mx-auto w-[75vw] space-y-6 px-4 py-8 text-[var(--gaia-text-default)]">
       <header className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -156,13 +153,14 @@ function WealthInstrumentsContent() {
               type="button"
               disabled={syncing}
               onClick={async () => {
-                if (!state) return;
                 setSyncing(true);
                 setError(null);
                 setSyncStatus(null);
                 try {
                   const hasData = Boolean(
-                    state.accounts.length || state.instruments.length || state.flows.length
+                    state.accounts.length ||
+                    state.instruments.length ||
+                    state.flows.length,
                   );
                   if (!hasData) {
                     const legacy = await importLegacyWealthStateToSupabase();
@@ -194,32 +192,32 @@ function WealthInstrumentsContent() {
           <button
             type="button"
             onClick={() => {
-              if (!state) return;
               const last = state.instruments[state.instruments.length - 1];
-              const template: WealthInstrument =
-                last ?? {
-                  id: "",
-                  accountId: "",
-                  accountNumber: "",
-                  bankName: "",
-                  revenueFrequency: "",
-                  reference: "",
-                  name: "Certificate",
-                  currency: "EGP",
-                  principal: 0,
-                  startDate: today,
-                  termMonths: 36,
-                  annualRatePercent: 0,
-                  payoutFrequency: "monthly-interest" as PayoutFrequency,
-                  autoRenew: false,
-                  note: "",
-                };
+              const template: WealthInstrument = last ?? {
+                id: "",
+                accountId: "",
+                accountNumber: "",
+                bankName: "",
+                revenueFrequency: "",
+                reference: "",
+                name: "Certificate",
+                currency: "EGP",
+                principal: 0,
+                startDate: today,
+                termMonths: 36,
+                annualRatePercent: 0,
+                payoutFrequency: "monthly-interest" as PayoutFrequency,
+                autoRenew: false,
+                note: "",
+              };
               const newInst: WealthInstrument = {
                 ...template,
                 id: `inst-${Math.random().toString(36).slice(2, 8)}`,
               };
               setState((prev) =>
-                prev ? { ...prev, instruments: [...prev.instruments, newInst] } : prev
+                prev
+                  ? { ...prev, instruments: [...prev.instruments, newInst] }
+                  : prev,
               );
               setEditing(newInst);
               setIsNew(true);
@@ -279,7 +277,7 @@ function WealthInstrumentsContent() {
                     over the next 12 months if nothing changes.
                   </p>
                 </div>
-              )
+              ),
             )}
             {portfolioByCurrency.size === 0 && (
               <p className="text-xs gaia-muted">
@@ -333,7 +331,7 @@ function WealthInstrumentsContent() {
                 const monthly = estimateMonthlyInterest(draft);
                 const endLabel = computeEndDate(
                   draft.startDate,
-                  draft.termMonths
+                  draft.termMonths,
                 );
 
                 return (
@@ -349,7 +347,7 @@ function WealthInstrumentsContent() {
                             value={draft.name}
                             onChange={(e) =>
                               setEditing((prev) =>
-                                prev ? { ...prev, name: e.target.value } : prev
+                                prev ? { ...prev, name: e.target.value } : prev,
                               )
                             }
                           />
@@ -369,7 +367,7 @@ function WealthInstrumentsContent() {
                             setEditing((prev) =>
                               prev
                                 ? { ...prev, reference: e.target.value }
-                                : prev
+                                : prev,
                             )
                           }
                           placeholder="Ref #"
@@ -387,13 +385,15 @@ function WealthInstrumentsContent() {
                             setEditing((prev) =>
                               prev
                                 ? { ...prev, accountNumber: e.target.value }
-                                : prev
+                                : prev,
                             )
                           }
                           placeholder="Account #"
                         />
                       ) : (
-                        draft.accountNumber || <span className="opacity-60">-</span>
+                        draft.accountNumber || (
+                          <span className="opacity-60">-</span>
+                        )
                       )}
                     </td>
                     <td className="px-3 py-2 align-top text-[11px] text-[var(--gaia-text-default)]">
@@ -403,7 +403,9 @@ function WealthInstrumentsContent() {
                           value={draft.bankName ?? ""}
                           onChange={(e) =>
                             setEditing((prev) =>
-                              prev ? { ...prev, bankName: e.target.value } : prev
+                              prev
+                                ? { ...prev, bankName: e.target.value }
+                                : prev,
                             )
                           }
                           placeholder="Bank name"
@@ -424,7 +426,7 @@ function WealthInstrumentsContent() {
                                     ...prev,
                                     currency: e.target.value.toUpperCase(),
                                   }
-                                : prev
+                                : prev,
                             )
                           }
                         />
@@ -442,7 +444,7 @@ function WealthInstrumentsContent() {
                             setEditing((prev) =>
                               prev
                                 ? { ...prev, principal: Number(e.target.value) }
-                                : prev
+                                : prev,
                             )
                           }
                         />
@@ -463,7 +465,7 @@ function WealthInstrumentsContent() {
                                     ...prev,
                                     annualRatePercent: Number(e.target.value),
                                   }
-                                : prev
+                                : prev,
                             )
                           }
                         />
@@ -484,7 +486,7 @@ function WealthInstrumentsContent() {
                                     ...prev,
                                     termMonths: Number(e.target.value),
                                   }
-                                : prev
+                                : prev,
                             )
                           }
                         />
@@ -501,7 +503,7 @@ function WealthInstrumentsContent() {
                             setEditing((prev) =>
                               prev
                                 ? { ...prev, startDate: e.target.value }
-                                : prev
+                                : prev,
                             )
                           }
                         />
@@ -519,7 +521,9 @@ function WealthInstrumentsContent() {
                           value={draft.revenueFrequency ?? ""}
                           onChange={(e) =>
                             setEditing((prev) =>
-                              prev ? { ...prev, revenueFrequency: e.target.value } : prev
+                              prev
+                                ? { ...prev, revenueFrequency: e.target.value }
+                                : prev,
                             )
                           }
                         >
@@ -529,7 +533,9 @@ function WealthInstrumentsContent() {
                           <option value="yearly">Yearly</option>
                         </select>
                       ) : (
-                        draft.revenueFrequency || <span className="opacity-60">-</span>
+                        draft.revenueFrequency || (
+                          <span className="opacity-60">-</span>
+                        )
                       )}
                     </td>
                     <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-[var(--gaia-text-strong)]">
@@ -548,10 +554,10 @@ function WealthInstrumentsContent() {
                                     ? {
                                         ...prev,
                                         instruments: prev.instruments.filter(
-                                          (i) => i.id !== inst.id
+                                          (i) => i.id !== inst.id,
                                         ),
                                       }
-                                    : prev
+                                    : prev,
                                 );
                               }
                               setEditing(null);
@@ -591,7 +597,7 @@ function WealthInstrumentsContent() {
 
                               const instrumentsNext = state.instruments.slice();
                               const existingIdx = instrumentsNext.findIndex(
-                                (i) => i.id === payload.id
+                                (i) => i.id === payload.id,
                               );
                               if (existingIdx >= 0) {
                                 instrumentsNext[existingIdx] = payload;
@@ -622,7 +628,7 @@ function WealthInstrumentsContent() {
                                 setIsNew(false);
                               } catch (err: any) {
                                 setError(
-                                  err?.message ?? "Failed to save certificate."
+                                  err?.message ?? "Failed to save certificate.",
                                 );
                               } finally {
                                 setSaving(false);
@@ -649,11 +655,14 @@ function WealthInstrumentsContent() {
                             aria-label="Delete certificate"
                             className="inline-flex items-center justify-center rounded-full border border-rose-400/60 px-2 py-1 text-[11px] text-rose-600 hover:border-rose-500"
                             onClick={async () => {
-                              if (!state) return;
                               const next: WealthState = {
                                 ...state,
-                                instruments: state.instruments.filter((i) => i.id !== inst.id),
-                                flows: state.flows.filter((flow) => flow.instrumentId !== inst.id),
+                                instruments: state.instruments.filter(
+                                  (i) => i.id !== inst.id,
+                                ),
+                                flows: state.flows.filter(
+                                  (flow) => flow.instrumentId !== inst.id,
+                                ),
                               };
                               try {
                                 await saveWealthStateWithRemote(next);
@@ -663,7 +672,10 @@ function WealthInstrumentsContent() {
                                   setIsNew(false);
                                 }
                               } catch (err: any) {
-                                setError(err?.message ?? "Failed to delete certificate.");
+                                setError(
+                                  err?.message ??
+                                    "Failed to delete certificate.",
+                                );
                               }
                             }}
                           >

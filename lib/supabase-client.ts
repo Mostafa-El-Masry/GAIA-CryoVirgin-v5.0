@@ -11,7 +11,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const isSupabaseClientConfigured = Boolean(
-  supabaseUrl && supabaseAnonKey
+  supabaseUrl && supabaseAnonKey,
 );
 
 let supabaseClient: SupabaseClient | null = null;
@@ -19,12 +19,19 @@ let supabaseClient: SupabaseClient | null = null;
 function getSupabaseBrowserClient(): SupabaseClient {
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
-      "Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      "Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY",
     );
   }
 
   if (!supabaseClient) {
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce",
+      },
+    });
   }
 
   return supabaseClient;
@@ -98,7 +105,7 @@ export async function signOut() {
  */
 export async function authenticatedFetch(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ) {
   const client = getSupabaseBrowserClient();
   const session = await getSession();
@@ -184,7 +191,7 @@ export async function fetchStock(locationId?: string, productId?: string) {
  * Subscribe to authentication state changes
  */
 export function onAuthStateChange(
-  callback: (event: string, session: any) => void
+  callback: (event: string, session: any) => void,
 ) {
   const client = getSupabaseBrowserClient();
   const {

@@ -30,12 +30,12 @@ export const DEFAULT_PLAN_DEFINITIONS: WealthLevelDefinition[] = [
     order: 1,
     minSavings: 50000,
     minMonthlyRevenue: 1000,
-    description: `This level is about not collapsing.
-You are not building a life yet — you are protecting it.
-Discipline here is quiet and invisible.`,
+    description: `Income: 1,000 EGP
+Savings: 50,000 EGP
+Active Project: 100 JavaScript Projects`,
     survivability: "❌ Suffocating",
-    allowedEnrichment: "0% (Every pound is defensive.)",
-    calendarsUnlocked: "❌ None",
+    allowedEnrichment: "0%",
+    calendarsUnlocked: "None",
   },
   {
     id: "L2",
@@ -44,12 +44,12 @@ Discipline here is quiet and invisible.`,
     order: 2,
     minSavings: 120000,
     minMonthlyRevenue: 2000,
-    description: `Your body comes first.
-Stabilizing food and insulin reduces chaos everywhere else.
-This is the first act of self-respect.`,
+    description: `Income: 2,000 EGP
+Savings: 120,000 EGP
+Active Project: Inventory Management System`,
     survivability: "❌ Suffocating",
-    allowedEnrichment: "5% (≈100 EGP)",
-    calendarsUnlocked: "✅ Food & Insulin Calendar",
+    allowedEnrichment: "5%",
+    calendarsUnlocked: "Food & Insulin",
   },
   {
     id: "L3",
@@ -58,12 +58,12 @@ This is the first act of self-respect.`,
     order: 3,
     minSavings: 250000,
     minMonthlyRevenue: 4000,
-    description: `You are still poor, but no longer stagnant.
-You invest in skills because future income is the exit.
-Hope becomes structured.`,
+    description: `Income: 4,000 EGP
+Savings: 250,000 EGP
+Active Project: HR System`,
     survivability: "❌ Unsafe",
-    allowedEnrichment: "10% (≈400 EGP)",
-    calendarsUnlocked: "✅ Learning Calendar",
+    allowedEnrichment: "10%",
+    calendarsUnlocked: "Learning",
   },
   {
     id: "L4",
@@ -72,12 +72,12 @@ Hope becomes structured.`,
     order: 4,
     minSavings: 400000,
     minMonthlyRevenue: 8000,
-    description: `Strength becomes necessary, not optional.
-Your body stops being neglected.
-Energy starts to rise.`,
+    description: `Income: 8,000 EGP
+Savings: 400,000 EGP
+Active Project: BOS / POS System`,
     survivability: "⚠️ Near survival",
-    allowedEnrichment: "15% (≈1,200 EGP)",
-    calendarsUnlocked: "✅ Workout / Physical Training Calendar",
+    allowedEnrichment: "15%",
+    calendarsUnlocked: "Workout",
   },
   {
     id: "L5",
@@ -86,12 +86,12 @@ Energy starts to rise.`,
     order: 5,
     minSavings: 700000,
     minMonthlyRevenue: 16000,
-    description: `You protect rest like income.
-Burnout is no longer allowed.
-Life becomes sustainable.`,
+    description: `Income: 16,000 EGP
+Savings: 700,000 EGP
+Active Project: Accounting System`,
     survivability: "✅ Surviving",
-    allowedEnrichment: "20% (≈3,200 EGP)",
-    calendarsUnlocked: "✅ Sleep & Recovery Calendar",
+    allowedEnrichment: "20%",
+    calendarsUnlocked: "Sleep & Recovery",
   },
   {
     id: "L6",
@@ -100,12 +100,12 @@ Life becomes sustainable.`,
     order: 6,
     minSavings: 1200000,
     minMonthlyRevenue: 32000,
-    description: `You stop surviving your thoughts.
-Healing becomes intentional.
-You begin living inside your body, not outside it.`,
+    description: `Income: 32,000 EGP
+Savings: 1,200,000 EGP
+Active Project: Budgeting & Forecasting System`,
     survivability: "🌱 Begin to enjoy",
-    allowedEnrichment: "30% (≈9,600 EGP)",
-    calendarsUnlocked: "✅ Mental Health / Emotional Regulation Calendar",
+    allowedEnrichment: "30%",
+    calendarsUnlocked: "Mental Health",
   },
   {
     id: "L7",
@@ -114,12 +114,12 @@ You begin living inside your body, not outside it.`,
     order: 7,
     minSavings: 2500000,
     minMonthlyRevenue: 64000,
-    description: `Your mind expands beyond urgency.
-You read to grow, not escape.
-Wisdom starts compounding.`,
+    description: `Income: 64,000 EGP
+Savings: 2,500,000 EGP
+Active Project: Cashflow & Treasury System`,
     survivability: "✅ Comfortable",
-    allowedEnrichment: "40% (≈25,600 EGP)",
-    calendarsUnlocked: "✅ Reading & Deep Thinking Calendar",
+    allowedEnrichment: "40%",
+    calendarsUnlocked: "Reading & Deep Thinking",
   },
   {
     id: "L8",
@@ -128,12 +128,12 @@ Wisdom starts compounding.`,
     order: 8,
     minSavings: 5000000,
     minMonthlyRevenue: 128000,
-    description: `You invest in people intentionally.
-Boundaries replace obligation.
-Connection becomes nourishing.`,
+    description: `Income: 128,000 EGP
+Savings: 5,000,000 EGP
+Active Project: Assets & Depreciation System`,
     survivability: "🟢 Very secure",
-    allowedEnrichment: "50% (≈64,000 EGP)",
-    calendarsUnlocked: "✅ Relationships & Social Health Calendar",
+    allowedEnrichment: "50%",
+    calendarsUnlocked: "Relationships",
   },
   {
     id: "L9",
@@ -142,12 +142,12 @@ Connection becomes nourishing.`,
     order: 9,
     minSavings: 10000000,
     minMonthlyRevenue: 256000,
-    description: `You ask “why” more than “how much.”
-Your actions start to ripple outward.
-Life gains depth.`,
+    description: `Income: 256,000 EGP
+Savings: 10,000,000 EGP
+Active Project: Compliance & Audit System`,
     survivability: "🟢 Abundant",
-    allowedEnrichment: "55% (≈140,800 EGP)",
-    calendarsUnlocked: "✅ Purpose / Meaning / Contribution Calendar",
+    allowedEnrichment: "55%",
+    calendarsUnlocked: "Purpose & Meaning",
   },
   {
     id: "L10",
@@ -156,12 +156,12 @@ Life gains depth.`,
     order: 10,
     minSavings: 20000000,
     minMonthlyRevenue: 512000,
-    description: `You are no longer waiting for life to begin.
-You are shaping it.
-Money serves meaning.`,
+    description: `Income: 512,000 EGP
+Savings: 20,000,000+ EGP
+Active Project: Reporting & Intelligence System`,
     survivability: "🟢 Untouchable",
-    allowedEnrichment: "60% (≈307,200 EGP)",
-    calendarsUnlocked: "✅ Legacy / Creation / Long-Term Vision Calendar",
+    allowedEnrichment: "60%",
+    calendarsUnlocked: "Legacy & Creation",
   },
 ];
 
@@ -184,7 +184,7 @@ function getCachedEgpPerKwd(): number | null {
 function resolveConversionRate(
   primaryCurrency: string,
   planCurrency: string,
-  fxRate?: number
+  fxRate?: number,
 ): number {
   if (primaryCurrency === planCurrency) return 1;
   if (planCurrency === "EGP" && primaryCurrency === "KWD") {
@@ -200,7 +200,7 @@ function getConversionRateForCurrency(
   fromCurrency: string,
   planCurrency: string,
   primaryCurrency: string,
-  fxRate?: number
+  fxRate?: number,
 ): number | null {
   if (fromCurrency === planCurrency) return 1;
   if (fromCurrency === primaryCurrency) {
@@ -216,7 +216,7 @@ function getConversionRateForCurrency(
 }
 
 function mergePlanDefinitions(
-  overrides: WealthLevelDefinition[] | null
+  overrides: WealthLevelDefinition[] | null,
 ): WealthLevelDefinition[] {
   if (!Array.isArray(overrides) || overrides.length === 0) {
     return [...DEFAULT_PLAN_DEFINITIONS].sort((a, b) => a.order - b.order);
@@ -247,7 +247,7 @@ function mergePlanDefinitions(
       minSavings: normalizeNumber(override.minSavings, def.minSavings ?? 0),
       minMonthlyRevenue: normalizeNumber(
         override.minMonthlyRevenue,
-        def.minMonthlyRevenue ?? 0
+        def.minMonthlyRevenue ?? 0,
       ),
     };
   }).sort((a, b) => a.order - b.order);
@@ -259,13 +259,13 @@ export function getPlanDefinitions(): WealthLevelDefinition[] {
   }
   const stored = readJSON<WealthLevelDefinition[] | null>(
     PLANS_STORAGE_KEY,
-    null
+    null,
   );
   return mergePlanDefinitions(stored);
 }
 
 export function savePlanDefinitions(
-  levels: WealthLevelDefinition[]
+  levels: WealthLevelDefinition[],
 ): WealthLevelDefinition[] {
   const merged = mergePlanDefinitions(levels);
   writeJSON(PLANS_STORAGE_KEY, merged);
@@ -291,7 +291,7 @@ function flowsForMonth(flows: WealthFlow[], monthKey: MonthKey): WealthFlow[] {
 
 export function buildLevelsSnapshot(
   overview: WealthOverview,
-  options: PlanSnapshotOptions = {}
+  options: PlanSnapshotOptions = {},
 ): WealthLevelsSnapshot {
   const today = getTodayInKuwait();
   const monthKey = toMonthKey(today);
@@ -300,7 +300,7 @@ export function buildLevelsSnapshot(
   const conversionRate = resolveConversionRate(
     overview.primaryCurrency,
     planCurrency,
-    options.fxRate
+    options.fxRate,
   );
   const toPlanCurrency = (value: number) => value * conversionRate;
 
@@ -309,9 +309,9 @@ export function buildLevelsSnapshot(
   // Estimate monthly expenses in primary currency
   const monthlyExpensesPrimary = sumBy(
     flowsThisMonth.filter(
-      (f) => f.kind === "expense" && f.currency === overview.primaryCurrency
+      (f) => f.kind === "expense" && f.currency === overview.primaryCurrency,
     ),
-    (f) => f.amount
+    (f) => f.amount,
   );
   const monthlyExpenses = toPlanCurrency(monthlyExpensesPrimary);
 
@@ -322,7 +322,7 @@ export function buildLevelsSnapshot(
       inst.currency,
       planCurrency,
       overview.primaryCurrency,
-      options.fxRate
+      options.fxRate,
     );
     if (!rate) continue;
     totalInstrumentSavings += inst.principal * rate;

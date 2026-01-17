@@ -185,7 +185,11 @@ const PROJECTION_COLUMN_WIDTHS: Record<ProjectionColumnKey, string> = {
 export default function WealthProjectionsPage() {
   const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
 
-  const [state, setState] = useState<WealthState | null>(null);
+  const [state, setState] = useState<WealthState>({
+    accounts: [],
+    instruments: [],
+    flows: [],
+  });
   const [horizon, setHorizon] = useState<(typeof HORIZON_OPTIONS)[number]>(12);
   const [expandedYear, setExpandedYear] = useState<number | null>(null);
   const [collapsingYear, setCollapsingYear] = useState<number | null>(null);
@@ -221,7 +225,7 @@ export default function WealthProjectionsPage() {
     "KWD";
   const columnCount = projectionColumns.length;
   const [fiveYearRates, setFiveYearRates] = useState<YearRate[]>(() =>
-    loadRates()
+    loadRates(),
   );
 
   useEffect(() => {
@@ -272,25 +276,25 @@ export default function WealthProjectionsPage() {
 
     const totalPrincipal = projectionInstruments.reduce(
       (sum, inst) => sum + inst.principal,
-      0
+      0,
     );
     if (totalPrincipal <= 0) return [] as AgeProjectionRow[];
     const baseRate =
       projectionInstruments.reduce(
         (sum, inst) => sum + inst.principal * inst.annualRatePercent,
-        0
+        0,
       ) / totalPrincipal;
     let reinvestBucket = 0;
 
     const startDate = new Date(
-      Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1)
+      Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1),
     );
     const endDate = new Date(
       Date.UTC(
         BIRTH_DATE_UTC.getUTCFullYear() + 60,
         BIRTH_DATE_UTC.getUTCMonth(),
-        1
-      )
+        1,
+      ),
     );
     const rowsByYear = new Map<number, AgeProjectionRow>();
 
@@ -298,7 +302,7 @@ export default function WealthProjectionsPage() {
       let cursor = new Date(startDate);
       cursor <= endDate;
       cursor = new Date(
-        Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1)
+        Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1),
       )
     ) {
       const year = cursor.getUTCFullYear();
@@ -320,7 +324,7 @@ export default function WealthProjectionsPage() {
       const monthAge = calculateAge(cursor, BIRTH_DATE_UTC);
       const startPrincipal = projectionInstruments.reduce(
         (sum, inst) => sum + inst.principal,
-        0
+        0,
       );
       const startBalance = startPrincipal + reinvestBucket;
       const bucketTotal = reinvestBucket + monthlyRevenue;
@@ -411,19 +415,9 @@ export default function WealthProjectionsPage() {
     return map;
   }, [instruments, horizon, today, fiveYearRates]);
 
-  if (!state) {
-    return (
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-slate-100">
-        <section className={`${surface} p-6 text-sm text-slate-300`}>
-          Loading your investments and projections...
-        </section>
-      </main>
-    );
-  }
-
   const getCellClasses = (
     key: ProjectionColumnKey,
-    isMonth: boolean
+    isMonth: boolean,
   ): string => {
     const align = key === "year" || key === "age" ? "" : "text-right";
     const base = isMonth ? "py-2" : "py-3";
@@ -481,7 +475,7 @@ export default function WealthProjectionsPage() {
 
   const renderMonthCell = (
     key: ProjectionColumnKey,
-    month: AgeProjectionRow["months"][number]
+    month: AgeProjectionRow["months"][number],
   ) => {
     switch (key) {
       case "year":
@@ -509,7 +503,7 @@ export default function WealthProjectionsPage() {
 
   const handleColumnDrop = (
     sourceKey: ProjectionColumnKey,
-    targetKey: ProjectionColumnKey
+    targetKey: ProjectionColumnKey,
   ) => {
     if (sourceKey === targetKey) return;
     setProjectionColumns((prev) => {
@@ -677,7 +671,7 @@ export default function WealthProjectionsPage() {
                 const total = estimateTotalInterestOverHorizon(
                   inst,
                   horizon,
-                  today
+                  today,
                 );
                 const endMonth = instrumentEndMonth(inst);
                 const endDate = computeEndDate(inst.startDate, inst.termMonths);
@@ -787,7 +781,7 @@ export default function WealthProjectionsPage() {
                         const source =
                           draggingColumn ||
                           (event.dataTransfer.getData(
-                            "text/plain"
+                            "text/plain",
                           ) as ProjectionColumnKey);
                         if (source) {
                           handleColumnDrop(source, key);
@@ -831,14 +825,14 @@ export default function WealthProjectionsPage() {
                         idx === 0
                           ? "rounded-l-xl"
                           : idx === projectionColumns.length - 1
-                          ? "rounded-r-xl"
-                          : "";
+                            ? "rounded-r-xl"
+                            : "";
                       return (
                         <td
                           key={key}
                           className={`${getCellClasses(
                             key,
-                            false
+                            false,
                           )} ${rounding}`}
                         >
                           {renderYearCell(key, row)}
@@ -879,15 +873,15 @@ export default function WealthProjectionsPage() {
                                       colIdx === 0
                                         ? "rounded-l-xl"
                                         : colIdx ===
-                                          projectionColumns.length - 1
-                                        ? "rounded-r-xl"
-                                        : "";
+                                            projectionColumns.length - 1
+                                          ? "rounded-r-xl"
+                                          : "";
                                     return (
                                       <td
                                         key={key}
                                         className={`${getCellClasses(
                                           key,
-                                          true
+                                          true,
                                         )} ${rounding}`}
                                       >
                                         {renderMonthCell(key, month)}

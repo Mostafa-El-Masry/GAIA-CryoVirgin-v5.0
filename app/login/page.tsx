@@ -1,17 +1,14 @@
 import LoginClient from "./LoginClient";
 
 interface LoginPageProps {
-  searchParams:
-    | URLSearchParams
-    | { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default function LoginPage({ searchParams }: LoginPageProps) {
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolvedSearchParams = await searchParams;
   const modeParam =
-    searchParams instanceof URLSearchParams
-      ? searchParams.get("mode")
-      : typeof searchParams?.mode === "string"
-      ? searchParams.mode
+    typeof resolvedSearchParams?.mode === "string"
+      ? resolvedSearchParams.mode
       : undefined;
   const initialMode = modeParam === "signup" ? "signup" : "signin";
 
