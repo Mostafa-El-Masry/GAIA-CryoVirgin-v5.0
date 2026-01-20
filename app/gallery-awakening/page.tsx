@@ -5,7 +5,6 @@ import { Space_Grotesk } from "next/font/google";
 import { mockMediaItems } from "./mockMedia";
 import type { MediaItem } from "./mediaTypes";
 import { MediaGrid } from "./components/MediaGrid";
-import { MediaLightbox } from "./components/MediaLightbox";
 import { useGalleryData } from "./useGalleryData";
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import { hasR2PublicBase } from "./r2";
@@ -48,6 +47,7 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   });
   const [page, setPage] = useState<number>(1);
   const [shuffleSeed] = useState(() => Math.random().toString(36).slice(2, 10));
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
   const [titleOverrides, setTitleOverrides] = useState<Record<string, string>>(
     () => {
       if (typeof window === "undefined") return {};
@@ -57,7 +57,7 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
       } catch {
         return {};
       }
-    }
+    },
   );
   const [hiddenIds, setHiddenIds] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
@@ -74,7 +74,7 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     try {
       window.localStorage.setItem(
         "gaia_gallery_local_items_v1",
-        JSON.stringify(localNewItems)
+        JSON.stringify(localNewItems),
       );
     } catch {
       // ignore
@@ -92,7 +92,7 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
             // strip extensions from synthetic title overrides for display
             slug: item.slug,
           }
-        : item
+        : item,
     );
     const withThumbs = withTitles.map((item) => {
       if (item.type !== "video") return item;
@@ -145,6 +145,42 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   const allowDelete =
     isCreatorAdmin(userEmail) || Boolean((permissions as any).galleryDelete);
 
+  const videosArray = useMemo(() => {
+    return shuffledItems.filter((item) => item.type === "video");
+  }, [shuffledItems]);
+
+  const handleNextVideo = () => {
+    if (!currentVideoId) return;
+    const currentIndex = videosArray.findIndex(
+      (video) => video.id === currentVideoId,
+    );
+    if (currentIndex < videosArray.length - 1) {
+      const nextVideo = videosArray[currentIndex + 1];
+      setCurrentVideoId(nextVideo.id);
+      // Scroll to the next video card
+      const element = document.getElementById(`media-card-${nextVideo.id}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  };
+
+  const handlePrevVideo = () => {
+    if (!currentVideoId) return;
+    const currentIndex = videosArray.findIndex(
+      (video) => video.id === currentVideoId,
+    );
+    if (currentIndex > 0) {
+      const prevVideo = videosArray[currentIndex - 1];
+      setCurrentVideoId(prevVideo.id);
+      // Scroll to the previous video card
+      const element = document.getElementById(`media-card-${prevVideo.id}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  };
+
   const handleDeleteItem = (id: string) => {
     setHiddenIds((prev) => {
       const next = Array.from(new Set([...prev, id]));
@@ -152,7 +188,7 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
         if (typeof window !== "undefined") {
           window.localStorage.setItem(
             "gaia_gallery_hidden",
-            JSON.stringify(next)
+            JSON.stringify(next),
           );
         }
       } catch {
@@ -169,7 +205,7 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
         if (typeof window !== "undefined") {
           window.localStorage.setItem(
             "gaia_gallery_titles",
-            JSON.stringify(next)
+            JSON.stringify(next),
           );
         }
       } catch {
@@ -178,13 +214,6 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
       return next;
     });
   };
-
-  const [lightboxActiveId, setLightboxActiveId] = useState<string | null>(null);
-  const openPreview = (item: MediaItem) => {
-    setLightboxActiveId(item.id);
-  };
-  const closePreview = () => setLightboxActiveId(null);
-  const changePreview = (id: string) => setLightboxActiveId(id);
 
   if (!isHydrated) {
     return null;
@@ -205,20 +234,16 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
               allowDelete={allowDelete}
               onDeleteItem={handleDeleteItem}
               onRenameItem={handleRenameItem}
-              onPreview={openPreview}
               maxVisibleItems={allowedGalleryMediaCount}
+              allItems={shuffledItems}
+              onNextVideo={handleNextVideo}
+              onPrevVideo={handlePrevVideo}
+              currentVideoId={currentVideoId}
+              onSetCurrentVideo={setCurrentVideoId}
             />
           </section>
         </div>
       </section>
-      {lightboxActiveId ? (
-        <MediaLightbox
-          items={shuffledItems}
-          activeId={lightboxActiveId}
-          onClose={closePreview}
-          onChange={changePreview}
-        />
-      ) : null}
     </main>
   );
 };

@@ -5,8 +5,20 @@ const MOBILE_UA =
 const PUBLIC_FILE =
   /\.(?:css|js|json|map|txt|xml|ico|png|jpe?g|gif|svg|webp)$/i;
 
+const PROTECTED = ["/dashboard", "/archives", "/settings"];
+const ADMIN = ["/admin"];
+
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  // Auth checks first
+  const session = request.cookies.get("gaia.session");
+  const needsAuth = PROTECTED.some((p) => pathname.startsWith(p));
+  const needsAdmin = ADMIN.some((p) => pathname.startsWith(p));
+
+  if ((needsAuth || needsAdmin) && !session) {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
 
   if (
     pathname.startsWith("/_next") ||

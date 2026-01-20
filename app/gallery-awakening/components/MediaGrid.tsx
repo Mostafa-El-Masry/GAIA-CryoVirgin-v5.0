@@ -15,7 +15,11 @@ interface MediaGridProps {
   allowDelete?: boolean;
   onDeleteItem?: (id: string) => void;
   onRenameItem?: (id: string, nextTitle: string) => void;
-  onPreview?: (item: MediaItem) => void;
+  allItems?: MediaItem[];
+  onNextVideo?: () => void;
+  onPrevVideo?: () => void;
+  currentVideoId?: string | null;
+  onSetCurrentVideo?: (id: string) => void;
 }
 
 export const MediaGrid: React.FC<MediaGridProps> = ({
@@ -29,7 +33,11 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
   allowDelete = false,
   onDeleteItem,
   onRenameItem,
-  onPreview,
+  allItems = [],
+  onNextVideo,
+  onPrevVideo,
+  currentVideoId,
+  onSetCurrentVideo,
 }) => {
   const filtered = useMemo(() => {
     if (!typeFilter) return items;
@@ -76,15 +84,7 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
 
       <div className="mx-auto flex max-w-3xl flex-col gap-6 lg:max-w-4xl">
         {paged.map((item) => (
-          <MediaCard
-            key={item.id}
-            item={item}
-            onPreview={() => onPreview?.(item)}
-            variant="feed"
-            allowDelete={allowDelete}
-            onDelete={() => onDeleteItem?.(item.id)}
-            onRename={(nextTitle) => onRenameItem?.(item.id, nextTitle)}
-          />
+          <MediaCard key={item.id} item={item} />
         ))}
       </div>
 

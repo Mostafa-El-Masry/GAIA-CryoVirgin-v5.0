@@ -1,36 +1,72 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 const SESSION_COOKIE = "gaia.session";
 
-export async function getSession() {
+export type GaiaSession = {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  ua_hash: string;
+  ip_hash: string;
+};
+
+export async function getSession(): Promise<GaiaSession | null> {
   const cookieStore = await cookies();
-  const cookie = cookieStore.get(SESSION_COOKIE);
-  if (!cookie) return null;
+  const raw = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!raw) return null;
 
   try {
-    const session = JSON.parse(cookie.value);
-    if (!session.access_token || !session.expires_at) return null;
-    if (Date.now() / 1000 > session.expires_at) return null;
-    return session;
+    const s = JSON.parse(raw) as GaiaSession;
+
+    const headersStore = await headers();
+    const ua = headersStore.get("user-agent") ?? "";
+    const ip = headersStore.get("x-forwarded-for") ?? "";
+
+    const uaHash = crypto.createHash("sha256").update(ua).digest("hex");
+    const ipHash = crypto.createHash("sha256").update(ip).digest("hex");
+
+    if (uaHash !== s.ua_hash || ipHash !== s.ip_hash) return null;
+
+    return s;
   } catch {
     return null;
   }
 }
 
-export async function createSupabaseUserClient() {
-  const session = await getSession();
-  if (!session) return null;
+export function isExpired(s: GaiaSession) {
+  return Date.now() / 1000 > s.expires_at - 30;
+}
 
-  return createClient(
+export async function rotateSession(s: GaiaSession) {
+  const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
+
+  const { data } = await supabase.auth.refreshSession({
+    refresh_token: s.refresh_token,
+  });
+
+  if (!data?.session) return null;
+
+  const cookieStore = await cookies();
+  cookieStore.set(
+    SESSION_COOKIE,
+    JSON.stringify({
+      ...s,
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      expires_at: data.session.expires_at,
+    }),
     {
-      global: {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      },
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/",
     },
   );
+
+  return data.session;
 }
