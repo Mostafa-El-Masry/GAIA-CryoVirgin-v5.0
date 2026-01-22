@@ -10,9 +10,15 @@ export type AutoTagResult = {
 
 const KEYWORD_GROUPS: Array<{ tag: string; keywords: string[] }> = [
   { tag: "travel", keywords: ["trip", "travel", "vacation", "journey"] },
-  { tag: "family", keywords: ["family", "kids", "mom", "dad", "sister", "brother"] },
+  {
+    tag: "family",
+    keywords: ["family", "kids", "mom", "dad", "sister", "brother"],
+  },
   { tag: "work", keywords: ["work", "office", "project", "client"] },
-  { tag: "nature", keywords: ["mountain", "forest", "lake", "sunset", "sunrise"] },
+  {
+    tag: "nature",
+    keywords: ["mountain", "forest", "lake", "sunset", "sunrise"],
+  },
   { tag: "city", keywords: ["city", "urban", "street"] },
   { tag: "event", keywords: ["party", "wedding", "birthday", "festival"] },
 ];
@@ -31,7 +37,7 @@ export function deriveAutoTags(item: GalleryItem): AutoTagResult {
       item.r2Path,
       item.localPath,
       (item.tags ?? []).join(" "),
-    ].join(" ")
+    ].join(" "),
   );
 
   KEYWORD_GROUPS.forEach(({ tag, keywords }) => {
@@ -44,7 +50,7 @@ export function deriveAutoTags(item: GalleryItem): AutoTagResult {
   if (item.type === "video") tags.add("video");
   if (item.type === "image") tags.add("image");
 
-  (item.tags ?? []).forEach((tag) => {
+  (item.tags ?? []).forEach((tag: string) => {
     if (tag) tags.add(tag);
   });
 

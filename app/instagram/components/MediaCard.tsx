@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import type { MediaItem } from "../mediaTypes";
-import "../gallery.css";
+import "../instagram.css";
 
 type MediaCardProps = {
   item: MediaItem;

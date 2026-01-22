@@ -25,7 +25,7 @@ export function MediaMeta({ mediaId }: { mediaId: string }) {
           {people.map((p) => (
             <Link
               key={p.id}
-              href={`/gallery-awakening/people/${p.id}`}
+              href={`/instagram/people/${p.id}`}
               className="px-2 py-1 bg-white/10 rounded-full hover:bg-white/20"
             >
               {p.name}

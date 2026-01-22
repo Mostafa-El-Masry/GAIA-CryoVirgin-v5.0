@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import type { AutoBoxResult } from "@/app/gallery-awakening/featureLogic";
-import type { MediaItem } from "@/app/gallery-awakening/mediaTypes";
-import { getAutoBoxResult } from "@/app/gallery-awakening/featureLogic";
-import { MediaCard } from "@/app/gallery-awakening/components/MediaCard";
+import type { AutoBoxResult } from "@/app/instagram/featureLogic";
+import type { MediaItem } from "@/app/instagram/mediaTypes";
+import { getAutoBoxResult } from "@/app/instagram/featureLogic";
+import { MediaCard } from "@/app/instagram/components/MediaCard";
 
 interface GalleryApiResponse {
   items: MediaItem[];
@@ -203,7 +203,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
           )}
         </div>
         <a
-          href="/gallery-awakening"
+          href="/instagram"
           className="inline-flex items-center justify-center rounded-md border border-primary/60 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/20"
         >
           Open Gallery

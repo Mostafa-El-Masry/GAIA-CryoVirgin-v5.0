@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { gallerySupabase } from "@/lib/gallery/db";
-import { createEmbedMediaItem, extractEmbedSrc } from "@/app/gallery-awakening/embed";
+import { createEmbedMediaItem, extractEmbedSrc } from "@/app/instagram/embed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     if (!embedUrl) {
       return NextResponse.json(
         { ok: false, error: "embedUrl is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -53,11 +53,13 @@ export async function POST(request: Request) {
           tags: item.tags ?? [],
           preview:
             item.thumbnails && item.thumbnails[0]
-              ? item.thumbnails[0].r2Key ?? item.thumbnails[0].localPath ?? null
+              ? (item.thumbnails[0].r2Key ??
+                item.thumbnails[0].localPath ??
+                null)
               : null,
           created_at: item.createdAt,
         },
-        { onConflict: "id" }
+        { onConflict: "id" },
       );
       if (error) {
         console.error("[gallery] failed to save embed in Supabase", error);
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
     console.error("[gallery] embed POST failed", err);
     return NextResponse.json(
       { ok: false, error: err?.message ?? "Failed to save embed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

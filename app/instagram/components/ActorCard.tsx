@@ -3,7 +3,7 @@ import Link from "next/link";
 export function ActorCard({ actor }: any) {
   return (
     <Link
-      href={`/gallery-awakening/people/${actor.id}`}
+      href={`/instagram/people/${actor.id}`}
       className="flex flex-col items-center gap-2 min-w-[84px] group transition-transform hover:-translate-y-1"
     >
       <div className="relative">

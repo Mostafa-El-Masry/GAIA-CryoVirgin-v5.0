@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import TodayStrip from '@/app/components/dashboard/TodayStrip';
-import HealthQuickCard from '@/app/components/dashboard/HealthQuickCard';
-import HealthNudgeClient from '@/app/components/dashboard/HealthNudgeClient';
-import DashboardFeatureCard from '@/app/gallery-awakening/components/DashboardFeatureCard';
-import GuardianTodayCard from '@/app/components/dashboard/GuardianTodayCard';
-import DashboardVersionBadge from '@/app/components/dashboard/DashboardVersionBadge';
+import React from "react";
+import TodayStrip from "@/app/components/dashboard/TodayStrip";
+import HealthQuickCard from "@/app/components/dashboard/HealthQuickCard";
+import HealthNudgeClient from "@/app/components/dashboard/HealthNudgeClient";
+import DashboardFeatureCard from "@/app/instagram/components/DashboardFeatureCard";
+import GuardianTodayCard from "@/app/components/dashboard/GuardianTodayCard";
+import DashboardVersionBadge from "@/app/components/dashboard/DashboardVersionBadge";
 
 interface DashboardCorePanelProps {
   className?: string;
@@ -34,7 +34,9 @@ interface DashboardCorePanelProps {
 // You can safely delete this file later if you prefer to wire
 // everything manually on the Dashboard.
 
-const DashboardCorePanel: React.FC<DashboardCorePanelProps> = ({ className = '' }) => {
+const DashboardCorePanel: React.FC<DashboardCorePanelProps> = ({
+  className = "",
+}) => {
   return (
     <section className={`space-y-4 ${className}`}>
       {/* Top row: TodayStrip + Version badge */}

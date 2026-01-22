@@ -170,7 +170,7 @@ const TodayStrip: React.FC<TodayStripProps> = ({ className = '' }) => {
           </a>
 
           {/* Gallery pill */}
-          <a href="/gallery-awakening" className={pillClasses}>
+          <a href="/instagram" className={pillClasses}>
             <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400" />
             <span className="font-semibold text-fuchsia-100">Gallery</span>
             {summary.gallery.hasFeature ? (

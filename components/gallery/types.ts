@@ -1,1 +1,1 @@
-export type { MediaItem as GalleryItem } from "@/app/gallery-awakening/mediaTypes";
+export type { MediaItem as GalleryItem } from "@/app/instagram/mediaTypes";

@@ -48,7 +48,7 @@ export function PeopleEditor({ mediaId }: { mediaId: string }) {
           {people.map((person) => (
             <Link
               key={person.id}
-              href={`/gallery-awakening/people/${person.id}`}
+              href={`/instagram/people/${person.id}`}
               className="text-xs text-blue-400 hover:underline"
             >
               {person.name}

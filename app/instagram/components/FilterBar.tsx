@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import "../gallery.css";
+import "../instagram.css";
 
 type FilterOption = "Latest" | "Oldest" | "Most Viewed";
 
