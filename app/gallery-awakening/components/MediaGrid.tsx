@@ -83,8 +83,8 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
       </header>
 
       <div className="mx-auto flex max-w-3xl flex-col gap-6 lg:max-w-4xl">
-        {paged.map((item) => (
-          <MediaCard key={item.id} item={item} />
+        {paged.map((item, index) => (
+          <MediaCard key={item.id} item={item} allItems={paged} index={index} />
         ))}
       </div>
 

@@ -5,9 +5,14 @@ import { Space_Grotesk } from "next/font/google";
 import { mockMediaItems } from "./mockMedia";
 import type { MediaItem } from "./mediaTypes";
 import { MediaGrid } from "./components/MediaGrid";
+import { ActorCard } from "./components/ActorCard";
+import { PageTransition } from "./components/PageTransition";
 import { useGalleryData } from "./useGalleryData";
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import { hasR2PublicBase } from "./r2";
+import { getMostViewed } from "./lib/discoveryStore";
+import { supabase } from "./lib/videoStore";
+import { getAllTags } from "./lib/tagStore";
 import { useCurrentPermissions, isCreatorAdmin } from "@/lib/permissions";
 import { useAuthSnapshot } from "@/lib/auth-client";
 
@@ -31,6 +36,45 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     setIsHydrated(true);
   }, []);
 
+  React.useEffect(() => {
+    getMostViewed().then((res) => {
+      // Transform Supabase records to MediaItem structure
+      const transformed = (res.data || []).map((item) => ({
+        id: item.id,
+        slug: item.id,
+        type: item.type || "image",
+        title: item.title || "Untitled",
+        description: item.description || "",
+        tags: [],
+        source:
+          item.type === "image"
+            ? "r2_image"
+            : item.embed_url
+              ? "embed"
+              : "r2_video",
+        r2Path: item.type === "image" ? undefined : item.src, // For videos, src might be r2 path
+        localPath: undefined,
+        embedUrl: item.embed_url,
+        embedHtml: item.embed_html,
+        createdAt: item.created_at || new Date().toISOString(),
+        updatedAt:
+          item.updated_at || item.created_at || new Date().toISOString(),
+        src: item.src, // Keep the full URL for getMediaUrl to handle
+      }));
+      setMostViewed(transformed);
+    });
+  }, []);
+
+  React.useEffect(() => {
+    supabase
+      .from("gallery_people")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then((res) => setActors(res.data || []));
+  }, []);
+  React.useEffect(() => {
+    getAllTags().then((res) => setTags(res.data || []));
+  }, []);
   const { items } = useGalleryData(mockMediaItems);
   const { profile, status } = useAuthSnapshot();
   const permissions = useCurrentPermissions();
@@ -48,6 +92,9 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   const [page, setPage] = useState<number>(1);
   const [shuffleSeed] = useState(() => Math.random().toString(36).slice(2, 10));
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
+  const [mostViewed, setMostViewed] = useState<any[]>([]);
+  const [actors, setActors] = useState<any[]>([]);
+  const [tags, setTags] = useState<any[]>([]);
   const [titleOverrides, setTitleOverrides] = useState<Record<string, string>>(
     () => {
       if (typeof window === "undefined") return {};
@@ -223,6 +270,57 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     <main className={`relative min-h-screen ${spaceGrotesk.className} gaia-bg`}>
       <section>
         <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-10 xl:max-w-[85vw]">
+          {/* Most Viewed */}
+          {mostViewed.length > 0 && (
+            <section className="space-y-3 pt-2 mb-8">
+              <h2 className="text-white text-lg">Most Viewed</h2>
+              <MediaGrid
+                title=""
+                items={mostViewed}
+                page={1}
+                perPage={12}
+                onPageChange={() => {}}
+                allowDelete={false}
+                onDeleteItem={() => {}}
+                onRenameItem={() => {}}
+                maxVisibleItems={12}
+                allItems={mostViewed}
+                onNextVideo={handleNextVideo}
+                onPrevVideo={handlePrevVideo}
+                currentVideoId={currentVideoId}
+                onSetCurrentVideo={setCurrentVideoId}
+              />
+            </section>
+          )}
+
+          {/* Actors */}
+          {actors.length > 0 && (
+            <section className="space-y-3 mb-8">
+              <h2 className="text-white text-lg">Actors</h2>
+              <div className="flex gap-4 overflow-x-auto py-3 px-1 scrollbar-hide">
+                {actors.map((a) => (
+                  <ActorCard key={a.id} actor={a} />
+                ))}
+              </div>
+            </section>
+          )}
+          {/* Tags */}
+          {tags.length > 0 && (
+            <section className="space-y-3 mb-8">
+              <h2 className="text-white text-lg">Tags</h2>
+              <div className="flex gap-2 flex-wrap">
+                {tags.map((t) => (
+                  <a
+                    key={t.id}
+                    href={`/gallery-awakening?tag=${t.name}`}
+                    className="px-3 py-1 text-xs border border-white/30 rounded-full text-white"
+                  >
+                    #{t.name}
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
           {/* BigShot grid */}
           <section className="space-y-3 pt-2">
             <MediaGrid
@@ -253,9 +351,11 @@ const GalleryAwakeningPage: React.FC = () => {
     useGaiaFeatureUnlocks();
 
   return (
-    <GalleryAwakeningContent
-      allowedGalleryMediaCount={allowedGalleryMediaCount}
-    />
+    <PageTransition>
+      <GalleryAwakeningContent
+        allowedGalleryMediaCount={allowedGalleryMediaCount}
+      />
+    </PageTransition>
   );
 };
 

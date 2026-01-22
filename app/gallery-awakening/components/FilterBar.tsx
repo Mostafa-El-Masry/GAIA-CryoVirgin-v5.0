@@ -1,51 +1,41 @@
-'use client';
+"use client";
 
-import React from 'react';
+import { useSearchParams } from "next/navigation";
 
-interface FilterBarProps {
-  availableTags: string[];
-  activeTags: string[];
-  onToggleTag: (tag: string) => void;
-}
+export function FilterBar() {
+  const params = useSearchParams();
+  const active = params.get("sort") || "latest";
 
-export const FilterBar: React.FC<FilterBarProps> = ({
-  availableTags,
-  activeTags,
-  onToggleTag,
-}) => {
+  const base =
+    "px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200";
+  const activeCls = "bg-white text-black shadow-md scale-105";
+  const inactiveCls =
+    "bg-white/10 text-white hover:bg-white/20 hover:scale-105";
+
   return (
-    <section className="space-y-3 rounded-3xl border border-base-300 bg-base-100 p-4 text-xs text-base-content shadow-inner shadow-base-200/70">
-      {availableTags.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-base-content/60">
-            <span>Tags</span>
-            {activeTags.length > 0 && (
-              <span className="rounded-full border border-primary/50 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
-                {activeTags.length} selected
-              </span>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {availableTags.map((tag) => {
-              const active = activeTags.includes(tag);
-              return (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => onToggleTag(tag)}
-                  className={`rounded-full px-2 py-0.5 text-[11px] transition ${
-                    active
-                      ? 'border border-primary/70 bg-primary/15 text-primary shadow-sm shadow-primary/20'
-                      : 'border border-base-300 bg-base-200 text-base-content hover:bg-base-300'
-                  }`}
-                >
-                  #{tag}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </section>
+    <div className="sticky top-16 z-30">
+      <div className="flex gap-2 items-center backdrop-blur-xl bg-black/40 p-2 rounded-full w-fit mx-auto shadow-lg">
+        <a
+          href="?sort=views"
+          className={`${base} ${active === "views" ? activeCls : inactiveCls}`}
+        >
+          Most Viewed
+        </a>
+
+        <a
+          href="?sort=latest"
+          className={`${base} ${active === "latest" ? activeCls : inactiveCls}`}
+        >
+          Latest
+        </a>
+
+        <a
+          href="?sort=oldest"
+          className={`${base} ${active === "oldest" ? activeCls : inactiveCls}`}
+        >
+          Oldest
+        </a>
+      </div>
+    </div>
   );
-};
+}

@@ -1,6 +1,18 @@
 {
     "chat.tools.terminal.autoApprove": {
         "timeout": true,
-        "mv": true
+        "mv": true,
+        "/^node -e \"console\\.log\\('R2_BASE:', process\\.env\\.NEXT_PUBLIC_GAIA_GALLERY_URL\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd e:\\\\GAIA-CryoVirgin-v5\\.0 ; node -e \"\nconst base = process\\.env\\.NEXT_PUBLIC_R2_PUBLIC_BASE_URL \\|\\| process\\.env\\.NEXT_PUBLIC_IMG_CDN_BASE \\|\\| process\\.env\\.NEXT_PUBLIC_GAIA_GALLERY_URL \\|\\| process\\.env\\.NEXT_PUBLIC_GAIA_GALLERY_FALLBACK;\nconsole\\.log\\('R2 Base URL:', base\\);\nconsole\\.log\\('Has base:', Boolean\\(base\\)\\);\n\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd e:\\\\GAIA-CryoVirgin-v5\\.0 ; node -p \"\nconst base = 'https://pub-3354a96a3d194a9c95c8e51e1b20944e\\.r2\\.dev';\nconst key = 'images/test\\.jpg';\nconst trimmedBase = base\\.replace\\(/\\\\\\\\/\\$/, ''\\);\nconst normalizedKey = key\\.replace\\(/\\^\\\\\\\\/\\+/, ''\\);\nconst url = \\\\`\\\\\\$\\{trimmedBase\\}/\\\\\\$\\{normalizedKey\\}\\\\`;\nconsole\\.log\\('Generated URL:', url\\);\n\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }

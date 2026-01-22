@@ -1,155 +1,132 @@
 "use client";
 
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useCallback,
-} from "react";
-import type { MediaItem } from "../mediaTypes";
+import { useRef, useCallback, useState } from "react";
 import { getR2Url, getR2PreviewUrl } from "../r2";
+import { ImagePreviewModal } from "./ImagePreviewModal";
+import { VideoModal } from "./VideoModal";
 
-/* ─────────────────────────────────────
-   CONFIG
-───────────────────────────────────── */
+function getMediaUrl(item: any): string {
+  // If it's already a full URL, use it
+  if (
+    item.src &&
+    (item.src.startsWith("http://") || item.src.startsWith("https://"))
+  ) {
+    return item.src;
+  }
 
-const PREVIEW_INTERVAL = 1200;
-const INTERSECTION_THRESHOLD = 0.35;
+  // Handle R2 paths
+  if (item.r2Path) {
+    return getR2Url(item.r2Path);
+  }
 
-/* ─────────────────────────────────────
-   TYPES
-───────────────────────────────────── */
+  // Handle local paths for videos
+  if (item.localPath && item.type === "video") {
+    // Assuming local videos are in /public/videos and localPath is the filename
+    return `/videos/${item.localPath.replace(/^\//, "")}`;
+  }
 
-type Props = {
-  item: MediaItem;
-};
+  // Handle other local paths
+  if (item.localPath) {
+    return item.localPath;
+  }
 
-/* ─────────────────────────────────────
-   COMPONENT
-───────────────────────────────────── */
+  // Fallback
+  return "/placeholder-gallery-image.png";
+}
 
-export function MediaCard({ item }: Props) {
-  const isVideo = item.type === "video";
-  const isImage = item.type === "image";
+export function MediaCard({ item, allItems, index }: any) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const [activeItem, setActiveItem] = useState<{ item: any; index: number } | null>(null);
 
-  const src = getR2Url(item.r2Path || "");
+  const mediaUrl = getMediaUrl(item);
+  const posterUrl =
+    item.type === "video" && item.thumbnails && item.thumbnails.length > 0
+      ? getR2PreviewUrl(item.thumbnails[0].r2Key)
+      : undefined;
 
-  const cardRef = useRef<HTMLDivElement | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [isVisible, setIsVisible] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [previewIndex, setPreviewIndex] = useState(0);
-
-  /* ─────────────────────────────────────
-     VIDEO PREVIEW SOURCES (VIDEO ONLY)
-  ───────────────────────────────────── */
-
-  const previewSources = useMemo(() => {
-    if (!isVideo) return [];
-    return (item.thumbnails ?? [])
-      .sort((a, b) => a.index - b.index)
-      .map((t) => getR2PreviewUrl(t.r2Key || ""))
-      .filter(Boolean);
-  }, [item, isVideo]);
-
-  const poster = previewSources[previewIndex] ?? previewSources[0] ?? undefined;
-
-  /* ─────────────────────────────────────
-     INTERSECTION OBSERVER
-  ───────────────────────────────────── */
-
-  useEffect(() => {
-    if (!cardRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold: INTERSECTION_THRESHOLD },
-    );
-
-    observer.observe(cardRef.current);
-    return () => observer.disconnect();
+  const onEnter = useCallback(() => {
+    setIsHovering(true);
   }, []);
 
-  /* ─────────────────────────────────────
-     PREVIEW CYCLING (DESKTOP + VIDEO ONLY)
-  ───────────────────────────────────── */
-
-  const shouldCycle =
-    isVideo && isVisible && isHovered && previewSources.length > 1;
-
-  useEffect(() => {
-    if (!shouldCycle) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = null;
-      setPreviewIndex(0);
-      return;
-    }
-
-    timerRef.current = setInterval(() => {
-      setPreviewIndex((i) => (i + 1) % previewSources.length);
-    }, PREVIEW_INTERVAL);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = null;
-    };
-  }, [shouldCycle, previewSources]);
-
-  /* ─────────────────────────────────────
-     HOVER HANDLERS (DESKTOP SAFE)
-  ───────────────────────────────────── */
-
-  const onMouseEnter = useCallback(() => {
-    if (window.matchMedia("(hover: hover)").matches) {
-      setIsHovered(true);
-    }
+  const onLeave = useCallback(() => {
+    setIsHovering(false);
   }, []);
 
-  const onMouseLeave = useCallback(() => {
-    setIsHovered(false);
-  }, []);
+  const handleClose = () => {
+    setActiveItem(null);
+  };
 
-  /* ─────────────────────────────────────
-     RENDER
-  ───────────────────────────────────── */
+  const handleNext = () => {
+    if (!activeItem) return;
+    const nextIndex = (activeItem.index + 1) % allItems.length;
+    setActiveItem({ item: allItems[nextIndex], index: nextIndex });
+  };
+
+  const handlePrev = () => {
+    if (!activeItem) return;
+    const prevIndex = (activeItem.index - 1 + allItems.length) % allItems.length;
+    setActiveItem({ item: allItems[prevIndex], index: prevIndex });
+  };
 
   return (
-    <div
-      ref={cardRef}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      className="relative w-full aspect-video rounded-lg overflow-hidden bg-black"
-    >
-      {/* IMAGE ONLY */}
-      {isImage && (
-        <img
-          src={src}
-          alt={item.title}
-          loading="lazy"
-          className="w-full h-full object-cover"
-        />
-      )}
-
-      {/* VIDEO ONLY (LAZY HYDRATION) */}
-      {isVideo && isVisible && (
-        <video
-          src={src}
-          poster={poster}
-          muted
-          playsInline
-          preload="metadata"
-          className="w-full h-full object-cover"
-        />
-      )}
-
-      {/* TITLE OVERLAY */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-        <p className="text-sm text-white truncate">{item.title}</p>
+    <>
+      <div
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
+        onClick={() => setActiveItem({ item, index })}
+        className="relative rounded-lg overflow-hidden bg-black/40 group cursor-pointer"
+      >
+        {item.type === "video" ? (
+          <>
+            <video
+              ref={videoRef}
+              src={mediaUrl}
+              poster={posterUrl}
+              muted
+              playsInline
+              preload="metadata"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            {isHovering && item.thumbnails && (
+              <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-px">
+                {item.thumbnails.map((thumb: any) => (
+                  <img
+                    key={thumb.r2Key}
+                    src={getR2PreviewUrl(thumb.r2Key)}
+                    className="w-full h-full object-cover"
+                    alt="video thumbnail"
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <img
+            src={mediaUrl}
+            alt={item.title || "Gallery image"}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        )}
       </div>
-    </div>
+      {activeItem && activeItem.item.type === "image" && (
+        <ImagePreviewModal
+          src={getMediaUrl(activeItem.item)}
+          title={activeItem.item.title}
+          mediaId={activeItem.item.id}
+          onClose={handleClose}
+          onNext={handleNext}
+          onPrev={handlePrev}
+        />
+      )}
+      {activeItem && activeItem.item.type === "video" && (
+        <VideoModal
+          video={activeItem.item}
+          onClose={handleClose}
+          onNext={handleNext}
+          onPrev={handlePrev}
+        />
+      )}
+    </>
   );
 }

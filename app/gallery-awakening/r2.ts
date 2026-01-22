@@ -40,8 +40,8 @@ function buildR2Url(key: string, customBase?: string): string {
     return `${trimmedBase}/${normalizedKey}`;
   }
 
-  // Fallback: you can implement this API route later if you prefer a proxy.
-  return `/api/r2-proxy?key=${encodeURIComponent(key)}`;
+  // Fallback: if no base is configured, return a placeholder.
+  return `/placeholder-gallery-image.png`;
 }
 
 /**

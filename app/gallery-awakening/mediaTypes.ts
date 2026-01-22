@@ -1,12 +1,12 @@
 export type MediaSource =
-  | 'local_video'
-  | 'local_image'
-  | 'r2_image'
-  | 'r2_thumb'
-  | 'r2_video'
-  | 'embed';
+  | "local_video"
+  | "local_image"
+  | "r2_image"
+  | "r2_thumb"
+  | "r2_video"
+  | "embed";
 
-export type MediaType = 'image' | 'video';
+export type MediaType = "image" | "video";
 
 export interface VideoThumbnail {
   /**
@@ -29,12 +29,12 @@ export interface VideoThumbnail {
  * Why GAIA chose a specific item for the auto-box.
  */
 export type AutoBoxReason =
-  | 'pinned'
-  | 'this_month'
-  | 'nostalgia_week'
-  | 'power_tag'
-  | 'favorite_tag'
-  | 'fallback';
+  | "pinned"
+  | "this_month"
+  | "nostalgia_week"
+  | "power_tag"
+  | "favorite_tag"
+  | "fallback";
 
 export interface MediaItem {
   /**
@@ -70,6 +70,7 @@ export interface MediaItem {
    */
   embedUrl?: string;
   embedHtml?: string;
+  youtubeId?: string;
   /**
    * Week 2: flags to support "add more previews for this video".
    */
@@ -85,6 +86,6 @@ export interface MediaItem {
    * If true, this item is manually pinned as the Feature of the Month.
    */
   pinnedForFeature?: boolean;
-  createdAt: string;  // ISO string
+  createdAt: string; // ISO string
   updatedAt?: string; // ISO string
 }
