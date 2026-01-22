@@ -1,12 +1,10 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
-import crypto from "crypto";
 
 const SESSION_COOKIE = "gaia.session";
-const CSRF_COOKIE = "gaia.csrf";
 
 export async function loginWithEmail(email: string, password: string) {
   const supabase = createClient(
@@ -23,10 +21,6 @@ export async function loginWithEmail(email: string, password: string) {
     throw new Error("Invalid credentials");
   }
 
-  const csrf = crypto.randomUUID();
-  const headersStore = await headers();
-  const ua = headersStore.get("user-agent") ?? "";
-  const ip = headersStore.get("x-forwarded-for") ?? "";
   const cookieStore = await cookies();
 
   cookieStore.set(
@@ -35,8 +29,6 @@ export async function loginWithEmail(email: string, password: string) {
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,
       expires_at: data.session.expires_at,
-      ua_hash: crypto.createHash("sha256").update(ua).digest("hex"),
-      ip_hash: crypto.createHash("sha256").update(ip).digest("hex"),
     }),
     {
       httpOnly: true,
@@ -47,19 +39,11 @@ export async function loginWithEmail(email: string, password: string) {
     },
   );
 
-  cookieStore.set(CSRF_COOKIE, csrf, {
-    httpOnly: false,
-    secure: true,
-    sameSite: "strict",
-    path: "/",
-  });
-
   redirect("/dashboard");
 }
 
 export async function logout() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
-  cookieStore.delete(CSRF_COOKIE);
   redirect("/auth/login");
 }

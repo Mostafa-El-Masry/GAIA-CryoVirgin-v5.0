@@ -1,6 +1,5 @@
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
 
 const SESSION_COOKIE = "gaia.session";
 
@@ -8,8 +7,6 @@ export type GaiaSession = {
   access_token: string;
   refresh_token: string;
   expires_at: number;
-  ua_hash: string;
-  ip_hash: string;
 };
 
 export async function getSession(): Promise<GaiaSession | null> {
@@ -19,16 +16,6 @@ export async function getSession(): Promise<GaiaSession | null> {
 
   try {
     const s = JSON.parse(raw) as GaiaSession;
-
-    const headersStore = await headers();
-    const ua = headersStore.get("user-agent") ?? "";
-    const ip = headersStore.get("x-forwarded-for") ?? "";
-
-    const uaHash = crypto.createHash("sha256").update(ua).digest("hex");
-    const ipHash = crypto.createHash("sha256").update(ip).digest("hex");
-
-    if (uaHash !== s.ua_hash || ipHash !== s.ip_hash) return null;
-
     return s;
   } catch {
     return null;
