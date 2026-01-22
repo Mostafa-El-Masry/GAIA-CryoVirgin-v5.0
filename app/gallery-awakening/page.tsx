@@ -16,6 +16,9 @@ import { getAllTags } from "./lib/tagStore";
 import { useCurrentPermissions, isCreatorAdmin } from "@/lib/permissions";
 import { useAuthSnapshot } from "@/lib/auth-client";
 
+import { FilterBar } from "./components/FilterBar";
+import "./gallery.css";
+
 const PAGE_SIZE = 24;
 
 const spaceGrotesk = Space_Grotesk({
@@ -23,6 +26,8 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
+
+type FilterOption = "Latest" | "Oldest" | "Most Viewed";
 
 type GalleryAwakeningContentProps = {
   allowedGalleryMediaCount: number;
@@ -32,6 +37,8 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
   allowedGalleryMediaCount,
 }) => {
   const [isHydrated, setIsHydrated] = React.useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterOption>("Latest");
+
   React.useEffect(() => {
     setIsHydrated(true);
   }, []);
@@ -173,6 +180,23 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     return visible.filter((item) => !hiddenIds.includes(item.id));
   }, [mergedItems, hiddenIds]);
 
+  const sortedItems = useMemo(() => {
+    if (activeFilter === "Latest") {
+      return [...allItems].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    }
+    if (activeFilter === "Oldest") {
+      return [...allItems].sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+    }
+    // "Most Viewed" will be handled separately for the main grid for now
+    return allItems;
+  }, [allItems, activeFilter]);
+
   const shuffledItems = useMemo(() => {
     const hash = (value: string) => {
       let h = 0;
@@ -193,8 +217,8 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     isCreatorAdmin(userEmail) || Boolean((permissions as any).galleryDelete);
 
   const videosArray = useMemo(() => {
-    return shuffledItems.filter((item) => item.type === "video");
-  }, [shuffledItems]);
+    return sortedItems.filter((item) => item.type === "video");
+  }, [sortedItems]);
 
   const handleNextVideo = () => {
     if (!currentVideoId) return;
@@ -270,6 +294,12 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
     <main className={`relative min-h-screen ${spaceGrotesk.className} gaia-bg`}>
       <section>
         <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-10 xl:max-w-[85vw]">
+          <div className="flex justify-center mb-8">
+            <FilterBar
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+            />
+          </div>
           {/* Most Viewed */}
           {mostViewed.length > 0 && (
             <section className="space-y-3 pt-2 mb-8">
@@ -284,9 +314,6 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
                 onDeleteItem={() => {}}
                 onRenameItem={() => {}}
                 maxVisibleItems={12}
-                allItems={mostViewed}
-                onNextVideo={handleNextVideo}
-                onPrevVideo={handlePrevVideo}
                 currentVideoId={currentVideoId}
                 onSetCurrentVideo={setCurrentVideoId}
               />
@@ -325,7 +352,7 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
           <section className="space-y-3 pt-2">
             <MediaGrid
               title="Feed"
-              items={shuffledItems}
+              items={activeFilter === "Most Viewed" ? mostViewed : sortedItems}
               page={page}
               perPage={PAGE_SIZE}
               onPageChange={setPage}
@@ -333,9 +360,6 @@ const GalleryAwakeningContent: React.FC<GalleryAwakeningContentProps> = ({
               onDeleteItem={handleDeleteItem}
               onRenameItem={handleRenameItem}
               maxVisibleItems={allowedGalleryMediaCount}
-              allItems={shuffledItems}
-              onNextVideo={handleNextVideo}
-              onPrevVideo={handlePrevVideo}
               currentVideoId={currentVideoId}
               onSetCurrentVideo={setCurrentVideoId}
             />

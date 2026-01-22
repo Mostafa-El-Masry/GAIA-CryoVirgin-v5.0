@@ -1,41 +1,32 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import React from "react";
+import "../gallery.css";
 
-export function FilterBar() {
-  const params = useSearchParams();
-  const active = params.get("sort") || "latest";
+type FilterOption = "Latest" | "Oldest" | "Most Viewed";
 
-  const base =
-    "px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200";
-  const activeCls = "bg-white text-black shadow-md scale-105";
-  const inactiveCls =
-    "bg-white/10 text-white hover:bg-white/20 hover:scale-105";
+type FilterBarProps = {
+  activeFilter: FilterOption;
+  onFilterChange: (filter: FilterOption) => void;
+};
 
+const filterOptions: FilterOption[] = ["Latest", "Oldest", "Most Viewed"];
+
+export const FilterBar: React.FC<FilterBarProps> = ({
+  activeFilter,
+  onFilterChange,
+}) => {
   return (
-    <div className="sticky top-16 z-30">
-      <div className="flex gap-2 items-center backdrop-blur-xl bg-black/40 p-2 rounded-full w-fit mx-auto shadow-lg">
-        <a
-          href="?sort=views"
-          className={`${base} ${active === "views" ? activeCls : inactiveCls}`}
+    <div className="filter-bar flex items-center justify-center gap-4">
+      {filterOptions.map((option) => (
+        <button
+          key={option}
+          className={`filter-button ${activeFilter === option ? "active" : ""}`}
+          onClick={() => onFilterChange(option)}
         >
-          Most Viewed
-        </a>
-
-        <a
-          href="?sort=latest"
-          className={`${base} ${active === "latest" ? activeCls : inactiveCls}`}
-        >
-          Latest
-        </a>
-
-        <a
-          href="?sort=oldest"
-          className={`${base} ${active === "oldest" ? activeCls : inactiveCls}`}
-        >
-          Oldest
-        </a>
-      </div>
+          {option}
+        </button>
+      ))}
     </div>
   );
-}
+};

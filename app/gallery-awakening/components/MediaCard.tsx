@@ -1,132 +1,59 @@
 "use client";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import type { MediaItem } from "../mediaTypes";
+import "../gallery.css";
 
-import { useRef, useCallback, useState } from "react";
-import { getR2Url, getR2PreviewUrl } from "../r2";
-import { ImagePreviewModal } from "./ImagePreviewModal";
-import { VideoModal } from "./VideoModal";
+type MediaCardProps = {
+  item: MediaItem;
+  onClick: () => void;
+  isCurrent: boolean;
+};
 
-function getMediaUrl(item: any): string {
-  // If it's already a full URL, use it
-  if (
-    item.src &&
-    (item.src.startsWith("http://") || item.src.startsWith("https://"))
-  ) {
-    return item.src;
-  }
-
-  // Handle R2 paths
-  if (item.r2Path) {
-    return getR2Url(item.r2Path);
-  }
-
-  // Handle local paths for videos
-  if (item.localPath && item.type === "video") {
-    // Assuming local videos are in /public/videos and localPath is the filename
-    return `/videos/${item.localPath.replace(/^\//, "")}`;
-  }
-
-  // Handle other local paths
-  if (item.localPath) {
-    return item.localPath;
-  }
-
-  // Fallback
-  return "/placeholder-gallery-image.png";
-}
-
-export function MediaCard({ item, allItems, index }: any) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
-  const [activeItem, setActiveItem] = useState<{ item: any; index: number } | null>(null);
-
-  const mediaUrl = getMediaUrl(item);
-  const posterUrl =
-    item.type === "video" && item.thumbnails && item.thumbnails.length > 0
-      ? getR2PreviewUrl(item.thumbnails[0].r2Key)
-      : undefined;
-
-  const onEnter = useCallback(() => {
-    setIsHovering(true);
-  }, []);
-
-  const onLeave = useCallback(() => {
-    setIsHovering(false);
-  }, []);
-
-  const handleClose = () => {
-    setActiveItem(null);
-  };
-
-  const handleNext = () => {
-    if (!activeItem) return;
-    const nextIndex = (activeItem.index + 1) % allItems.length;
-    setActiveItem({ item: allItems[nextIndex], index: nextIndex });
-  };
-
-  const handlePrev = () => {
-    if (!activeItem) return;
-    const prevIndex = (activeItem.index - 1 + allItems.length) % allItems.length;
-    setActiveItem({ item: allItems[prevIndex], index: prevIndex });
+export const MediaCard: React.FC<MediaCardProps> = ({
+  item,
+  onClick,
+  isCurrent,
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const getImageUrl = (item: MediaItem) => {
+    // This is a placeholder. In a real application, you would have a function
+    // to get the correct image URL based on the item's source and path.
+    return item.src || "https://via.placeholder.com/300";
   };
 
   return (
-    <>
-      <div
-        onMouseEnter={onEnter}
-        onMouseLeave={onLeave}
-        onClick={() => setActiveItem({ item, index })}
-        className="relative rounded-lg overflow-hidden bg-black/40 group cursor-pointer"
-      >
-        {item.type === "video" ? (
-          <>
-            <video
-              ref={videoRef}
-              src={mediaUrl}
-              poster={posterUrl}
-              muted
-              playsInline
-              preload="metadata"
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            {isHovering && item.thumbnails && (
-              <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-px">
-                {item.thumbnails.map((thumb: any) => (
-                  <img
-                    key={thumb.r2Key}
-                    src={getR2PreviewUrl(thumb.r2Key)}
-                    className="w-full h-full object-cover"
-                    alt="video thumbnail"
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        ) : (
-          <img
-            src={mediaUrl}
-            alt={item.title || "Gallery image"}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        )}
+    <motion.div
+      layoutId={`media-card-${item.id}`}
+      className={`media-card ${isCurrent ? "active" : ""}`}
+      onClick={onClick}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      whileHover={{ scale: 1.05 }}
+    >
+      {item.type === "video" && isHovered ? (
+        <video
+          src={getImageUrl(item)}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="media-card-asset"
+        />
+      ) : (
+        <img
+          src={getImageUrl(item)}
+          alt={item.title}
+          className="media-card-asset"
+        />
+      )}
+      <div className="media-card-overlay">
+        <h3 className="media-card-title">{item.title}</h3>
       </div>
-      {activeItem && activeItem.item.type === "image" && (
-        <ImagePreviewModal
-          src={getMediaUrl(activeItem.item)}
-          title={activeItem.item.title}
-          mediaId={activeItem.item.id}
-          onClose={handleClose}
-          onNext={handleNext}
-          onPrev={handlePrev}
-        />
-      )}
-      {activeItem && activeItem.item.type === "video" && (
-        <VideoModal
-          video={activeItem.item}
-          onClose={handleClose}
-          onNext={handleNext}
-          onPrev={handlePrev}
-        />
-      )}
-    </>
+    </motion.div>
   );
-}
+};

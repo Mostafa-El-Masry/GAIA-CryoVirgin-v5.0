@@ -45,6 +45,7 @@ export interface MediaItem {
   type: MediaType;
   title: string;
   description?: string;
+  src?: string;
   /**
    * Free tags: trip, family, power, etc.
    */

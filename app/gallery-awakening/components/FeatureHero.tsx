@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import type { AutoBoxResult } from '../featureLogic';
-import { MediaCard } from './MediaCard';
-import { formatMediaTitle } from '../formatMediaTitle';
+import React from "react";
+import type { AutoBoxResult } from "../featureLogic";
+import { MediaCard } from "./MediaCard";
+import { formatMediaTitle } from "../formatMediaTitle";
 
 interface FeatureHeroProps {
   autoBox: AutoBoxResult;
@@ -15,7 +15,8 @@ export const FeatureHero: React.FC<FeatureHeroProps> = ({ autoBox }) => {
       <section className="rounded-3xl border border-dashed border-base-300 bg-base-100 p-4 text-sm text-base-content/70">
         <p className="font-medium">No Feature Yet</p>
         <p className="mt-1 text-xs">
-          Add some memories to your Gallery and GAIA will start picking a Feature of the Day here.
+          Add some memories to your Gallery and GAIA will start picking a
+          Feature of the Day here.
         </p>
       </section>
     );
@@ -31,16 +32,21 @@ export const FeatureHero: React.FC<FeatureHeroProps> = ({ autoBox }) => {
             {autoBox.label}
           </p>
           <h2 className="text-xl font-semibold text-base-content">
-            Feature of the Day - <span className="text-primary">{displayTitle}</span>
+            Feature of the Day -{" "}
+            <span className="text-primary">{displayTitle}</span>
           </h2>
-          <p className="text-xs text-base-content/70 max-w-xl">{autoBox.description}</p>
+          <p className="text-xs text-base-content/70 max-w-xl">
+            {autoBox.description}
+          </p>
           {autoBox.item.description && (
-            <p className="text-xs text-primary/90 max-w-xl">"{autoBox.item.description}"</p>
+            <p className="text-xs text-primary/90 max-w-xl">
+              "{autoBox.item.description}"
+            </p>
           )}
         </div>
         <div className="flex-1 md:max-w-sm">
           {/* Reuse the same card visuals so the hero stays consistent with the grid. */}
-          <MediaCard item={autoBox.item} />
+          <MediaCard item={autoBox.item} onClick={() => {}} isCurrent={false} />
         </div>
       </div>
     </section>

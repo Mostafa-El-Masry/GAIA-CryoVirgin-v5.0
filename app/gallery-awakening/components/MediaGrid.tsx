@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import type { MediaItem, MediaType } from "../mediaTypes";
 import { MediaCard } from "./MediaCard";
+import { motion } from "framer-motion";
 
 interface MediaGridProps {
   title: string;
@@ -15,9 +16,6 @@ interface MediaGridProps {
   allowDelete?: boolean;
   onDeleteItem?: (id: string) => void;
   onRenameItem?: (id: string, nextTitle: string) => void;
-  allItems?: MediaItem[];
-  onNextVideo?: () => void;
-  onPrevVideo?: () => void;
   currentVideoId?: string | null;
   onSetCurrentVideo?: (id: string) => void;
 }
@@ -30,12 +28,6 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
   perPage,
   onPageChange,
   maxVisibleItems,
-  allowDelete = false,
-  onDeleteItem,
-  onRenameItem,
-  allItems = [],
-  onNextVideo,
-  onPrevVideo,
   currentVideoId,
   onSetCurrentVideo,
 }) => {
@@ -67,9 +59,6 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
     <section className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-base-content/60">
-            Feed
-          </p>
           <h2 className="text-2xl font-semibold text-base-content">{title}</h2>
         </div>
         <p className="text-xs text-base-content/70">
@@ -82,11 +71,19 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
         </p>
       </header>
 
-      <div className="mx-auto flex max-w-3xl flex-col gap-6 lg:max-w-4xl">
-        {paged.map((item, index) => (
-          <MediaCard key={item.id} item={item} allItems={paged} index={index} />
+      <motion.div
+        layout
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+      >
+        {paged.map((item) => (
+          <MediaCard
+            key={item.id}
+            item={item}
+            onClick={() => onSetCurrentVideo && onSetCurrentVideo(item.id)}
+            isCurrent={currentVideoId === item.id}
+          />
         ))}
-      </div>
+      </motion.div>
 
       {totalPages > 1 && onPageChange && perPage && (
         <div className="flex flex-col items-center justify-center gap-2 text-xs text-base-content/70">

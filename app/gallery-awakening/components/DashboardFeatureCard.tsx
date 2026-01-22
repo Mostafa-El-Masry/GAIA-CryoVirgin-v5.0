@@ -93,7 +93,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
           // we silently fall back to live auto-box behaviour below.
           console.warn(
             "[Gallery] /api/gallery/feature not available, falling back.",
-            err
+            err,
           );
         }
 
@@ -139,7 +139,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
           } catch (postErr) {
             console.warn(
               "[Gallery] Failed to auto-save daily feature",
-              postErr
+              postErr,
             );
           }
         }
@@ -230,7 +230,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
 
       {!loading && !error && autoBox?.item && (
         <div className="mt-1">
-          <MediaCard item={autoBox.item} />
+          <MediaCard item={autoBox.item} onClick={() => {}} isCurrent={false} />
         </div>
       )}
     </section>
