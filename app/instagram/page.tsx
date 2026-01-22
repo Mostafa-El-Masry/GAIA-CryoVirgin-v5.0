@@ -15,7 +15,7 @@ import { useCurrentPermissions, isCreatorAdmin } from "@/lib/permissions";
 import { useAuthSnapshot } from "@/lib/auth-client";
 
 // import { FilterBar } from "./components/FilterBar"; // Removed as FilterBar is removed
-import InstagramHeader from "./components/InstagramHeader";
+// import InstagramHeader from "./components/InstagramHeader";
 import InstagramPost from "./components/InstagramPost"; // Import the new InstagramPost component
 import InstagramStories from "./components/InstagramStories"; // Import the new InstagramStories component
 import "./instagram.css";
@@ -249,9 +249,9 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
 
   return (
     <main className={`relative min-h-screen ${spaceGrotesk.className} gaia-bg`}>
-      <InstagramHeader />
+      {/* <InstagramHeader /> */}
       <InstagramStories /> {/* Add the new InstagramStories component here */}
-      <section className="pt-4 max-w-lg mx-auto">
+      <section className="pt-4 max-w-md mx-auto px-4">
         {sortedItems.map((item) => (
           <InstagramPost key={item.id} item={item} />
         ))}

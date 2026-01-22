@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import type { MediaItem, VideoThumbnail } from './mediaTypes';
+import { useEffect, useState } from "react";
+import type { MediaItem, VideoThumbnail } from "./mediaTypes";
+import { getR2Url } from "./r2";
 
-const CACHE_KEY = 'gaia_gallery_v3_3_media_cache';
+const CACHE_KEY = "gaia_gallery_v3_3_media_cache";
 
-type DataSource = 'none' | 'cache' | 'r2';
+type DataSource = "none" | "cache" | "r2";
 
 interface CachePayload {
   items: MediaItem[];
@@ -22,7 +23,7 @@ export interface GalleryDataState {
 
 type ManifestItem = {
   id: string;
-  type: 'image' | 'video';
+  type: "image" | "video";
   src: string;
   preview?: string[];
   addedAt?: string;
@@ -32,25 +33,36 @@ type ManifestItem = {
   embedUrl?: string;
 };
 
-const normalizeKey = (key: string) => key.replace(/^\/+/, '');
-const isLocalKey = (key: string) => normalizeKey(key).startsWith('media/');
+const normalizeKey = (key: string) => key.replace(/^\/+/, "");
+const isLocalKey = (key: string) => normalizeKey(key).startsWith("media/");
 
 const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
   const normalized = item.embedUrl ? item.embedUrl : normalizeKey(item.src);
   const createdAt = item.addedAt || new Date().toISOString();
   const localPath =
     !item.embedUrl && isLocalKey(normalized) ? `/${normalized}` : undefined;
-  const title = item.title || normalized.split('/').pop() || item.id;
+  const title = item.title || normalized.split("/").pop() || item.id;
 
-  if (item.type === 'image') {
+  // Compute the src URL
+  let src: string | undefined;
+  if (item.embedUrl) {
+    src = item.embedUrl;
+  } else if (isLocalKey(normalized)) {
+    src = localPath;
+  } else {
+    src = getR2Url(normalized);
+  }
+
+  if (item.type === "image") {
     return {
       id: item.id,
       slug: item.id,
-      type: 'image',
+      type: "image",
       title,
-      description: item.description || 'Gallery image',
+      description: item.description || "Gallery image",
       tags: item.tags ?? [],
-      source: isLocalKey(normalized) ? 'local_image' : 'r2_image',
+      source: isLocalKey(normalized) ? "local_image" : "r2_image",
+      src,
       r2Path: isLocalKey(normalized) ? undefined : normalized,
       localPath,
       createdAt,
@@ -62,16 +74,22 @@ const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
     return {
       id: item.id,
       slug: item.id,
-      type: 'video',
+      type: "video",
       title,
-      description: item.description || 'Embedded video',
+      description: item.description || "Embedded video",
       tags: item.tags ?? [],
-      source: 'embed',
+      source: "embed",
+      src,
       embedUrl: item.embedUrl,
-      thumbnails: (item.preview ?? []).map((p, idx) => ({
-        index: idx + 1,
-        r2Key: p,
-      })),
+      thumbnails: (item.preview ?? []).map((p, idx) => {
+        const key = normalizeKey(p);
+        const localThumb = isLocalKey(key);
+        return {
+          index: idx + 1,
+          r2Key: localThumb ? undefined : key,
+          localPath: localThumb ? `/${key}` : undefined,
+        };
+      }),
       createdAt,
       updatedAt: createdAt,
     };
@@ -91,11 +109,14 @@ const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
   return {
     id: item.id,
     slug: item.id,
-    type: 'video',
+    type: "video",
     title,
-    description: isLocalKey(normalized) ? 'Local video asset' : 'Cloudflare R2 video asset',
+    description: isLocalKey(normalized)
+      ? "Local video asset"
+      : "Cloudflare R2 video asset",
     tags: [],
-    source: isLocalKey(normalized) ? 'local_video' : 'r2_video',
+    source: isLocalKey(normalized) ? "local_video" : "r2_video",
+    src,
     r2Path: isLocalKey(normalized) ? undefined : normalized,
     localPath,
     thumbnails: thumbs,
@@ -110,7 +131,7 @@ const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
  */
 export function useGalleryData(fallbackItems: MediaItem[]): GalleryDataState {
   const [items, setItems] = useState<MediaItem[]>(fallbackItems);
-  const [source, setSource] = useState<DataSource>('none');
+  const [source, setSource] = useState<DataSource>("none");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -119,43 +140,45 @@ export function useGalleryData(fallbackItems: MediaItem[]): GalleryDataState {
     let cancelled = false;
 
     // 1) Load from cache (if any).
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       try {
         const raw = window.localStorage.getItem(CACHE_KEY);
         if (raw) {
           const payload = JSON.parse(raw) as CachePayload;
           if (!cancelled && payload.items?.length) {
             setItems(payload.items);
-            setSource('cache');
+            setSource("cache");
             setLastUpdated(payload.lastUpdated);
           }
         }
       } catch (err) {
-        console.warn('[GAIA Gallery] Failed to read cache', err);
+        console.warn("[GAIA Gallery] Failed to read cache", err);
       }
     }
 
     // 2) Pull from API (merges R2 + local).
     async function fetchFromApi() {
       try {
-        const res = await fetch('/api/gallery', { cache: 'no-store' });
+        const res = await fetch("/api/gallery", { cache: "no-store" });
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
         }
         const payload = await res.json();
-        const manifest: ManifestItem[] = Array.isArray(payload?.items) ? payload.items : [];
+        const manifest: ManifestItem[] = Array.isArray(payload?.items)
+          ? payload.items
+          : [];
         const mapped = manifest.map(mapManifestToMediaItem).filter(Boolean);
 
         if (!cancelled) {
           const nextItems = mapped.length ? mapped : fallbackItems;
           setItems(nextItems);
-          setSource(mapped.length ? 'r2' : 'cache');
+          setSource(mapped.length ? "r2" : "cache");
           const nowIso = new Date().toISOString();
           setLastUpdated(nowIso);
           setIsLoading(false);
           setError(null);
 
-          if (typeof window !== 'undefined' && mapped.length) {
+          if (typeof window !== "undefined" && mapped.length) {
             const payload: CachePayload = {
               items: mapped,
               lastUpdated: nowIso,
@@ -163,16 +186,18 @@ export function useGalleryData(fallbackItems: MediaItem[]): GalleryDataState {
             try {
               window.localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
             } catch (err) {
-              console.warn('[GAIA Gallery] Failed to write cache', err);
+              console.warn("[GAIA Gallery] Failed to write cache", err);
             }
           }
         }
-      } catch (err: any) {
-        console.warn('[GAIA Gallery] Failed to load /api/gallery', err);
+      } catch (err: unknown) {
+        console.warn("[GAIA Gallery] Failed to load /api/gallery", err);
         if (!cancelled) {
           setItems(fallbackItems);
-          setSource(source === 'none' ? 'cache' : source);
-          setError(err?.message ?? 'Unknown error');
+          setSource((prevSource) =>
+            prevSource === "none" ? "cache" : prevSource,
+          );
+          setError(err instanceof Error ? err.message : "Unknown error");
           setIsLoading(false);
         }
       } finally {

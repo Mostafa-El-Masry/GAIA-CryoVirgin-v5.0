@@ -3,6 +3,11 @@ import Image from "next/image";
 import Link from "next/link"; // Import Link
 import type { MediaItem } from "../mediaTypes";
 import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  FavouriteIcon,
+  ChatIcon,
+  Share01Icon,
+} from "@hugeicons/core-free-icons";
 
 interface InstagramPostProps {
   item: MediaItem;
@@ -10,14 +15,16 @@ interface InstagramPostProps {
 
 const InstagramPost: React.FC<InstagramPostProps> = ({ item }) => {
   // Mock user data for now
-  const mockUser = {
+  const [mockUser] = useState(() => ({
     id: Math.floor(Math.random() * 100).toString(), // Random user ID for linking
     username: "gaia_user",
     avatar: "https://via.placeholder.com/150/FF0000/FFFFFF?text=GA", // Red placeholder avatar
-  };
+  }));
 
   const [isLiked, setIsLiked] = useState(false);
-  const [likes, setLikes] = useState(Math.floor(Math.random() * 1000) + 10); // Mock initial likes
+  const [likes, setLikes] = useState(
+    () => Math.floor(Math.random() * 1000) + 10,
+  ); // Mock initial likes
   const [comments, setComments] = useState<string[]>([]);
   const [newComment, setNewComment] = useState("");
 
@@ -37,34 +44,33 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ item }) => {
     <div className="instagram-post">
       {/* Post Header */}
       <div className="post-header">
-        <Link href={`/instagram/people/${mockUser.id}`} className="flex items-center">
+        <Link
+          href={`/instagram/people/${mockUser.id}`}
+          className="flex items-center"
+        >
           <Image
             src={mockUser.avatar}
             alt={`${mockUser.username}'s avatar`}
             width={32}
             height={32}
           />
-          <span className="username">
-            {mockUser.username}
-          </span>
+          <span className="username">{mockUser.username}</span>
         </Link>
       </div>
 
       {/* Media */}
       <div className="post-media">
-        {item.type === "image" && (
-          <img
+        {item.type === "image" && item.src && (
+          <Image
             src={item.src}
             alt={item.title || "Instagram post image"}
+            width={470}
+            height={600}
             className="post-media"
           />
         )}
-        {item.type === "video" && (
-          <video
-            src={item.src}
-            controls
-            className="post-media"
-          />
+        {item.type === "video" && item.src && (
+          <video src={item.src} controls className="post-media" />
         )}
       </div>
 
@@ -73,19 +79,25 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ item }) => {
         <div className="flex">
           {isLiked ? (
             <HugeiconsIcon
-              name="heart-fill"
+              icon={FavouriteIcon}
               className="text-red-500 text-2xl cursor-pointer"
               onClick={handleLikeClick}
             />
           ) : (
             <HugeiconsIcon
-              name="heart"
+              icon={FavouriteIcon}
               className="text-white text-2xl cursor-pointer hover:text-gray-400"
               onClick={handleLikeClick}
             />
           )}
-          <HugeiconsIcon name="chat" className="text-white text-2xl cursor-pointer hover:text-gray-400" />
-          <HugeiconsIcon name="share" className="text-white text-2xl cursor-pointer hover:text-gray-400" />
+          <HugeiconsIcon
+            icon={ChatIcon}
+            className="text-white text-2xl cursor-pointer hover:text-gray-400"
+          />
+          <HugeiconsIcon
+            icon={Share01Icon}
+            className="text-white text-2xl cursor-pointer hover:text-gray-400"
+          />
         </div>
         {/* Placeholder for bookmark/save icon */}
         {/* <RiBookmarkLine className="text-white text-2xl cursor-pointer hover:text-gray-400" /> */}
@@ -132,10 +144,7 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ item }) => {
               }
             }}
           />
-          <button
-            onClick={handleAddComment}
-            className="comment-post-button"
-          >
+          <button onClick={handleAddComment} className="comment-post-button">
             Post
           </button>
         </div>
@@ -143,3 +152,5 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ item }) => {
     </div>
   );
 };
+
+export default InstagramPost;

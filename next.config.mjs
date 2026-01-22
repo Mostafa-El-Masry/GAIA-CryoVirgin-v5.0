@@ -38,15 +38,18 @@ const nextConfig = {
       {
         protocol: "https",
         hostname:
-          hostFrom(galleryCdn) ||
-          "pub-3354a96a3d194a9c95c8e51e1b20944e.r2.dev",
+          hostFrom(galleryCdn) || "pub-3354a96a3d194a9c95c8e51e1b20944e.r2.dev",
       },
       // previews bucket (video thumbnails/frames)
       {
         protocol: "https",
         hostname:
-          hostFrom(previewCdn) ||
-          "pub-f962df99714e4baaac2e2c4a54a7b861.r2.dev",
+          hostFrom(previewCdn) || "pub-f962df99714e4baaac2e2c4a54a7b861.r2.dev",
+      },
+      // placeholder images
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
       },
     ],
   },

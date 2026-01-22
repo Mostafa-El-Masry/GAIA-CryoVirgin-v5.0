@@ -70,6 +70,14 @@ header nav a:hover {
   background-color: #121212; /* Dark background for media area */
 }
 
+.instagram-post .post-media img,
+.instagram-post .post-media video {
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  object-fit: contain;
+}
+
 .instagram-post .post-actions {
   display: flex;
   justify-content: space-between;

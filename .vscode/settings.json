@@ -13,6 +13,8 @@
         "/^cd e:\\\\GAIA-CryoVirgin-v5\\.0 ; node -p \"\nconst base = 'https://pub-3354a96a3d194a9c95c8e51e1b20944e\\.r2\\.dev';\nconst key = 'images/test\\.jpg';\nconst trimmedBase = base\\.replace\\(/\\\\\\\\/\\$/, ''\\);\nconst normalizedKey = key\\.replace\\(/\\^\\\\\\\\/\\+/, ''\\);\nconst url = \\\\`\\\\\\$\\{trimmedBase\\}/\\\\\\$\\{normalizedKey\\}\\\\`;\nconsole\\.log\\('Generated URL:', url\\);\n\"$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "pkill": true,
+        "Get-CimInstance": true
     }
 }

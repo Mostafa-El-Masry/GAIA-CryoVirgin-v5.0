@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import type { MediaItem } from "../mediaTypes";
 import "../instagram.css";
 
@@ -16,11 +17,6 @@ export const MediaCard: React.FC<MediaCardProps> = ({
   isCurrent,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const getImageUrl = (item: MediaItem) => {
-    // This is a placeholder. In a real application, you would have a function
-    // to get the correct image URL based on the item's source and path.
-    return item.src || "https://via.placeholder.com/300";
-  };
 
   return (
     <motion.div
@@ -37,7 +33,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
     >
       {item.type === "video" && isHovered ? (
         <video
-          src={getImageUrl(item)}
+          src={item.src}
           autoPlay
           loop
           muted
@@ -45,9 +41,11 @@ export const MediaCard: React.FC<MediaCardProps> = ({
           className="media-card-asset"
         />
       ) : (
-        <img
-          src={getImageUrl(item)}
+        <Image
+          src={item.src || "/placeholder-gallery-image.png"}
           alt={item.title}
+          width={300}
+          height={200}
           className="media-card-asset"
         />
       )}

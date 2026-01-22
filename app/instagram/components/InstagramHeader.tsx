@@ -1,6 +1,13 @@
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Home01Icon,
+  Search01Icon,
+  CompassIcon,
+  FavouriteIcon,
+  MessengerIcon,
+} from "@hugeicons/core-free-icons";
 
 const InstagramHeader: React.FC = () => {
   return (
@@ -11,19 +18,19 @@ const InstagramHeader: React.FC = () => {
         </Link>
         <nav className="flex space-x-4">
           <Link href="/instagram">
-            <HugeiconsIcon name="home" size={24} />
+            <HugeiconsIcon icon={Home01Icon} size={24} />
           </Link>
           <Link href="/instagram/search">
-            <HugeiconsIcon name="search" size={24} />
+            <HugeiconsIcon icon={Search01Icon} size={24} />
           </Link>
           <Link href="/instagram/explore">
-            <HugeiconsIcon name="compass" size={24} />
+            <HugeiconsIcon icon={CompassIcon} size={24} />
           </Link>
           <Link href="/instagram/activity">
-            <HugeiconsIcon name="heart" size={24} />
+            <HugeiconsIcon icon={FavouriteIcon} size={24} />
           </Link>
           <Link href="/instagram/messages">
-            <HugeiconsIcon name="messenger" size={24} />
+            <HugeiconsIcon icon={MessengerIcon} size={24} />
           </Link>
           {/* Placeholder for profile pic */}
           <div className="w-6 h-6 rounded-full bg-gray-600"></div>

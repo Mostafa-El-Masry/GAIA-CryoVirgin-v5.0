@@ -96,7 +96,7 @@ const ExplorePage: React.FC = () => {
       return Math.abs(h);
     };
     // We want a consistent shuffle for the explore page for now
-    const shuffleSeed = 'explore_seed';
+    const shuffleSeed = "explore_seed";
     return [...allItems].sort((a, b) => {
       const aKey = hash(`${a.id}-${shuffleSeed}`);
       const bKey = hash(`${b.id}-${shuffleSeed}`);

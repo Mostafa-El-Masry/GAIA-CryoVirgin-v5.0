@@ -1,48 +1,29 @@
-import { NextRequest, NextResponse } from "next/server";
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { NextResponse } from "next/server";
 
-const MOBILE_UA =
-  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-const PUBLIC_FILE =
-  /\.(?:css|js|json|map|txt|xml|ico|png|jpe?g|gif|svg|webp)$/i;
+import type { NextRequest } from "next/server";
 
-const PROTECTED = ["/dashboard", "/archives", "/settings"];
-const ADMIN = ["/admin"];
+export async function proxy(req: NextRequest) {
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req, res });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-export function proxy(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
+  const isProtected = [
+    "/dashboard",
+    "/settings",
+    "/timeline",
+    "/guardian",
+    "/accounts",
+    "/search",
+  ].some((path) => req.nextUrl.pathname.startsWith(path));
 
-  // Auth checks first
-  const session = request.cookies.get("gaia.session");
-  const needsAuth = PROTECTED.some((p) => pathname.startsWith(p));
-  const needsAdmin = ADMIN.some((p) => pathname.startsWith(p));
-
-  if ((needsAuth || needsAdmin) && !session) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+  if (isProtected && !session) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/auth") ||
-    pathname === "/favicon.ico" ||
-    pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml" ||
-    pathname === "/manifest.json" ||
-    PUBLIC_FILE.test(pathname)
-  ) {
-    return NextResponse.next();
-  }
-
-  const userAgent = request.headers.get("user-agent") ?? "";
-  if (!MOBILE_UA.test(userAgent)) {
-    return NextResponse.next();
-  }
-
-  const redirectUrl = request.nextUrl.clone();
-  redirectUrl.pathname = "/auth/login";
-  redirectUrl.search = "";
-  redirectUrl.searchParams.set("redirect", `${pathname}${search}`);
-  return NextResponse.redirect(redirectUrl);
+  return res;
 }
 
 // Keep a compatibility alias in case something imports the middleware symbol
