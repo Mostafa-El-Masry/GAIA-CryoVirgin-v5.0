@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-const LOCAL_CURRENT_USER_ID_KEY = "gaia_current_user_id_v1";
 
 type Mode = "signin" | "signup";
 
@@ -127,21 +126,24 @@ const LoginClient: React.FC<LoginClientProps> = ({
 
       // Best-effort: keep GAIA internal users table in sync.
       try {
-        await fetch("/api/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            displayName: name.trim(),
-            email: email.trim(),
-            role: "member",
-            permissions: {
-              canViewGalleryPrivate: true,
-              canViewWealth: true,
-              canViewHealth: true,
-              canViewGuardian: true,
-            },
-          }),
-        });
+        if (data?.user?.id) {
+          await fetch('/api/users', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: data.user.id,
+              displayName: name.trim(),
+              email: email.trim(),
+              role: 'member',
+              permissions: {
+                canViewGalleryPrivate: true,
+                canViewWealth: true,
+                canViewHealth: true,
+                canViewGuardian: true,
+              },
+            }),
+          })
+        }
       } catch {
         // ignore
       }
@@ -164,48 +166,23 @@ const LoginClient: React.FC<LoginClientProps> = ({
   };
 
   const handleContinueAsGuest = async () => {
-    resetMessages();
-    setLoading(true);
+    resetMessages()
+    setLoading(true)
     try {
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          displayName: "Guest",
-          email: null,
-          role: "guest",
-          permissions: {
-            canViewGalleryPrivate: false,
-            canViewWealth: false,
-            canViewHealth: false,
-            canViewGuardian: false,
-          },
-        }),
-      });
-
-      const data = (await res.json().catch(() => ({}))) as any;
-      if (!data.ok || !data.user) {
-        throw new Error(data.error || "Failed to create guest user.");
-      }
-
-      const guestId = String(data.user.id);
-      try {
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem(LOCAL_CURRENT_USER_ID_KEY, guestId);
-        }
-      } catch {
-        // ignore
+      const { error } = await supabase.auth.signInAnonymously()
+      if (error) {
+        throw error
       }
 
       // Allow state to sync before redirecting
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      router.replace("/");
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      router.replace('/')
     } catch (err: any) {
-      setError(err?.message ?? "Failed to continue as guest.");
+      setError(err?.message ?? 'Failed to continue as guest.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <main

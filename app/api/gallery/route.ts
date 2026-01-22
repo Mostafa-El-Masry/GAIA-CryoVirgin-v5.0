@@ -138,6 +138,7 @@ function mergePreviewMaps(base: PreviewMap, extra?: PreviewMap | null): PreviewM
 async function collectFromR2(): Promise<{
   items: ManifestItem[];
   previewMap: PreviewMap;
+  error?: string;
 } | null> {
   const mediaCfg: R2Config = {
     endpoint: process.env.CLOUDFLARE_R2_S3_ENDPOINT,
@@ -152,7 +153,23 @@ async function collectFromR2(): Promise<{
     secretAccessKey: process.env.CLOUDFLARE_R2_PREVIEWS_SECRET_ACCESS_KEY,
   };
 
-  if (!hasValidConfig(mediaCfg)) return null;
+  if (!hasValidConfig(mediaCfg)) {
+    const missing = [
+      !process.env.CLOUDFLARE_R2_S3_ENDPOINT && "CLOUDFLARE_R2_S3_ENDPOINT",
+      !process.env.CLOUDFLARE_R2_BUCKET && "CLOUDFLARE_R2_BUCKET",
+      !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID &&
+        "CLOUDFLARE_R2_ACCESS_KEY_ID",
+      !process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY &&
+        "CLOUDFLARE_R2_SECRET_ACCESS_KEY",
+    ]
+      .filter(Boolean)
+      .join(", ");
+    return {
+      items: [],
+      previewMap: new Map(),
+      error: `Cloudflare R2 is not configured. Missing environment variables: ${missing}`,
+    };
+  }
 
   const client = createR2Client(mediaCfg);
   const mediaObjects = await listR2(client, mediaCfg.bucket);
@@ -398,6 +415,13 @@ export async function GET() {
 
   // Prefer live R2 listing when configured, but always merge local media so dev/local files still appear.
   const r2Data = await collectFromR2().catch(() => null);
+
+  if (r2Data?.error) {
+    return new NextResponse(JSON.stringify({ message: r2Data.error }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   const r2Items = r2Data?.items ?? [];
   const mergedPreviewMap = mergePreviewMaps(
     localPreviewMap,

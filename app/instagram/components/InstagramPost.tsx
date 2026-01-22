@@ -2,12 +2,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link"; // Import Link
 import type { MediaItem } from "../mediaTypes";
-import {
-  RiHeartLine,
-  RiHeartFill,
-  RiChat3Line,
-  RiShareLine,
-} from "@hugeicons/react"; // Import RiHeartFill
+import { HugeiconsIcon } from "@hugeicons/react";
 
 interface InstagramPostProps {
   item: MediaItem;
@@ -77,18 +72,20 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ item }) => {
       <div className="post-actions">
         <div className="flex">
           {isLiked ? (
-            <RiHeartFill
+            <HugeiconsIcon
+              name="heart-fill"
               className="text-red-500 text-2xl cursor-pointer"
               onClick={handleLikeClick}
             />
           ) : (
-            <RiHeartLine
+            <HugeiconsIcon
+              name="heart"
               className="text-white text-2xl cursor-pointer hover:text-gray-400"
               onClick={handleLikeClick}
             />
           )}
-          <RiChat3Line className="text-white text-2xl cursor-pointer hover:text-gray-400" />
-          <RiShareLine className="text-white text-2xl cursor-pointer hover:text-gray-400" />
+          <HugeiconsIcon name="chat" className="text-white text-2xl cursor-pointer hover:text-gray-400" />
+          <HugeiconsIcon name="share" className="text-white text-2xl cursor-pointer hover:text-gray-400" />
         </div>
         {/* Placeholder for bookmark/save icon */}
         {/* <RiBookmarkLine className="text-white text-2xl cursor-pointer hover:text-gray-400" /> */}
@@ -146,5 +143,3 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ item }) => {
     </div>
   );
 };
-
-export default InstagramPost;

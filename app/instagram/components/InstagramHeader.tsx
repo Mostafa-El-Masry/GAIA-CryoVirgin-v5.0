@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { RiHomeLine, RiSearchLine, RiCompassLine, RiHeartLine, RiMessengerLine } from "@hugeicons/react"; // Assuming these are available or similar
+import { HugeiconsIcon } from "@hugeicons/react";
 
 const InstagramHeader: React.FC = () => {
   return (
@@ -11,19 +11,19 @@ const InstagramHeader: React.FC = () => {
         </Link>
         <nav className="flex space-x-4">
           <Link href="/instagram">
-            <RiHomeLine size={24} />
+            <HugeiconsIcon name="home" size={24} />
           </Link>
           <Link href="/instagram/search">
-            <RiSearchLine size={24} />
+            <HugeiconsIcon name="search" size={24} />
           </Link>
           <Link href="/instagram/explore">
-            <RiCompassLine size={24} />
+            <HugeiconsIcon name="compass" size={24} />
           </Link>
           <Link href="/instagram/activity">
-            <RiHeartLine size={24} />
+            <HugeiconsIcon name="heart" size={24} />
           </Link>
           <Link href="/instagram/messages">
-            <RiMessengerLine size={24} />
+            <HugeiconsIcon name="messenger" size={24} />
           </Link>
           {/* Placeholder for profile pic */}
           <div className="w-6 h-6 rounded-full bg-gray-600"></div>
