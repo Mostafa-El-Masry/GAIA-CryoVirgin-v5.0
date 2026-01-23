@@ -33,7 +33,7 @@ const InstagramHeader: React.FC = () => {
             <HugeiconsIcon icon={MessengerIcon} size={24} />
           </Link>
           {/* Placeholder for profile pic */}
-          <div className="w-6 h-6 rounded-full bg-gray-600"></div>
+          <div className="w-6 h-6 rounded-full gaia-surface-soft"></div>
         </nav>
       </div>
     </header>

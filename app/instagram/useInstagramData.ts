@@ -59,7 +59,7 @@ const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
       slug: item.id,
       type: "image",
       title,
-      description: item.description || "Gallery image",
+      description: item.description || "",
       tags: item.tags ?? [],
       source: isLocalKey(normalized) ? "local_image" : "r2_image",
       src,
@@ -76,7 +76,7 @@ const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
       slug: item.id,
       type: "video",
       title,
-      description: item.description || "Embedded video",
+      description: item.description || "",
       tags: item.tags ?? [],
       source: "embed",
       src,
@@ -111,9 +111,7 @@ const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
     slug: item.id,
     type: "video",
     title,
-    description: isLocalKey(normalized)
-      ? "Local video asset"
-      : "Cloudflare R2 video asset",
+    description: "",
     tags: [],
     source: isLocalKey(normalized) ? "local_video" : "r2_video",
     src,

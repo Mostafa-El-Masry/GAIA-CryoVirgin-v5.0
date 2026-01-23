@@ -7,7 +7,7 @@ export function ImageUploader() {
     const file = e.target.files?.[0];
     if (!file) return;
     await uploadImage(file);
-    location.reload(); // simple refresh for now
+    location.reload();
   };
 
   return (

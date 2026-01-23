@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { Space_Grotesk } from "next/font/google";
 import InstagramHeader from "../components/InstagramHeader";
-import { MediaGrid } from "../components/MediaGrid"; // Re-using MediaGrid
+import { MediaGrid } from "../components/MediaGrid";
 import { mockMediaItems } from "../mockMedia";
 import type { MediaItem } from "../mediaTypes";
 import { useGalleryData } from "../useInstagramData";
@@ -95,7 +95,6 @@ const ExplorePage: React.FC = () => {
       }
       return Math.abs(h);
     };
-    // We want a consistent shuffle for the explore page for now
     const shuffleSeed = "explore_seed";
     return [...allItems].sort((a, b) => {
       const aKey = hash(`${a.id}-${shuffleSeed}`);
@@ -112,17 +111,17 @@ const ExplorePage: React.FC = () => {
     <main className={`relative min-h-screen ${spaceGrotesk.className} gaia-bg`}>
       <InstagramHeader />
       <div className="max-w-4xl mx-auto py-8 px-4">
-        <h1 className="text-white text-2xl font-semibold mb-6">Explore</h1>
+        <h1 className="gaia-strong text-2xl font-semibold mb-6">Explore</h1>
         <MediaGrid
           title=""
           items={shuffledItems}
           page={1}
-          perPage={24} // Display more items in explore grid
+          perPage={24}
           onPageChange={() => {}}
           allowDelete={false}
           onDeleteItem={() => {}}
           onRenameItem={() => {}}
-          maxVisibleItems={-1} // Show all available items
+          maxVisibleItems={-1}
           currentVideoId={null}
           onSetCurrentVideo={() => {}}
         />

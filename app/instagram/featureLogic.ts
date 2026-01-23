@@ -10,7 +10,7 @@ export interface AutoBoxResult {
 /** Minimal fallback implementation used by DashboardFeatureCard until full logic is available. */
 export function getAutoBoxResult(
   items: MediaItem[],
-  now: Date = new Date()
+  now: Date = new Date(),
 ): AutoBoxResult {
   if (!items || items.length === 0) {
     return {
@@ -21,7 +21,6 @@ export function getAutoBoxResult(
     };
   }
 
-  // Very small heuristic: prefer pinned, else first item.
   const pinned = items.find((i) => i.pinnedForFeature);
   const chosen = pinned ?? items[0];
 

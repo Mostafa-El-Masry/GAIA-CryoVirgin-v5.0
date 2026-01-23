@@ -24,6 +24,7 @@ const navItems: NavItem[] = [
   { href: "/wealth-awakening/purchases", label: "Purchases" },
   { href: "/wealth-awakening/instruments", label: "Investments" },
   { href: "/wealth-awakening/levels", label: "Plans" },
+  { href: "/wealth-awakening/phases", label: "Phases" },
   { href: "/wealth-awakening/projections", label: "Projections" },
   { href: "/wealth-awakening/status", label: "Status" },
 ];
@@ -53,7 +54,6 @@ export default function WealthShell({ children }: { children: ReactNode }) {
               </p>
             </div>
           </div>
-
 
           <nav className="space-y-1">
             {navItems.map((item) => {

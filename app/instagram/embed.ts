@@ -41,10 +41,9 @@ type CreateEmbedOpts = {
  */
 export function createEmbedMediaItem(
   input: string,
-  opts: CreateEmbedOpts = {}
+  opts: CreateEmbedOpts = {},
 ): MediaItem {
   const raw = extractEmbedSrc(input);
-  // Route through proxy to bypass X-Frame-Options/frame-ancestors.
   const src = raw
     ? raw.startsWith("/api/embed/proxy")
       ? raw
@@ -62,8 +61,8 @@ export function createEmbedMediaItem(
     id,
     slug: id,
     type: "video",
-    title: opts.title ?? "Embedded video",
-    description: opts.description ?? "External embed",
+    title: opts.title ?? "",
+    description: opts.description ?? "",
     tags: opts.tags ?? [],
     source: "embed",
     embedUrl: src,
@@ -80,7 +79,7 @@ export function createEmbedMediaItem(
 export function addEmbedToItems(
   items: MediaItem[],
   input: string,
-  opts: CreateEmbedOpts = {}
+  opts: CreateEmbedOpts = {},
 ): MediaItem[] {
   const embed = createEmbedMediaItem(input, opts);
   const withoutExisting = items.filter((i) => i.id !== embed.id);

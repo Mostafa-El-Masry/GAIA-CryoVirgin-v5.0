@@ -85,6 +85,30 @@ export default function TODOPage() {
     work: todayInput(),
     distraction: todayInput(),
   });
+  const defaultDueDates = useMemo(() => {
+    const result: Record<Category, string> = {
+      life: todayInput(),
+      work: todayInput(),
+      distraction: todayInput(),
+    };
+    CATEGORY_ORDER.forEach((category) => {
+      const categoryTasks = tasks.filter(
+        (t) => t.category === category && t.due_date,
+      );
+      if (categoryTasks.length > 0) {
+        const sortedDues = categoryTasks
+          .map((t) => t.due_date!)
+          .sort((a, b) => a.localeCompare(b));
+        const latestDue = sortedDues[sortedDues.length - 1];
+        const nextDay = shiftDate(latestDue, 1);
+        result[category] = nextDay;
+      }
+    });
+    return result;
+  }, [tasks]);
+  useEffect(() => {
+    setDraftsDue(defaultDueDates);
+  }, [defaultDueDates]);
   const [orderMap, setOrderMap] = useState<Record<Category, string[]>>({
     life: [],
     work: [],
@@ -104,13 +128,13 @@ export default function TODOPage() {
       const date = new Date(`${today}T00:00:00`);
       return {
         dayName: new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
-          date
+          date,
         ),
         monthName: new Intl.DateTimeFormat("en-US", { month: "long" }).format(
-          date
+          date,
         ),
         monthShort: new Intl.DateTimeFormat("en-US", { month: "short" }).format(
-          date
+          date,
         ),
         dayNumber: date.getDate(),
       };
@@ -122,13 +146,13 @@ export default function TODOPage() {
     const now = new Date();
     return {
       dayName: new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
-        now
+        now,
       ),
       monthName: new Intl.DateTimeFormat("en-US", { month: "long" }).format(
-        now
+        now,
       ),
       monthShort: new Intl.DateTimeFormat("en-US", { month: "short" }).format(
-        now
+        now,
       ),
       dayNumber: now.getDate(),
     };
@@ -176,7 +200,7 @@ export default function TODOPage() {
       const due = parseDate(t.due_date);
       if (due && todayDate) {
         const diffDays = Math.round(
-          (due.getTime() - todayDate.getTime()) / 86400000
+          (due.getTime() - todayDate.getTime()) / 86400000,
         );
         if (!isDone && diffDays === 0) todayPending += 1;
         if (!isDone && diffDays === 1) tomorrowPending += 1;
@@ -184,7 +208,7 @@ export default function TODOPage() {
       }
       if (!isDone && customDateParsed && due) {
         const diffCustom = Math.round(
-          (due.getTime() - customDateParsed.getTime()) / 86400000
+          (due.getTime() - customDateParsed.getTime()) / 86400000,
         );
         if (diffCustom === 0) customPending += 1;
       }
@@ -260,7 +284,7 @@ export default function TODOPage() {
         [category]: sortTasksByMode(byCat[category], mode).map((t) => t.id),
       }));
     },
-    [byCat]
+    [byCat],
   );
 
   const handleSortChange = useCallback(
@@ -268,7 +292,7 @@ export default function TODOPage() {
       setSortModes((prev) => ({ ...prev, [category]: mode }));
       applySortForCategory(category, mode);
     },
-    [applySortForCategory]
+    [applySortForCategory],
   );
 
   useEffect(() => {
@@ -298,7 +322,7 @@ export default function TODOPage() {
         if (ids.length === 0) return;
         if (hasNew || lengthChanged) {
           next[cat] = sortTasksByMode(byCat[cat], sortModes[cat]).map(
-            (t) => t.id
+            (t) => t.id,
           );
           changed = true;
         }
@@ -375,8 +399,8 @@ export default function TODOPage() {
         status === "done"
           ? "done"
           : status === "skipped"
-          ? "skipped"
-          : "pending";
+            ? "skipped"
+            : "pending";
     }
     return {
       label:
@@ -404,7 +428,7 @@ export default function TODOPage() {
         setDraftsDue((prev) => ({ ...prev, [category]: todayInput() }));
       }
     },
-    [addQuickTask, drafts, draftsDue]
+    [addQuickTask, drafts, draftsDue],
   );
 
   const handleDateChange = useCallback(
@@ -412,7 +436,7 @@ export default function TODOPage() {
       const normalized = nextValue.trim();
       editTask(taskId, { due_date: normalized ? normalized : null });
     },
-    [editTask]
+    [editTask],
   );
 
   const handleStatusChange = useCallback(
@@ -423,7 +447,7 @@ export default function TODOPage() {
           : today;
       setTaskStatus(task.id, targetDate, next);
     },
-    [setTaskStatus, today]
+    [setTaskStatus, today],
   );
 
   const handleReorder = useCallback(
@@ -431,7 +455,7 @@ export default function TODOPage() {
       category: Category,
       sourceId: string,
       targetId: string | null,
-      position: "before" | "after"
+      position: "before" | "after",
     ) => {
       setOrderMap((prev) => {
         const base =
@@ -451,7 +475,7 @@ export default function TODOPage() {
       setDragging(null);
       setDropTarget(null);
     },
-    [orderedByCat]
+    [orderedByCat],
   );
 
   const dragIndicator = (taskId: string, category: Category) => {
@@ -474,7 +498,7 @@ export default function TODOPage() {
       custom: "todo-grid",
       all: "todo-grid-bottom",
     }),
-    []
+    [],
   );
 
   const persistNavFilter = useCallback((key: NavFilter) => {
@@ -491,7 +515,7 @@ export default function TODOPage() {
         el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     },
-    [navTargets, persistNavFilter]
+    [navTargets, persistNavFilter],
   );
 
   if (!hydrated) {
@@ -784,7 +808,7 @@ export default function TODOPage() {
                                 category={cat}
                                 className={`relative flex min-h-[170px] flex-col gap-3 overflow-hidden p-4 transition duration-150 ${dragIndicator(
                                   t.id,
-                                  cat
+                                  cat,
                                 )}`}
                                 onReorder={handleReorder}
                                 setDragging={setDragging}
@@ -834,7 +858,8 @@ export default function TODOPage() {
                                         <span
                                           className="inline-flex h-2.5 w-2.5 flex-shrink-0 rounded-full"
                                           style={{
-                                            backgroundColor: toneColors[statusMeta.tone],
+                                            backgroundColor:
+                                              toneColors[statusMeta.tone],
                                           }}
                                           aria-hidden
                                         />
@@ -845,7 +870,7 @@ export default function TODOPage() {
                                           onChange={(e) =>
                                             handleStatusChange(
                                               t,
-                                              e.target.value as StatusTone
+                                              e.target.value as StatusTone,
                                             )
                                           }
                                         >

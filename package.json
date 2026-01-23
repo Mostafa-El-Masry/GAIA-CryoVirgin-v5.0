@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "cross-env NODE_OPTIONS=--require=./scripts/suppress-baseline.cjs next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "gallery:scan": "node scripts/scan-gallery.cjs",
     "postinstall": "node scripts/patch-next.cjs"
   },

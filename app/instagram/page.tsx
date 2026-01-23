@@ -8,19 +8,13 @@ import { PageTransition } from "./components/PageTransition";
 import { useGalleryData } from "./useInstagramData";
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import { hasR2PublicBase } from "./r2";
-// import { getMostViewed } from "./lib/discoveryStore"; // Removed as Most Viewed section is removed
 import { supabase } from "./lib/videoStore";
-// import { getAllTags } from "./lib/tagStore"; // Removed as Tags section is removed
 import { useCurrentPermissions, isCreatorAdmin } from "@/lib/permissions";
 import { useAuthSnapshot } from "@/lib/auth-client";
-
-// import { FilterBar } from "./components/FilterBar"; // Removed as FilterBar is removed
-// import InstagramHeader from "./components/InstagramHeader";
-import InstagramPost from "./components/InstagramPost"; // Import the new InstagramPost component
-import InstagramStories from "./components/InstagramStories"; // Import the new InstagramStories component
+import InstagramPost from "./components/InstagramPost";
 import "./instagram.css";
 
-const PAGE_SIZE = 24;
+const PAGE_SIZE = 20;
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -38,15 +32,10 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
   allowedGalleryMediaCount,
 }) => {
   const [isHydrated, setIsHydrated] = React.useState(false);
-  // const [activeFilter, setActiveFilter] = useState<FilterOption>("Latest"); // FilterBar removed
 
   React.useEffect(() => {
     setIsHydrated(true);
   }, []);
-
-  // Removed useEffect for getMostViewed
-  // Removed useEffect for gallery_people (actors)
-  // Removed useEffect for getAllTags (tags)
 
   const { items } = useGalleryData(mockMediaItems);
   const { profile, status } = useAuthSnapshot();
@@ -62,12 +51,10 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
       return [];
     }
   });
+  const [itemsToShow, setItemsToShow] = useState(20);
   const [page, setPage] = useState<number>(1);
   const [shuffleSeed] = useState(() => Math.random().toString(36).slice(2, 10));
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
-  // const [mostViewed, setMostViewed] = useState<any[]>([]); // Removed as Most Viewed section is removed
-  // const [actors, setActors] = useState<any[]>([]); // Removed as Actors section is removed
-  // const [tags, setTags] = useState<any[]>([]); // Removed as Tags section is removed
   const [titleOverrides, setTitleOverrides] = useState<Record<string, string>>(
     () => {
       if (typeof window === "undefined") return {};
@@ -88,7 +75,6 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
       return [];
     }
   });
-  // Persist locally added items so they survive reloads even if Supabase is absent.
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -135,7 +121,6 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
     return withThumbs;
   }, [items, localNewItems, titleOverrides]);
 
-  // Hide items that cannot render because there is no public R2 base URL
   const allItems = useMemo(() => {
     const allowR2 = hasR2PublicBase();
     const visible = mergedItems.filter((item) => {
@@ -147,11 +132,7 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
   }, [mergedItems, hiddenIds]);
 
   const sortedItems = useMemo(() => {
-    // For now, in Instagram view, we'll just show all items sorted by latest
-    return [...allItems].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+    return [...allItems].sort(() => Math.random() - 0.5);
   }, [allItems]);
 
   const shuffledItems = useMemo(() => {
@@ -169,6 +150,21 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
       return aKey - bKey;
     });
   }, [allItems, shuffleSeed]);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.body.offsetHeight - 100
+      ) {
+        setItemsToShow((prev) => Math.min(prev + 20, sortedItems.length));
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [sortedItems.length]);
+
   const userEmail = profile?.email ?? status?.email ?? null;
   const allowDelete =
     isCreatorAdmin(userEmail) || Boolean((permissions as any).galleryDelete);
@@ -185,7 +181,6 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
     if (currentIndex < videosArray.length - 1) {
       const nextVideo = videosArray[currentIndex + 1];
       setCurrentVideoId(nextVideo.id);
-      // Scroll to the next video card
       const element = document.getElementById(`media-card-${nextVideo.id}`);
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -201,7 +196,6 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
     if (currentIndex > 0) {
       const prevVideo = videosArray[currentIndex - 1];
       setCurrentVideoId(prevVideo.id);
-      // Scroll to the previous video card
       const element = document.getElementById(`media-card-${prevVideo.id}`);
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -249,10 +243,8 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
 
   return (
     <main className={`relative min-h-screen ${spaceGrotesk.className} gaia-bg`}>
-      {/* <InstagramHeader /> */}
-      <InstagramStories /> {/* Add the new InstagramStories component here */}
-      <section className="pt-4 max-w-md mx-auto px-4">
-        {sortedItems.map((item) => (
+      <section className="pt-4 max-w-4xl mx-auto px-4">
+        {sortedItems.slice(0, itemsToShow).map((item) => (
           <InstagramPost key={item.id} item={item} />
         ))}
       </section>

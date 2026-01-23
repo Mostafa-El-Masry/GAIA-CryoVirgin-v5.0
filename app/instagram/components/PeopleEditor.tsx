@@ -45,15 +45,17 @@ export function PeopleEditor({ mediaId }: { mediaId: string }) {
 
       {people.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
-          {people.map((person: unknown) => (
-            <Link
-              key={(person as any).id}
-              href={`/instagram/people/${(person as any).id}`}
-              className="text-xs text-blue-400 hover:underline"
-            >
-              {(person as any).name}
-            </Link>
-          ))}
+          {people.map((person: unknown) =>
+            (person as any).name ? (
+              <Link
+                key={(person as any).id}
+                href={`/instagram/people/${(person as any).id}`}
+                className="text-xs text-blue-400 hover:underline"
+              >
+                {(person as any).name}
+              </Link>
+            ) : null,
+          )}
         </div>
       )}
     </div>

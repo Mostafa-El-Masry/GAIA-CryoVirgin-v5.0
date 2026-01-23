@@ -59,7 +59,6 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
       setLoading(true);
       setError(null);
       try {
-        // 1) Try Supabase-backed daily feature first
         let usedStoredFeature = false;
         try {
           const featureRes = await fetch("/api/gallery/feature");
@@ -71,7 +70,6 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
                 usedStoredFeature = true;
                 setAutoBox({
                   item: featureData.feature,
-                  // Map persisted feature source to AutoBoxReason values
                   reason:
                     featureData.source === "manual" ? "pinned" : "fallback",
                   label:
@@ -89,15 +87,12 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
             }
           }
         } catch (err) {
-          // If the feature endpoint fails (e.g. table not created yet),
-          // we silently fall back to live auto-box behaviour below.
           console.warn(
             "[Gallery] /api/gallery/feature not available, falling back.",
             err,
           );
         }
 
-        // 2) Fallback – compute from live Gallery items
         const res = await fetch("/api/gallery");
         if (!res.ok) {
           throw new Error(`Gallery API error: ${res.status}`);
@@ -123,9 +118,6 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
           setAutoBox(result);
         }
 
-        // 3) Week 4: auto-save this feature for today if we didn't
-        //    already have a stored one. This is best-effort only;
-        //    errors are logged but never shown in the UI.
         if (!usedStoredFeature && result.item) {
           try {
             await fetch("/api/gallery/feature", {
@@ -171,7 +163,6 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
   const badgeLabel = (() => {
     if (!autoBox?.item) return null;
     if (autoBox.reason === "pinned") return "Pinned";
-    // Treat computed contextual reasons as "Saved" and fallbacks as "Auto"
     if (
       autoBox.reason === "this_month" ||
       autoBox.reason === "nostalgia_week" ||

@@ -22,7 +22,7 @@ export interface VideoThumbnail {
    * Optional local thumbnail path (relative to /public).
    */
   localPath?: string;
-  createdAt?: string; // ISO string
+  createdAt?: string;
 }
 
 /**
@@ -91,6 +91,6 @@ export interface MediaItem {
    * Owner ID for permission checking (from Supabase)
    */
   owner_id?: string;
-  createdAt: string; // ISO string
-  updatedAt?: string; // ISO string
+  createdAt: string;
+  updatedAt?: string;
 }

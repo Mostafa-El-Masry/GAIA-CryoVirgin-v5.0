@@ -1,4 +1,9 @@
-import type { MediaItem, MediaType, MediaSource, VideoThumbnail } from './mediaTypes';
+import type {
+  MediaItem,
+  MediaType,
+  MediaSource,
+  VideoThumbnail,
+} from "./mediaTypes";
 
 /**
  * Suggested Supabase table: gallery_media_items
@@ -80,7 +85,7 @@ export interface GalleryAutoBoxHistoryRow {
 export function mapRowToMediaItem(row: GalleryMediaRow): MediaItem {
   return {
     id: row.id,
-    slug: row.id, // You can later store a dedicated slug in DB if you prefer.
+    slug: row.id,
     type: row.type,
     title: row.title,
     description: row.description ?? undefined,
@@ -96,6 +101,6 @@ export function mapRowToMediaItem(row: GalleryMediaRow): MediaItem {
     viewCount: row.view_count ?? undefined,
     pinnedForFeature: row.pinned_for_feature ?? undefined,
     createdAt: row.created_at,
-    updatedAt: row.updated_at ?? undefined
+    updatedAt: row.updated_at ?? undefined,
   };
 }
