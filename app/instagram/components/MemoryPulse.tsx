@@ -1,20 +1,22 @@
-'use client';
+"use client";
 
-import React, { useMemo } from 'react';
-import type { MediaItem } from '../mediaTypes';
+import React, { useMemo } from "react";
+import type { MediaItem } from "../mediaTypes";
 
 interface MemoryPulseProps {
   items: MediaItem[];
 }
 
-function countByPredicate(items: MediaItem[], predicate: (item: MediaItem) => boolean): number {
+function countByPredicate(
+  items: MediaItem[],
+  predicate: (item: MediaItem) => boolean,
+): number {
   return items.reduce((acc, item) => (predicate(item) ? acc + 1 : acc), 0);
 }
 
 export const MemoryPulse: React.FC<MemoryPulseProps> = ({ items }) => {
-  const now = new Date();
-
   const summary = useMemo(() => {
+    const now = new Date();
     if (!items.length) {
       return {
         total: 0,
@@ -22,7 +24,7 @@ export const MemoryPulse: React.FC<MemoryPulseProps> = ({ items }) => {
         thisYear: 0,
         nostalgiaWeek: 0,
         powerTagged: 0,
-        favorites: 0
+        favorites: 0,
       };
     }
 
@@ -33,7 +35,9 @@ export const MemoryPulse: React.FC<MemoryPulseProps> = ({ items }) => {
     });
     const thisMonth = countByPredicate(items, (item) => {
       const d = new Date(item.createdAt);
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      return (
+        d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+      );
     });
 
     const nostalgiaWeek = countByPredicate(items, (item) => {
@@ -43,13 +47,17 @@ export const MemoryPulse: React.FC<MemoryPulseProps> = ({ items }) => {
       const diffDays = Math.abs(
         Math.round(
           (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) -
-            Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / oneDayMs
-        )
+            Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) /
+            oneDayMs,
+        ),
       );
       return diffDays <= 3;
     });
 
-    const powerTagged = countByPredicate(items, (item) => item.tags?.includes('power') ?? false);
+    const powerTagged = countByPredicate(
+      items,
+      (item) => item.tags?.includes("power") ?? false,
+    );
     const favorites = countByPredicate(items, (item) => !!item.isFavorite);
 
     return {
@@ -58,9 +66,9 @@ export const MemoryPulse: React.FC<MemoryPulseProps> = ({ items }) => {
       thisYear,
       nostalgiaWeek,
       powerTagged,
-      favorites
+      favorites,
     };
-  }, [items, now]);
+  }, [items]);
 
   return (
     <section className="space-y-3 rounded-3xl border border-base-300 bg-base-100 p-4 text-xs text-base-content shadow-sm">
@@ -70,7 +78,8 @@ export const MemoryPulse: React.FC<MemoryPulseProps> = ({ items }) => {
             Memory Pulse
           </p>
           <p className="text-xs text-base-content/70">
-            A quick heartbeat from your Gallery, ready to link with the Daily Thread later.
+            A quick heartbeat from your Gallery, ready to link with the Daily
+            Thread later.
           </p>
         </div>
         <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] text-primary">
@@ -80,8 +89,8 @@ export const MemoryPulse: React.FC<MemoryPulseProps> = ({ items }) => {
 
       {summary.total === 0 ? (
         <p className="text-[11px] text-base-content/70">
-          Once you add images and videos, GAIA will start summarising what kind of memories you are
-          collecting this month and across your timeline.
+          Once you add images and videos, GAIA will start summarising what kind
+          of memories you are collecting this month and across your timeline.
         </p>
       ) : (
         <div className="grid gap-3 md:grid-cols-3">
@@ -89,7 +98,9 @@ export const MemoryPulse: React.FC<MemoryPulseProps> = ({ items }) => {
             <p className="text-[11px] uppercase tracking-[0.16em] text-base-content/60">
               This Month
             </p>
-            <p className="text-base font-semibold text-primary">{summary.thisMonth}</p>
+            <p className="text-base font-semibold text-primary">
+              {summary.thisMonth}
+            </p>
             <p className="text-[11px] text-base-content/70">
               Memories captured in this calendar month of any year.
             </p>
@@ -98,37 +109,48 @@ export const MemoryPulse: React.FC<MemoryPulseProps> = ({ items }) => {
             <p className="text-[11px] uppercase tracking-[0.16em] text-base-content/60">
               This Year
             </p>
-            <p className="text-base font-semibold text-primary">{summary.thisYear}</p>
+            <p className="text-base font-semibold text-primary">
+              {summary.thisYear}
+            </p>
             <p className="text-[11px] text-base-content/70">
-              New additions in the current year. Future Daily Thread can sync with this.
+              New additions in the current year. Future Daily Thread can sync
+              with this.
             </p>
           </div>
           <div className="space-y-1 rounded-2xl bg-base-200 p-3">
             <p className="text-[11px] uppercase tracking-[0.16em] text-base-content/60">
               Nostalgia Week
             </p>
-            <p className="text-base font-semibold text-primary">{summary.nostalgiaWeek}</p>
+            <p className="text-base font-semibold text-primary">
+              {summary.nostalgiaWeek}
+            </p>
             <p className="text-[11px] text-base-content/70">
-              Memories from this week across years – perfect for &ldquo;from this week then&rdquo;
-              prompts in the Daily Thread.
+              Memories from this week across years – perfect for &ldquo;from
+              this week then&rdquo; prompts in the Daily Thread.
             </p>
           </div>
           <div className="space-y-1 rounded-2xl bg-base-200 p-3">
             <p className="text-[11px] uppercase tracking-[0.16em] text-base-content/60">
               Power Tagged
             </p>
-            <p className="text-base font-semibold text-primary">{summary.powerTagged}</p>
+            <p className="text-base font-semibold text-primary">
+              {summary.powerTagged}
+            </p>
             <p className="text-[11px] text-base-content/70">
-              Images or videos tagged as <span className="font-semibold text-primary">power</span>.
+              Images or videos tagged as{" "}
+              <span className="font-semibold text-primary">power</span>.
             </p>
           </div>
           <div className="space-y-1 rounded-2xl bg-base-200 p-3">
             <p className="text-[11px] uppercase tracking-[0.16em] text-base-content/60">
               Favorites
             </p>
-            <p className="text-base font-semibold text-primary">{summary.favorites}</p>
+            <p className="text-base font-semibold text-primary">
+              {summary.favorites}
+            </p>
             <p className="text-[11px] text-base-content/70">
-              Memories you explicitly marked as favorites – good candidates for Daily Thread anchors.
+              Memories you explicitly marked as favorites – good candidates for
+              Daily Thread anchors.
             </p>
           </div>
         </div>

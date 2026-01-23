@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   createPerson,
   assignPerson,
@@ -10,16 +10,16 @@ import Link from "next/link";
 
 export function PeopleEditor({ mediaId }: { mediaId: string }) {
   const [name, setName] = useState("");
-  const [people, setPeople] = useState<any[]>([]);
+  const [people, setPeople] = useState<unknown[]>([]);
+
+  const loadPeople = useCallback(async () => {
+    const res = await getPeopleByMedia(mediaId);
+    setPeople(res.data?.map((p: unknown) => (p as any).gallery_people) || []);
+  }, [mediaId]);
 
   useEffect(() => {
     loadPeople();
-  }, [mediaId]);
-
-  const loadPeople = async () => {
-    const res = await getPeopleByMedia(mediaId);
-    setPeople(res.data?.map((p: any) => p.gallery_people) || []);
-  };
+  }, [loadPeople]);
 
   const add = async () => {
     if (!name.trim()) return;
@@ -45,13 +45,13 @@ export function PeopleEditor({ mediaId }: { mediaId: string }) {
 
       {people.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
-          {people.map((person) => (
+          {people.map((person: unknown) => (
             <Link
-              key={person.id}
-              href={`/instagram/people/${person.id}`}
+              key={(person as any).id}
+              href={`/instagram/people/${(person as any).id}`}
               className="text-xs text-blue-400 hover:underline"
             >
-              {person.name}
+              {(person as any).name}
             </Link>
           ))}
         </div>

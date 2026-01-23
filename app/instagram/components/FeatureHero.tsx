@@ -40,7 +40,7 @@ export const FeatureHero: React.FC<FeatureHeroProps> = ({ autoBox }) => {
           </p>
           {autoBox.item.description && (
             <p className="text-xs text-primary/90 max-w-xl">
-              "{autoBox.item.description}"
+              &ldquo;{autoBox.item.description}&rdquo;
             </p>
           )}
         </div>

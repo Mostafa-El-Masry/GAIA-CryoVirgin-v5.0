@@ -87,6 +87,10 @@ export interface MediaItem {
    * If true, this item is manually pinned as the Feature of the Month.
    */
   pinnedForFeature?: boolean;
+  /**
+   * Owner ID for permission checking (from Supabase)
+   */
+  owner_id?: string;
   createdAt: string; // ISO string
   updatedAt?: string; // ISO string
 }

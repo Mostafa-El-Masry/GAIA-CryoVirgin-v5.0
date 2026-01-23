@@ -11,6 +11,7 @@ import { TagEditor } from "./TagEditor";
 import { RelatedMedia } from "./RelatedMedia";
 import { PeopleEditor } from "./PeopleEditor";
 import { MediaMeta } from "./MediaMeta";
+import type { MediaItem } from "../mediaTypes";
 
 declare global {
   interface Window {
@@ -25,14 +26,14 @@ export function VideoModal({
   onNext,
   onPrev,
 }: {
-  video: any;
+  video: MediaItem;
   onClose: () => void;
   onNext: () => void;
   onPrev: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const ytRef = useRef<any>(null);
-  const [related, setRelated] = useState<any[]>([]);
+  const ytRef = useRef<unknown>(null);
+  const [related, setRelated] = useState<MediaItem[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,15 +60,21 @@ export function VideoModal({
         onClose();
       }
       if (e.key === "ArrowRight") {
-        if (ytRef.current?.seekTo) {
-          ytRef.current.seekTo(ytRef.current.getCurrentTime() + 10, true);
+        if ((ytRef.current as any)?.seekTo) {
+          (ytRef.current as any).seekTo(
+            (ytRef.current as any).getCurrentTime() + 10,
+            true,
+          );
         } else if (videoRef.current) {
           videoRef.current.currentTime += 10;
         }
       }
       if (e.key === "ArrowLeft") {
-        if (ytRef.current?.seekTo) {
-          ytRef.current.seekTo(ytRef.current.getCurrentTime() - 10, true);
+        if ((ytRef.current as any)?.seekTo) {
+          (ytRef.current as any).seekTo(
+            (ytRef.current as any).getCurrentTime() - 10,
+            true,
+          );
         } else if (videoRef.current) {
           videoRef.current.currentTime -= 10;
         }
@@ -117,10 +124,10 @@ export function VideoModal({
       <div className="flex-1 flex items-center justify-center">
         {video.youtubeId ? (
           <div id="yt-player" className="w-full max-w-5xl aspect-video" />
-        ) : video.embed_html ? (
+        ) : video.embedHtml ? (
           <div
             className="w-full max-w-5xl aspect-video"
-            dangerouslySetInnerHTML={{ __html: video.embed_html }}
+            dangerouslySetInnerHTML={{ __html: video.embedHtml }}
           />
         ) : (
           <video

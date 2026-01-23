@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { reorderPlaylist } from "../lib/playlistStore";
 import { GripVertical } from "lucide-react";
+import type { MediaItem } from "../mediaTypes";
 
 export function PlaylistEditor({
   playlistId,
   videos,
 }: {
   playlistId: string;
-  videos: any[];
+  videos: MediaItem[];
 }) {
   const [items, setItems] = useState(videos);
 

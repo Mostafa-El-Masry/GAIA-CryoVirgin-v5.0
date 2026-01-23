@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createTag, assignTag, getTags } from "../lib/tagStore";
 
 export function TagEditor({ mediaId }: { mediaId: string }) {
-  const [tags, setTags] = useState<any[]>([]);
+  const [tags, setTags] = useState<unknown[]>([]);
   const [input, setInput] = useState("");
 
   useEffect(() => {
@@ -12,12 +12,12 @@ export function TagEditor({ mediaId }: { mediaId: string }) {
   }, []);
 
   const add = async () => {
-    let tag = tags.find((t) => t.name === input);
+    let tag = tags.find((t: unknown) => (t as any).name === input);
     if (!tag) {
       const res = await createTag(input);
       tag = res.data?.[0];
     }
-    await assignTag(mediaId, tag.id);
+    await assignTag(mediaId, (tag as any).id);
     setInput("");
   };
 

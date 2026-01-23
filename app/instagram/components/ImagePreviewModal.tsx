@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import { addViewSeconds } from "../lib/socialStore";
 import { EditableTitle } from "./EditableTitle";
 import { TagEditor } from "./TagEditor";
@@ -23,6 +24,8 @@ export function ImagePreviewModal({
   onNext: () => void;
   onPrev: () => void;
 }) {
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
   useEffect(() => {
     const interval = setInterval(() => {
       addViewSeconds(mediaId, 1);
@@ -50,11 +53,14 @@ export function ImagePreviewModal({
 
       <div
         className="flex-1 flex items-center justify-center touch-pan-x"
-        onTouchStart={(e) => ((window as any)._sx = e.touches[0].clientX)}
+        onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
         onTouchEnd={(e) => {
-          const dx = e.changedTouches[0].clientX - (window as any)._sx;
-          if (dx > 50) onPrev();
-          if (dx < -50) onNext();
+          if (touchStartX !== null) {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            if (dx > 50) onPrev();
+            if (dx < -50) onNext();
+          }
+          setTouchStartX(null);
         }}
       >
         <button
@@ -64,7 +70,13 @@ export function ImagePreviewModal({
           ‹
         </button>
 
-        <img src={src} className="max-h-full max-w-full object-contain" />
+        <Image
+          src={src}
+          alt={title || "Preview image"}
+          width={800}
+          height={600}
+          className="max-h-full max-w-full object-contain"
+        />
 
         <button
           onClick={onNext}

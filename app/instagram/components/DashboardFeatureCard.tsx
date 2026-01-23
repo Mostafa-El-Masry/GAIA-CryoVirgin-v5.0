@@ -145,7 +145,11 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
         }
       } catch (err: unknown) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load Gallery feature.");
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load Gallery feature.",
+          );
         }
       } finally {
         if (!cancelled) {

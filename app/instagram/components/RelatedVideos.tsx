@@ -1,11 +1,13 @@
 "use client";
 
+import type { MediaItem } from "../mediaTypes";
+
 export function RelatedVideos({
   videos,
   onSelect,
 }: {
-  videos: any[];
-  onSelect: (video: any) => void;
+  videos: MediaItem[];
+  onSelect: (video: MediaItem) => void;
 }) {
   return (
     <div className="mt-4 border-t border-white/10 pt-4">
