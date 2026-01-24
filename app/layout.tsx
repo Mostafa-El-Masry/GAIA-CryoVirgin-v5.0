@@ -6,6 +6,7 @@ import { cookies, headers } from "next/headers";
 import { DesignProvider } from "./DesignSystem/context/DesignProvider";
 import AppBar from "./components/AppBar";
 import AuthHydrator from "./components/AuthHydrator";
+import { AuthProvider } from "./context/AuthContext";
 import { DEFAULT_THEME, THEMES, type Theme } from "./DesignSystem/theme";
 
 export const metadata: Metadata = {
@@ -78,9 +79,10 @@ export default async function RootLayout({
     >
       <body className="overflow-x-hidden" suppressHydrationWarning>
         <DesignProvider>
-          <AuthHydrator />
-          <AppBar />
-          <div className="content min-h-screen">{children}</div>
+          <AuthProvider>
+            <AppBar />
+            <div className="content min-h-screen">{children}</div>
+          </AuthProvider>
         </DesignProvider>
       </body>
     </html>

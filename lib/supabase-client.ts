@@ -5,7 +5,7 @@
  * Handles session management and JWT token refresh.
  */
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -14,9 +14,9 @@ export const isSupabaseClientConfigured = Boolean(
   supabaseUrl && supabaseAnonKey,
 );
 
-let supabaseClient: SupabaseClient | null = null;
+let supabaseClient: any | null = null;
 
-function getSupabaseBrowserClient(): SupabaseClient {
+function getSupabaseBrowserClient(): any {
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
       "Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY",

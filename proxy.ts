@@ -1,34 +1,55 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
-
 import type { NextRequest } from "next/server";
+import { validateSession } from "./lib/auth/validate";
 
-export async function proxy(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  const isProtected = [
-    "/dashboard",
-    "/settings",
-    "/timeline",
-    "/guardian",
-    "/accounts",
-    "/search",
-  ].some((path) => req.nextUrl.pathname.startsWith(path));
-
-  if (isProtected && !session) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  // Public routes - allow access
+  if (
+    pathname.startsWith("/public") ||
+    pathname === "/login" ||
+    pathname.startsWith("/api/auth/")
+  ) {
+    return NextResponse.next();
   }
 
-  return res;
+  // Protected routes - require authentication
+  if (
+    pathname.startsWith("/dashboard/") ||
+    pathname === "/dashboard" ||
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/timeline") ||
+    pathname.startsWith("/guardian") ||
+    pathname.startsWith("/accounts") ||
+    pathname.startsWith("/search")
+  ) {
+    const result = await validateSession();
+
+    if (!result.isValid) {
+      // Redirect to login with return URL
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("returnUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  return NextResponse.next();
 }
 
 // Keep a compatibility alias in case something imports the middleware symbol
 export const middleware = proxy;
 
 export const config = {
-  matcher: "/:path*",
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|public).*)",
+  ],
 };

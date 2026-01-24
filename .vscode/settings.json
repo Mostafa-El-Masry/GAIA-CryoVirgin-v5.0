@@ -15,6 +15,11 @@
             "matchCommandLine": true
         },
         "pkill": true,
-        "Get-CimInstance": true
+        "Get-CimInstance": true,
+        "move": true,
+        "/^node scripts/check-supabase-setup\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }

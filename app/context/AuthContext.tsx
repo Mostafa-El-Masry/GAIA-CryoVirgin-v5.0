@@ -25,31 +25,62 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     // Get initial user
     if (!isSupabaseClientConfigured) {
+      console.warn("Supabase client is not configured");
       setError(
-        "Supabase client is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+        "Supabase client is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
       );
       setLoading(false);
       return;
     }
 
-    getSupabaseBrowserClient()
-      .auth.getUser()
-      .then(({ data, error }) => {
+    let mounted = true;
+
+    const checkSession = async () => {
+      try {
+        const { data, error } =
+          await getSupabaseBrowserClient().auth.getSession();
+        if (!mounted) return;
+
         if (error) {
+          console.error("Auth session error:", error);
           setError(error.message);
+          setUser(null);
         } else {
-          setUser(data.user);
+          console.log(
+            "Auth session loaded:",
+            data.session ? "authenticated" : "not authenticated",
+          );
+          setUser(data.session?.user ?? null);
+          setError(null);
         }
-        setLoading(false);
-      });
+      } catch (err) {
+        if (!mounted) return;
+        console.error("Failed to check session:", err);
+        setError("Failed to check session");
+        setUser(null);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    checkSession();
 
     // Subscribe to auth changes
     const subscription = onAuthStateChange((event, session) => {
+      console.log(
+        "Auth state change:",
+        event,
+        session ? "authenticated" : "not authenticated",
+      );
       setUser(session?.user ?? null);
       setError(null);
+      setLoading(false);
     });
 
     return () => {
+      mounted = false;
       subscription?.unsubscribe();
     };
   }, []);

@@ -4,11 +4,7 @@ import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
 import { sanitizeRedirect } from "@/lib/auth";
-import { recordUserLogin } from "@/lib/auth-client";
-import {
-  getSupabaseClient,
-  isSupabaseConfigured,
-} from "@/lib/supabase";
+import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 
 type SubmitStatus = {
   type: "idle" | "info" | "error" | "success";
@@ -57,8 +53,8 @@ export default function LoginPage() {
         typeof value === "string"
           ? value.trim()
           : value
-          ? String(value).trim()
-          : "";
+            ? String(value).trim()
+            : "";
 
       const email = normalize(formData.get("email"));
       const name = normalize(formData.get("name")) || null;
@@ -80,7 +76,6 @@ export default function LoginPage() {
       });
 
       try {
-        let sessionToken: string | null = null;
         const supabase = getSupabaseClient();
 
         if (mode === "signup") {
@@ -96,9 +91,7 @@ export default function LoginPage() {
             throw error;
           }
 
-          sessionToken = data.session?.access_token ?? null;
-
-          if (!sessionToken) {
+          if (!data.session) {
             setSubmitStatus({
               type: "success",
               message:
@@ -108,7 +101,7 @@ export default function LoginPage() {
             return;
           }
         } else {
-          const { data, error } = await supabase.auth.signInWithPassword({
+          const { error } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
@@ -116,16 +109,7 @@ export default function LoginPage() {
           if (error) {
             throw error;
           }
-
-          sessionToken = data.session?.access_token ?? null;
         }
-
-        recordUserLogin({
-          email,
-          name,
-          mode,
-          sessionToken: sessionToken ?? undefined,
-        });
 
         setSubmitStatus({
           type: "success",
@@ -139,7 +123,7 @@ export default function LoginPage() {
           } catch {
             window.location.href = target;
           }
-        }, 400);
+        }, 200);
       } catch (error) {
         const message =
           error instanceof Error
@@ -152,8 +136,59 @@ export default function LoginPage() {
         setIsSubmitting(false);
       }
     },
-    [isSubmitting, mode, redirectTo]
+    [isSubmitting, mode, redirectTo],
   );
+
+  const handleGuestLogin = useCallback(async () => {
+    if (isSubmitting) return;
+    if (!isSupabaseConfigured) {
+      setSubmitStatus({
+        type: "error",
+        message:
+          "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus({
+      type: "info",
+      message: "Continuing as guest...",
+    });
+
+    try {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.auth.signInAnonymously();
+
+      if (error) {
+        throw error;
+      }
+
+      setSubmitStatus({
+        type: "success",
+        message: "Welcome! Redirecting you...",
+      });
+
+      const target = redirectTo || "/";
+      setTimeout(() => {
+        try {
+          window.location.assign(target);
+        } catch {
+          window.location.href = target;
+        }
+      }, 200);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while continuing as guest.";
+      setSubmitStatus({
+        type: "error",
+        message,
+      });
+      setIsSubmitting(false);
+    }
+  }, [isSubmitting, redirectTo]);
 
   const submitLabel = mode === "signup" ? "Create account" : "Sign in";
   const switchHref =
@@ -195,7 +230,7 @@ export default function LoginPage() {
                 <p className="text-sm text-slate-400">
                   {mode === "signup"
                     ? "Set your credentials to begin your journey."
-                    : "Enter your credentials to continue."}
+                    : "Enter your credentials to continue, or continue as guest."}
                 </p>
               </div>
 
@@ -268,14 +303,35 @@ export default function LoginPage() {
                   {isSubmitting ? "Please wait..." : submitLabel}
                 </button>
 
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-white/10" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-slate-950/90 px-2 text-slate-400">
+                      or
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGuestLogin}
+                  className="inline-flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 shadow-lg transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 disabled:opacity-80"
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
+                >
+                  {isSubmitting ? "Please wait..." : "Continue as Guest"}
+                </button>
+
                 {submitStatus.message && (
                   <p
                     className={`text-sm ${
                       submitStatus.type === "error"
                         ? "text-rose-300"
                         : submitStatus.type === "success"
-                        ? "text-emerald-300"
-                        : "text-slate-400"
+                          ? "text-emerald-300"
+                          : "text-slate-400"
                     }`}
                   >
                     {submitStatus.message}
