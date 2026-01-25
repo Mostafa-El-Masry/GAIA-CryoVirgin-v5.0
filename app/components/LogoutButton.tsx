@@ -2,7 +2,6 @@
 
 import { useCallback, useTransition } from "react";
 
-import { logout } from "@/app/auth/login/actions";
 import { recordUserLogout } from "@/lib/auth-client";
 import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 
@@ -31,15 +30,11 @@ export default function LogoutButton({
         // ignore sign-out failures; we'll still clear local state
       }
       try {
-        await logout();
-      } catch {
-        try {
-          if (typeof window !== "undefined") {
-            window.location.href = "/auth/login";
-          }
-        } catch {
-          // ignore navigation fallback failure
+        if (typeof window !== "undefined") {
+          window.location.href = "/auth/login";
         }
+      } catch {
+        // ignore navigation fallback failure
       }
     });
   }, []);
