@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { gaiaBrain } from "@/gaia-brain";
 import { useHealthStore } from "@/app/health-awakening/lib/healthStore";
 import { useTimelineStore } from "@/app/timeline/lib/store";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useDailyRitualGate() {
   const health = useHealthStore();

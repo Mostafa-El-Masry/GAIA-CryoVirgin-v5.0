@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { gaiaBrain } from "@/gaia-brain";
 import { useTimelineStore } from "@/app/timeline/lib/store";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useGaiaFeatureUnlocks() {
   const timeline = useTimelineStore();

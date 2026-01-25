@@ -5,8 +5,7 @@ import { cookies, headers } from "next/headers";
 
 import { DesignProvider } from "./DesignSystem/context/DesignProvider";
 import AppBar from "./components/AppBar";
-import AuthHydrator from "./components/AuthHydrator";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { DEFAULT_THEME, THEMES, type Theme } from "./DesignSystem/theme";
 
 export const metadata: Metadata = {
