@@ -14,6 +14,7 @@ type AuthContextType = {
   user: User | null
   session: Session | null
   loading: boolean
+  error: string | null
   signInWithEmail: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -32,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return
       setSession(data.session)
       setUser(data.session?.user ?? null)
+      setError(null)
       setLoading(false)
     })
 
@@ -40,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return
         setSession(session)
         setUser(session?.user ?? null)
+        setError(null)
       }
     )
 
@@ -51,11 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true)
+    setError(null)
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
     if (error) {
+      setError(error.message)
       setLoading(false)
       throw error
     }
@@ -76,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         session,
         loading,
+        error,
         signInWithEmail,
         signOut,
       }}
