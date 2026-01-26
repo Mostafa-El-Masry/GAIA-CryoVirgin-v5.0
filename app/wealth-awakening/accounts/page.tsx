@@ -2,8 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useWealthUnlocks } from "../hooks/useWealthUnlocks";
-import type { WealthAccount, WealthAccountType, WealthState } from "../lib/types";
-import { loadWealthStateWithRemote, saveWealthStateWithRemote } from "../lib/wealthStore";
+import type {
+  WealthAccount,
+  WealthAccountType,
+  WealthState,
+} from "../lib/types";
+import {
+  loadWealthStateWithRemote,
+  saveWealthStateWithRemote,
+} from "../lib/wealthStore";
 
 type CurrencyTotals = Record<string, number>;
 
@@ -36,24 +43,6 @@ function formatCurrency(value: number, currency: string) {
 
 export default function WealthAccountsPage() {
   const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
-  if (!canAccess("accounts")) {
-    return (
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-[var(--gaia-text-default)]">
-        <section className={`${surface} p-8`}>
-          <h1 className="mb-2 text-xl font-semibold text-[var(--gaia-text-strong)]">
-            Accounts & balances locked
-          </h1>
-          <p className="mb-3 text-sm gaia-muted">
-            Complete more Academy lessons in Apollo to unlock this part of Wealth.
-          </p>
-          <p className="text-xs gaia-muted">
-            Lessons completed: <span className="font-semibold text-white">{totalLessonsCompleted}</span>{" "}
-            - Wealth stage <span className="font-semibold text-white">{stage}</span>/5
-          </p>
-        </section>
-      </main>
-    );
-  }
 
   const [state, setState] = useState<WealthState | null>(null);
   const [editing, setEditing] = useState<WealthAccount | null>(null);
@@ -93,6 +82,30 @@ export default function WealthAccountsPage() {
           .filter((a) => a.currency === primaryCurrency)
           .reduce((sum, a) => sum + a.currentBalance, 0)
       : 0;
+
+  if (!canAccess("accounts")) {
+    return (
+      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-[var(--gaia-text-default)]">
+        <section className={`${surface} p-8`}>
+          <h1 className="mb-2 text-xl font-semibold text-[var(--gaia-text-strong)]">
+            Accounts & balances locked
+          </h1>
+          <p className="mb-3 text-sm gaia-muted">
+            Complete more Academy lessons in Apollo to unlock this part of
+            Wealth.
+          </p>
+          <p className="text-xs gaia-muted">
+            Lessons completed:{" "}
+            <span className="font-semibold text-white">
+              {totalLessonsCompleted}
+            </span>{" "}
+            - Wealth stage{" "}
+            <span className="font-semibold text-white">{stage}</span>/5
+          </p>
+        </section>
+      </main>
+    );
+  }
 
   function startCreate() {
     setIsNew(true);
@@ -190,14 +203,10 @@ export default function WealthAccountsPage() {
             Accounts & balances
           </h1>
           <p className="mt-2 max-w-3xl text-sm gaia-muted">
-            These are the places where your money currently lives - cash buffers, certificates,
-            and future investment lanes.
+            These are the places where your money currently lives - cash
+            buffers, certificates, and future investment lanes.
           </p>
-          {error && (
-            <p className="mt-1 text-xs text-rose-300">
-              {error}
-            </p>
-          )}
+          {error && <p className="mt-1 text-xs text-rose-300">{error}</p>}
         </div>
       </header>
 
@@ -214,7 +223,10 @@ export default function WealthAccountsPage() {
                 </p>
                 <p className="mt-1 text-xs gaia-muted">
                   Sum of all accounts in your primary currency (
-                  <span className="font-semibold text-[var(--gaia-text-strong)]">{primaryCurrency}</span>).
+                  <span className="font-semibold text-[var(--gaia-text-strong)]">
+                    {primaryCurrency}
+                  </span>
+                  ).
                 </p>
               </div>
               <button
@@ -241,8 +253,13 @@ export default function WealthAccountsPage() {
             </p>
             <ul className="mt-2 space-y-1.5 text-xs text-[var(--gaia-text-default)]">
               {Object.entries(currencyTotals).map(([currency, total]) => (
-                <li key={currency} className="flex items-center justify-between">
-                  <span className="font-medium text-[var(--gaia-text-strong)]">{currency}</span>
+                <li
+                  key={currency}
+                  className="flex items-center justify-between"
+                >
+                  <span className="font-medium text-[var(--gaia-text-strong)]">
+                    {currency}
+                  </span>
                   <span>{formatCurrency(total, currency)}</span>
                 </li>
               ))}
@@ -289,7 +306,9 @@ export default function WealthAccountsPage() {
                   className="mt-1 w-full rounded-lg border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-sm text-[var(--gaia-text-default)]"
                   value={editing.name}
                   onChange={(e) =>
-                    setEditing((prev) => (prev ? { ...prev, name: e.target.value } : prev))
+                    setEditing((prev) =>
+                      prev ? { ...prev, name: e.target.value } : prev,
+                    )
                   }
                 />
               </label>
@@ -300,7 +319,9 @@ export default function WealthAccountsPage() {
                   value={editing.currency}
                   onChange={(e) =>
                     setEditing((prev) =>
-                      prev ? { ...prev, currency: e.target.value.toUpperCase() } : prev,
+                      prev
+                        ? { ...prev, currency: e.target.value.toUpperCase() }
+                        : prev,
                     )
                   }
                 />
@@ -312,7 +333,9 @@ export default function WealthAccountsPage() {
                   value={editing.type}
                   onChange={(e) =>
                     setEditing((prev) =>
-                      prev ? { ...prev, type: e.target.value as WealthAccountType } : prev,
+                      prev
+                        ? { ...prev, type: e.target.value as WealthAccountType }
+                        : prev,
                     )
                   }
                 >
@@ -330,7 +353,9 @@ export default function WealthAccountsPage() {
                   value={editing.currentBalance}
                   onChange={(e) =>
                     setEditing((prev) =>
-                      prev ? { ...prev, currentBalance: Number(e.target.value) } : prev,
+                      prev
+                        ? { ...prev, currentBalance: Number(e.target.value) }
+                        : prev,
                     )
                   }
                 />
@@ -342,7 +367,9 @@ export default function WealthAccountsPage() {
                   rows={2}
                   value={editing.note ?? ""}
                   onChange={(e) =>
-                    setEditing((prev) => (prev ? { ...prev, note: e.target.value } : prev))
+                    setEditing((prev) =>
+                      prev ? { ...prev, note: e.target.value } : prev,
+                    )
                   }
                 />
               </label>
@@ -365,7 +392,9 @@ export default function WealthAccountsPage() {
       </section>
 
       <section className={`${surface} p-5 md:p-6`}>
-        <h2 className="text-sm font-semibold text-[var(--gaia-text-strong)]">Account list</h2>
+        <h2 className="text-sm font-semibold text-[var(--gaia-text-strong)]">
+          Account list
+        </h2>
         <p className="mt-1 text-xs gaia-muted">
           Each entry shows the account type, currency, and current balance.
         </p>
@@ -383,7 +412,10 @@ export default function WealthAccountsPage() {
             </thead>
             <tbody>
               {state.accounts.map((acc: WealthAccount) => (
-                <tr key={acc.id} className="border-b gaia-border last:border-b-0">
+                <tr
+                  key={acc.id}
+                  className="border-b gaia-border last:border-b-0"
+                >
                   <td className="py-2 pr-3 align-top">
                     <div className="flex flex-col">
                       <span className="font-medium text-[var(--gaia-text-strong)]">
@@ -399,7 +431,9 @@ export default function WealthAccountsPage() {
                   <td className="px-3 py-2 align-top text-[11px] gaia-muted">
                     {typeLabels[acc.type] ?? acc.type}
                   </td>
-                  <td className="px-3 py-2 align-top text-[11px] gaia-muted">{acc.currency}</td>
+                  <td className="px-3 py-2 align-top text-[11px] gaia-muted">
+                    {acc.currency}
+                  </td>
                   <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-[var(--gaia-text-strong)]">
                     {formatCurrency(acc.currentBalance, acc.currency)}
                   </td>
@@ -428,9 +462,12 @@ export default function WealthAccountsPage() {
               ))}
               {state.accounts.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-xs gaia-muted">
-                    No accounts defined yet. In Week 6+ you&apos;ll be able to wire in your real map
-                    here.
+                  <td
+                    colSpan={6}
+                    className="py-4 text-center text-xs gaia-muted"
+                  >
+                    No accounts defined yet. In Week 6+ you&apos;ll be able to
+                    wire in your real map here.
                   </td>
                 </tr>
               )}

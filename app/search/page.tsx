@@ -17,7 +17,10 @@ function SearchResults() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!q) return setResults([]);
+    if (!q) {
+      setResults([]);
+      return;
+    }
     let canceled = false;
     setLoading(true);
     fetch(`/api/search?q=${encodeURIComponent(q)}`)

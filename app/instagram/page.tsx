@@ -131,10 +131,6 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
     return visible.filter((item) => !hiddenIds.includes(item.id));
   }, [mergedItems, hiddenIds]);
 
-  const sortedItems = useMemo(() => {
-    return [...allItems].sort(() => Math.random() - 0.5);
-  }, [allItems]);
-
   const shuffledItems = useMemo(() => {
     const hash = (value: string) => {
       let h = 0;
@@ -150,6 +146,8 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
       return aKey - bKey;
     });
   }, [allItems, shuffleSeed]);
+
+  const sortedItems = shuffledItems;
 
   React.useEffect(() => {
     const handleScroll = () => {
