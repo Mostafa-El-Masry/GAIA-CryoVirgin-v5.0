@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, startTransition } from "react";
 
 import LogoutButton from "./LogoutButton";
-import { useAuthSnapshot } from "@/lib/auth-client";
 import { capitalizeWords, normaliseEmail } from "@/lib/strings";
 import { getItem, waitForUserStorage } from "@/lib/user-storage";
 import { getCreatorAdminEmail } from "@/config/permissions";
@@ -15,7 +14,6 @@ import { getCreatorAdminEmail } from "@/config/permissions";
  */
 export default function AppBar() {
   const pathname = usePathname();
-  const { profile, status } = useAuthSnapshot();
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -43,28 +41,17 @@ export default function AppBar() {
   };
 
   const { title, email, isLoggedIn } = useMemo(() => {
-    const emailRaw = profile?.email ?? status?.email ?? null;
-    const prettyEmail = emailRaw ? normaliseEmail(emailRaw) : null;
-    const session = status?.session ?? null;
-
-    // Try to get saved profile name first
-    const savedProfile = savedProfiles.find((p) => p.email === emailRaw);
-    let displayName: string | undefined = savedProfile?.name ?? undefined;
-
-    // Fallback to "Creator" for admin, or email if nothing saved
-    if (!displayName) {
-      const isCreator = emailRaw?.toLowerCase() === getCreatorAdminEmail();
-      displayName = isCreator ? "Creator" : prettyEmail ?? undefined;
-    }
-
-    const name = displayName ? capitalizeWords(displayName) : null;
+    const emailRaw: string | null = null;
+    const prettyEmail: string | null = null;
+    const session = null;
+    const displayName = "User";
 
     return {
-      title: name ?? "User",
+      title: displayName,
       email: prettyEmail,
-      isLoggedIn: Boolean(prettyEmail && session),
+      isLoggedIn: false,
     };
-  }, [profile, status, savedProfiles]);
+  }, []);
 
   const router = useRouter();
   const [query, setQuery] = useState("");

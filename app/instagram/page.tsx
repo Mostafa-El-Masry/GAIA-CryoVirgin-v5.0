@@ -10,7 +10,6 @@ import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
 import { hasR2PublicBase } from "./r2";
 import { supabase } from "./lib/videoStore";
 import { useCurrentPermissions, isCreatorAdmin } from "@/lib/permissions";
-import { useAuthSnapshot } from "@/lib/auth-client";
 import InstagramPost from "./components/InstagramPost";
 import "./instagram.css";
 
@@ -38,7 +37,6 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
   }, []);
 
   const { items } = useGalleryData(mockMediaItems);
-  const { profile, status } = useAuthSnapshot();
   const permissions = useCurrentPermissions();
 
   const [localNewItems, setLocalNewItems] = useState<MediaItem[]>(() => {
@@ -163,9 +161,8 @@ const InstagramContent: React.FC<InstagramContentProps> = ({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [sortedItems.length]);
 
-  const userEmail = profile?.email ?? status?.email ?? null;
-  const allowDelete =
-    isCreatorAdmin(userEmail) || Boolean((permissions as any).galleryDelete);
+  const userEmail = null;
+  const allowDelete = Boolean((permissions as any).galleryDelete);
 
   const videosArray = useMemo(() => {
     return sortedItems.filter((item) => item.type === "video");

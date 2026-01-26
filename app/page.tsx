@@ -1,110 +1,71 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
-import NoScroll from "@/components/NoScroll";
-import UserDropdown from "@/components/UserDropdown";
-import AuthGate from "@/components/AuthGate";
-import { useAuthSnapshot } from "@/lib/auth-client";
-import { isCreatorAdmin, useCurrentPermissions } from "@/lib/permissions";
-import type { PermissionKey } from "@/config/permissions";
-
-interface NavLink {
-  href: string;
-  label: string;
-  permission: PermissionKey;
-}
+import { useEffect, useState } from "react";
 
 /**
- * New GAIA Home (v2.0)
- * - Circular layout with links around central symbol
- * - Responsive radius based on viewport
+ * Intro v3.0 (Phase 5 · Week 1)
+ * - Removes local/glass search (global search now lives in the Slim App Bar)
+ * - Keeps 8 quick links (no /search)
+ * - Mobile-first layout, centered symbol
  */
 export default function HomePage() {
-  const [radius] = useState<number>(280);
-  const [mobileOpen, setMobileOpen] = useState(true);
-  const { profile, status } = useAuthSnapshot();
-  const email = profile?.email ?? status?.email ?? null;
-  const permissions = useCurrentPermissions();
-  const isAdmin = useMemo(() => isCreatorAdmin(email), [email]);
-
+  const left = [
+    { href: "/gallery", label: "Gallery" },
+    { href: "/apollo", label: "Apollo" },
+    { href: "/timeline", label: "Timeline" },
+    { href: "/health", label: "Health" },
+  ];
+  const right = [
+    { href: "/wealth", label: "Wealth" },
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/core-brain", label: "Core Brain" },
+    { href: "/brain", label: "Brain" },
+  ];
+  const more = [
+    { href: "/media-tools", label: "Media Tools" },
+    { href: "/settings", label: "Settings" },
+    { href: "/interlog", label: "Intro" },
+  ];
+  const items = [...left, ...right, ...more];
   const linkNotes: Record<string, string> = {
-    Gallery: "Story vault and media drops",
-    Apollo: "AI workspace and tools",
-    Brain: "GAIA's decision and dictation UI",
-    ELEUTHIA: "Guided creation studio",
-    Timeline: "Session log and notes",
+    Gallery: "Stories and shared releases",
+    Apollo: "AI workspace and labs",
+    Timeline: "Track recent sessions",
     Health: "Vitals and recovery",
-    Wealth: "Capital dashboards",
-    Accounts: "Profiles and access",
+    Wealth: "Capital and flow",
     Dashboard: "Control room overview",
-    Settings: "Preferences and themes",
+    "Core Brain": "System settings and memory",
+    Intro: "Orientation and basics",
+    "Media Tools": "Utilities and exports",
+    Settings: "Themes and preferences",
+    Brain: "GAIA's decision and dictation UI",
   };
 
-  // All links in one array for circular layout
-  const links: NavLink[] = [
-    { href: "/instagram", label: "Gallery", permission: "gallery" },
-    { href: "/apollo", label: "Apollo", permission: "apollo" },
-    { href: "/gaia-brain", label: "Brain", permission: "core" },
-    { href: "/ELEUTHIA", label: "ELEUTHIA", permission: "eleuthia" },
-    { href: "/timeline", label: "Timeline", permission: "timeline" },
-    { href: "/health-awakening", label: "Health", permission: "health" },
-    { href: "/wealth-awakening", label: "Wealth", permission: "wealth" },
-    { href: "/accounts", label: "Accounts", permission: "accounts" }, // <-- new
-    { href: "/dashboard", label: "Dashboard", permission: "dashboard" },
-    // Archives moved under Apollo; remove from main intro links
-    { href: "/settings", label: "Settings", permission: "settings" },
-  ];
+  const [radius, setRadius] = useState<number>(180);
 
-  const { isFeatureUnlocked } = useGaiaFeatureUnlocks();
-
-  const visibleLinks = isAdmin
-    ? links
-    : links.filter((link) => {
-        if (!permissions[link.permission]) return false;
-
-        // Dashboard + Apollo are always available (once permissioned)
-        if (link.href === "/dashboard" || link.href === "/apollo") {
-          return true;
-        }
-
-        // Feature-by-feature Academy unlocks
-        switch (link.href) {
-          case "/wealth-awakening":
-            return isFeatureUnlocked("wealth");
-          case "/health-awakening":
-            return isFeatureUnlocked("health");
-          case "/timeline":
-            return isFeatureUnlocked("timeline");
-          case "/accounts":
-            return isFeatureUnlocked("accounts");
-          case "/ELEUTHIA":
-            return isFeatureUnlocked("eleuthia");
-          case "/settings":
-            return isFeatureUnlocked("settings");
-          case "/instagram":
-            return isFeatureUnlocked("gallery");
-          default:
-            return true;
-        }
-      });
+  useEffect(() => {
+    function update() {
+      const w = window.innerWidth;
+      if (w < 640) setRadius(140);
+      else if (w < 1024) setRadius(200);
+      else setRadius(320);
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   return (
-    <AuthGate>
-      <main className="relative flex min-h-screen items-center justify-center overflow-hidden text-[var(--gaia-text-default)]">
-        <NoScroll />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,var(--gaia-ink-faint),transparent_45%),radial-gradient(circle_at_80%_0%,var(--gaia-ink-faint),transparent_55%),radial-gradient(circle_at_50%_85%,var(--gaia-ink-faint),transparent_60%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-black px-4 py-8 text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.18),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(52,211,153,0.16),transparent_38%),radial-gradient(circle_at_50%_85%,rgba(52,211,153,0.12),transparent_45%)]" />
 
-        <div className="absolute right-6 top-6 z-50 hidden md:block">
-          <UserDropdown />
-        </div>
-
-        {/* Mobile layout */}
-        <section className="relative z-10 mx-auto flex w-full max-w-xl flex-col gap-6 px-5 pt-8 pb-12 md:hidden">
-          <div className="flex items-center justify-between rounded-2xl border border-[var(--gaia-border)] bg-[var(--gaia-surface)] px-4 py-3 shadow-sm">
+      <div className="relative z-10 mx-auto w-full max-w-5xl">
+        {/* Mobile-first functions view */}
+        <section className="mx-auto w-full max-w-xl space-y-4 md:hidden">
+          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--gaia-ink-soft)] ring-1 ring-[var(--gaia-border)]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
                 <img
                   src="/gaia-intro-1.png"
                   alt="GAIA"
@@ -112,99 +73,43 @@ export default function HomePage() {
                 />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[var(--gaia-text-muted)]">
+                <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">
                   GAIA
                 </p>
-                <p className="text-base font-semibold leading-5 text-[var(--gaia-text-strong)]">
-                  Adaptive navigator
+                <p className="text-lg font-semibold leading-5 text-white">
+                  Pick a function
                 </p>
-                <p className="text-[11px] text-[var(--gaia-text-muted)]">
-                  {email ? `Signed in as ${email}` : "Guest session active"}
+                <p className="text-sm text-white/70">
+                  Built to be thumb-friendly on phones.
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setMobileOpen((open) => !open)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] text-[var(--gaia-text-strong)] shadow-inner shadow-black/5 transition hover:border-[var(--gaia-contrast-bg)]"
-              aria-label={mobileOpen ? "Hide functions" : "Show functions"}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className={`h-5 w-5 transition-transform ${
-                  mobileOpen ? "rotate-45" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              >
-                <path d="M5 12h14M12 5v14" strokeLinecap="round" />
-              </svg>
-            </button>
+            <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-medium text-emerald-100 ring-1 ring-white/15">
+              Intro
+            </span>
           </div>
 
-          <div className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface)] p-5 shadow-xl shadow-black/5">
-            <div className="flex flex-col gap-3">
-              <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
-                Continue your session
-              </p>
-              <p className="text-sm text-[var(--gaia-text-muted)]">
-                Jump into a function or keep exploring. Everything is tuned for
-                one-hand navigation.
-              </p>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {visibleLinks.slice(0, 4).map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="gaia-panel group flex items-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold text-[var(--gaia-text-strong)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--gaia-contrast-bg)]/30 hover:shadow-md"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--gaia-ink-soft)] text-[var(--gaia-text-strong)] ring-1 ring-[var(--gaia-border)]">
-                    {link.label.slice(0, 1)}
-                  </span>
-                  <span className="leading-tight">{link.label}</span>
-                </Link>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setMobileOpen((open) => !open)}
-              className="mt-4 w-full rounded-2xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] px-4 py-3 text-sm font-medium text-[var(--gaia-text-strong)] transition hover:border-[var(--gaia-contrast-bg)]/30"
-            >
-              {mobileOpen
-                ? "Hide full function list"
-                : "Show full function list"}
-            </button>
-          </div>
-
-          <div
-            className={`grid gap-3 transition duration-200 ${
-              mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
-            }`}
-          >
-            {visibleLinks.map((link, idx) => (
+          <div className="grid gap-3">
+            {items.map((item, idx) => (
               <Link
-                key={link.href}
-                href={link.href}
-                className="gaia-panel group flex items-center justify-between rounded-2xl px-4 py-3 shadow-sm shadow-black/10 transition hover:-translate-y-0.5 hover:border-[var(--gaia-contrast-bg)]/30 hover:shadow-md"
+                key={item.href}
+                href={item.href}
+                className="gaia-glass gaia-border group flex items-center justify-between rounded-2xl border border-white/10 px-4 py-3 shadow-sm shadow-black/25 backdrop-blur transition hover:-translate-y-0.5 hover:border-emerald-300/40 hover:shadow-md hover:shadow-emerald-500/20"
               >
                 <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--gaia-ink-soft)] text-sm font-semibold text-[var(--gaia-text-strong)] ring-1 ring-[var(--gaia-border)]">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/10 text-sm font-semibold text-emerald-100 ring-1 ring-emerald-300/30">
                     {idx + 1}
                   </span>
                   <div className="flex flex-col">
-                    <span className="text-base font-semibold text-[var(--gaia-text-strong)]">
-                      {link.label}
+                    <span className="text-base font-semibold text-white">
+                      {item.label}
                     </span>
-                    <span className="text-xs text-[var(--gaia-text-muted)]">
-                      {linkNotes[link.label] ?? "Open module"}
+                    <span className="text-xs text-emerald-50/80">
+                      {linkNotes[item.label] ?? "Open module"}
                     </span>
                   </div>
                 </div>
-                <span className="text-[11px] uppercase tracking-[0.15em] text-[var(--gaia-text-muted)]">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-emerald-100/90">
                   Tap
                 </span>
               </Link>
@@ -212,40 +117,79 @@ export default function HomePage() {
           </div>
         </section>
 
-        <div className="relative mx-auto w-full max-w-6xl">
-          {/* Circle Container (desktop/tablet) */}
-          <div className="relative hidden h-[640px] sm:h-[720px] lg:h-[800px] md:block">
-            {/* Centered Logo */}
-            <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
-              <img src="/gaia-intro-1.png" alt="GAIA" className="h-96 w-auto" />
-            </div>
+        <div className="relative hidden h-[640px] sm:h-[720px] lg:h-[800px] md:block">
+          <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
+            <img src="/gaia-intro-1.png" alt="GAIA" className="h-96 w-auto" />
+          </div>
 
-            {/* Links positioned in a circle */}
-            {visibleLinks.map((link: NavLink, i: number) => {
-              const angle = i * (360 / visibleLinks.length) * (Math.PI / 180);
-
-              const rawX = radius * Math.cos(angle);
-              const rawY = radius * Math.sin(angle);
-              const x = rawX.toFixed(3);
-              const y = rawY.toFixed(3);
-              const style = {
-                transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
-              };
-
+          {(() => {
+            const ringCount = items.length > 8 ? 2 : 1;
+            const firstRingCount =
+              ringCount === 2 ? Math.ceil(items.length / 2) : items.length;
+            return items.map((l, i) => {
+              const ringIndex = i < firstRingCount ? 0 : 1;
+              const ringOffset = ringIndex === 0 ? 0 : firstRingCount;
+              const ringSize =
+                ringIndex === 0
+                  ? firstRingCount
+                  : items.length - firstRingCount;
+              const angle = ((i - ringOffset) / ringSize) * 360;
+              const ringRadius = ringIndex === 0 ? radius : radius + 160;
+              const transform = `translate(-50%,-50%) rotate(${angle}deg) translate(0,-${ringRadius}px) rotate(-${angle}deg)`;
               return (
                 <Link
-                  key={link.href}
-                  href={link.href}
-                  className="gaia-panel octagon-link absolute left-1/2 top-1/2 flex w-32 items-center justify-center px-6 py-3 text-center text-lg font-medium text-[var(--gaia-text-strong)] backdrop-blur transition whitespace-nowrap"
-                  style={style}
+                  key={l.href}
+                  href={l.href}
+                  aria-label={l.label}
+                  title={l.label}
+                  className="gaia-glass gaia-border absolute left-1/2 top-1/2 flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-center backdrop-blur transition-transform transform-gpu hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gaia-accent active:scale-[.99] text-[var(--gaia-text-default)] no-underline"
+                  style={{ transform }}
                 >
-                  {link.label}
+                  <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                    <svg
+                      className="h-4 w-4 text-[var(--gaia-text-muted)]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="9"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        opacity="0.18"
+                      />
+                      <path
+                        d="M8 12h8"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span className="text-sm font-medium leading-tight sm:text-base">
+                    {l.label}
+                  </span>
                 </Link>
               );
-            })}
+            });
+          })()}
+          {/* DEBUG: show computed items (remove after verification) */}
+          <div className="pointer-events-none fixed right-4 bottom-4 z-50 hidden md:block">
+            <div className="rounded bg-white/90 p-2 text-xs text-black/90 shadow">
+              <strong className="block text-[11px]">
+                Intro items ({items.length}):
+              </strong>
+              <div className="whitespace-pre">
+                {items.map((it) => it.label).join(", ")}
+              </div>
+            </div>
           </div>
         </div>
-      </main>
-    </AuthGate>
+      </div>
+    </main>
   );
 }

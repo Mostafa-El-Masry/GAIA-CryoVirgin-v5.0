@@ -1,18 +1,15 @@
 import { useMemo } from "react";
 import { gaiaBrain } from "@/gaia-brain";
 import { useTimelineStore } from "@/app/timeline/lib/store";
-import { useAuth } from "@/contexts/AuthContext";
 
 export function useGaiaFeatureUnlocks() {
   const timeline = useTimelineStore();
-  const { user } = useAuth();
 
   const decision = useMemo(() => {
     return gaiaBrain("progression", {
-      user,
       timeline,
     });
-  }, [user, timeline]);
+  }, [timeline]);
 
   const d = decision as any;
 

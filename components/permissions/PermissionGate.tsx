@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { useMemo } from "react";
-import { useAuthSnapshot } from "@/lib/auth-client";
 import { normaliseEmail } from "@/lib/strings";
 import { useCurrentPermissions, isCreatorAdmin } from "@/lib/permissions";
 import type { PermissionKey } from "@/config/permissions";
@@ -18,11 +17,8 @@ export default function PermissionGate({
   children,
   fallback,
 }: PermissionGateProps) {
-  const { profile, status } = useAuthSnapshot();
   const permissions = useCurrentPermissions();
-  const email = profile?.email ?? status?.email ?? null;
-  const normalised = normaliseEmail(email);
-  const isAdmin = isCreatorAdmin(normalised);
+  const isAdmin = isCreatorAdmin(null);
 
   // Temporarily disable permission gating across the app so all areas are
   // accessible during review. Restore original logic to re-enable locks.

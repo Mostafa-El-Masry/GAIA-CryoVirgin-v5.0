@@ -10,7 +10,6 @@ import {
 import { exportJSON, importJSON, loadData } from "@/app/apollo/lib/store";
 import { THEMES, type Theme } from "@/app/DesignSystem/theme";
 import SettingsPermissionsTab from "./SettingsPermissionsTab";
-import { useAuthSnapshot } from "@/lib/auth-client";
 import {
   resetViews,
   getTagsMap,
@@ -82,11 +81,8 @@ async function fetchGalleryManifest(): Promise<GalleryItem[]> {
 
 function SettingsContent() {
   const { theme, setTheme, button, setButton, search, setSearch } = useDesign();
-  const { profile: authProfile } = useAuthSnapshot();
-  const authName =
-    authProfile?.name ??
-    (authProfile?.email ? authProfile.email.split("@")[0] : null);
-  const authEmail = authProfile?.email ?? null;
+  const authName = null;
+  const authEmail = null;
 
 
   const [syncing, setSyncing] = useState(false);

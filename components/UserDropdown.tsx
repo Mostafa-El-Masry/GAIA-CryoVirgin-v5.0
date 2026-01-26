@@ -3,13 +3,11 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import LogoutButton from "@/app/components/LogoutButton";
-import { useAuthSnapshot } from "@/lib/auth-client";
 import { capitalizeWords, normaliseEmail } from "@/lib/strings";
 import { getItem, waitForUserStorage } from "@/lib/user-storage";
 import { getCreatorAdminEmail } from "@/config/permissions";
 
 export default function UserDropdown() {
-  const { profile, status } = useAuthSnapshot();
   const [open, setOpen] = useState(false);
   const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -39,21 +37,15 @@ export default function UserDropdown() {
   >([]);
 
   const { title, email, isLoggedIn } = useMemo(() => {
-    const emailRaw = profile?.email ?? status?.email ?? null;
-    const prettyEmail = emailRaw ? normaliseEmail(emailRaw) : null;
-    const session = status?.session ?? null;
-
-    // Prefer a saved profile name if available
-    const saved = savedProfiles.find((p) => p.email === emailRaw);
-    const isCreator = emailRaw?.toLowerCase() === getCreatorAdminEmail();
-    const displayName = saved?.name || (isCreator ? "Creator" : prettyEmail);
+    const emailRaw = null;
+    const prettyEmail = null;
 
     return {
-      title: displayName ? capitalizeWords(displayName) : "User",
+      title: "User",
       email: prettyEmail,
-      isLoggedIn: Boolean(prettyEmail && session),
+      isLoggedIn: false,
     };
-  }, [profile, status]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

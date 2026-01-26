@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuthSnapshot } from "@/lib/auth-client";
 import {
   getItem,
   setItem,
@@ -27,7 +26,6 @@ const PROFILES_KEY = "gaia.saved-profiles";
 const LOCAL_PROFILES_KEY = "gaia.saved-profiles.local"; // localStorage backup
 
 export default function ProfilesCard() {
-  const { profile, status } = useAuthSnapshot();
   const [profiles, setProfiles] = useState<SavedProfile[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState("");
@@ -36,15 +34,14 @@ export default function ProfilesCard() {
   const [editingCurrentProfile, setEditingCurrentProfile] = useState(false);
   const [currentProfileName, setCurrentProfileName] = useState("");
 
-  const currentEmail = profile?.email ?? status?.email ?? null;
-  const currentName = profile?.name?.trim() ?? null;
+  const currentEmail = null;
+  const currentName = null;
 
   // Get saved name for current email if it exists
   const savedCurrentProfile = profiles.find((p) => p.email === currentEmail);
-  const isCreator = currentEmail?.toLowerCase() === getCreatorAdminEmail();
+  const isCreator = false;
   // Show saved name, or "Creator" for admin, or "(not set)" for others
-  const displayName =
-    savedCurrentProfile?.name || (isCreator ? "Creator" : null);
+  const displayName = null;
 
   // Load saved profiles on mount and subscribe to updates
   useEffect(() => {
@@ -111,31 +108,7 @@ export default function ProfilesCard() {
   }, []);
 
   const saveCurrentProfile = () => {
-    if (!currentEmail || !newName.trim()) return;
-
-    const isCreator = currentEmail.toLowerCase() === getCreatorAdminEmail();
-    const newProfile: SavedProfile = {
-      email: currentEmail,
-      name: newName.trim(),
-      savedAt: new Date().toISOString(),
-      role: isCreator ? "Creator" : "User",
-      permissions: isCreator
-        ? createAdminPermissionSet()
-        : createEmptyPermissionSet(),
-    };
-
-    const updated = [
-      newProfile,
-      ...profiles.filter((p) => p.email !== currentEmail),
-    ];
-    setProfiles(updated);
-    setItem(PROFILES_KEY, JSON.stringify(updated));
-    // Backup to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem(LOCAL_PROFILES_KEY, JSON.stringify(updated));
-    }
-    setNewName("");
-    setShowForm(false);
+    return;
   };
 
   const removeProfile = (email: string) => {
@@ -175,36 +148,11 @@ export default function ProfilesCard() {
   };
 
   const startEditingCurrentProfile = () => {
-    setEditingCurrentProfile(true);
-    setCurrentProfileName(displayName || "");
+    return;
   };
 
   const saveCurrentProfileName = () => {
-    if (!currentProfileName.trim() || !currentEmail) return;
-
-    const isCreator = currentEmail.toLowerCase() === getCreatorAdminEmail();
-    const newProfile: SavedProfile = {
-      email: currentEmail,
-      name: currentProfileName.trim(),
-      savedAt: new Date().toISOString(),
-      role: isCreator ? "Creator" : "User",
-      permissions: isCreator
-        ? createAdminPermissionSet()
-        : createEmptyPermissionSet(),
-    };
-
-    const updated = [
-      newProfile,
-      ...profiles.filter((p) => p.email !== currentEmail),
-    ];
-    setProfiles(updated);
-    setItem(PROFILES_KEY, JSON.stringify(updated));
-    // Backup to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem(LOCAL_PROFILES_KEY, JSON.stringify(updated));
-    }
-    setEditingCurrentProfile(false);
-    setCurrentProfileName("");
+    return;
   };
 
   const cancelEditingCurrentProfile = () => {
@@ -223,67 +171,7 @@ export default function ProfilesCard() {
         <div className="mt-4 rounded-md bg-blue-500/10 border border-blue-400/30 p-3">
           <div className="text-sm font-medium mb-2">Current Profile</div>
           <div className="text-xs gaia-muted space-y-2">
-            <div>Email: {currentEmail}</div>
-            {editingCurrentProfile ? (
-              <div className="space-y-2">
-                <div>
-                  <label className="text-xs font-medium block mb-1">
-                    Name:
-                  </label>
-                  <input
-                    type="text"
-                    value={currentProfileName}
-                    onChange={(e) => setCurrentProfileName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full rounded border gaia-border px-2 py-1.5 text-sm"
-                    autoFocus
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={saveCurrentProfileName}
-                    disabled={!currentProfileName.trim()}
-                    className="rounded border px-3 py-1 text-xs gaia-contrast disabled:opacity-50"
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cancelEditingCurrentProfile}
-                    className="rounded border gaia-border px-3 py-1 text-xs gaia-hover-soft"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span>Name: {displayName || "(not set)"}</span>
-                    {currentEmail?.toLowerCase() === getCreatorAdminEmail() && (
-                      <span className="text-xs font-semibold rounded px-1.5 py-0.5 bg-amber-500/20 text-amber-700 dark:text-amber-400">
-                        Creator
-                      </span>
-                    )}
-                  </div>
-                  {currentEmail?.toLowerCase() === getCreatorAdminEmail() && (
-                    <div className="text-xs gaia-muted mt-1">
-                      ✓ All permissions
-                    </div>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={startEditingCurrentProfile}
-                  className="text-blue-400 hover:bg-blue-500/10 rounded px-2 py-1"
-                  title="Edit name"
-                >
-                  ✎
-                </button>
-              </div>
-            )}
+            <div>No current user session</div>
           </div>
         </div>
       )}

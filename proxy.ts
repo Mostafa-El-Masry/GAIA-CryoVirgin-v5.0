@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { validateSession } from "./lib/auth/validate";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public routes - allow access
+  // Allow all routes
   if (
     pathname.startsWith("/public") ||
     pathname === "/login" ||
@@ -14,7 +13,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protected routes - require authentication
+  // Allow protected routes
   if (
     pathname.startsWith("/dashboard/") ||
     pathname === "/dashboard" ||
@@ -24,14 +23,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/accounts") ||
     pathname.startsWith("/search")
   ) {
-    const result = await validateSession();
-
-    if (!result.isValid) {
-      // Redirect to login with return URL
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("returnUrl", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+    // Authentication removed - allow all access
+    return NextResponse.next();
   }
 
   return NextResponse.next();
