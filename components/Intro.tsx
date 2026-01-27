@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -11,35 +11,29 @@ import { useEffect, useState } from "react";
  */
 export default function Intro() {
   const left = [
-    { href: "/gallery", label: "Gallery" },
     { href: "/apollo", label: "Apollo" },
     { href: "/timeline", label: "Timeline" },
-    { href: "/health", label: "Health" },
+    { href: "/health-awakening", label: "Health" },
+    { href: "/ELEUTHIA", label: "ELEUTHIA" },
   ];
   const right = [
-    { href: "/wealth", label: "Wealth" },
+    { href: "/wealth-awakening", label: "Wealth" },
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/core-brain", label: "Core Brain" },
-    { href: "/brain", label: "Brain" },
-  ];
-  const more = [
-    { href: "/media-tools", label: "Media Tools" },
+    { href: "/guardian", label: "Guardian" },
     { href: "/settings", label: "Settings" },
-    { href: "/interlog", label: "Intro" },
   ];
+  const more = [{ href: "/instagram", label: "Instagram" }];
   const items = [...left, ...right, ...more];
   const linkNotes: Record<string, string> = {
-    Gallery: "Stories and shared releases",
     Apollo: "AI workspace and labs",
     Timeline: "Track recent sessions",
     Health: "Vitals and recovery",
+    ELEUTHIA: "Creative vault and inspiration",
     Wealth: "Capital and flow",
     Dashboard: "Control room overview",
-    "Core Brain": "System settings and memory",
-    Intro: "Orientation and basics",
-    "Media Tools": "Utilities and exports",
+    Guardian: "Security and monitoring",
     Settings: "Themes and preferences",
-    Brain: "GAIA's decision and dictation UI",
+    Instagram: "Social media integration",
   };
 
   const [radius, setRadius] = useState<number>(180);
