@@ -1,8 +1,7 @@
 import { supabase } from "./videoStore";
 
 export async function uploadImage(file: File) {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) throw new Error("Not authenticated");
+  // Auth check removed - proceeding with upload
 
   const ext = file.name.split(".").pop();
   const fileName = `${crypto.randomUUID()}.${ext}`;
@@ -23,7 +22,7 @@ export async function uploadImage(file: File) {
   await supabase.from("gallery_videos").insert({
     src: publicUrl.publicUrl,
     type: "image",
-    owner_id: user.id,
+    owner_id: null, // No user available
   });
 
   return publicUrl.publicUrl;

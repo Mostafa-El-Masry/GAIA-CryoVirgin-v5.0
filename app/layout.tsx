@@ -6,6 +6,7 @@ import { cookies, headers } from "next/headers";
 import { DesignProvider } from "./DesignSystem/context/DesignProvider";
 import AppBar from "./components/AppBar";
 import { DEFAULT_THEME, THEMES, type Theme } from "./DesignSystem/theme";
+import AppBarWrapper from "./components/AppBarWrapper";
 
 export const metadata: Metadata = {
   title: "GAIA",
@@ -77,10 +78,10 @@ export default async function RootLayout({
     >
       <body className="overflow-x-hidden" suppressHydrationWarning>
         <DesignProvider>
-
+          <AppBarWrapper>
             <AppBar />
-            <div className="content min-h-screen">{children}</div>
-
+          </AppBarWrapper>
+          <div className="content min-h-screen">{children}</div>
         </DesignProvider>
       </body>
     </html>

@@ -2,59 +2,21 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, startTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import LogoutButton from "./LogoutButton";
-import { capitalizeWords, normaliseEmail } from "@/lib/strings";
-import { getItem, waitForUserStorage } from "@/lib/user-storage";
-import { getCreatorAdminEmail } from "@/config/permissions";
+import { capitalizeWords } from "@/lib/strings";
 
 /**
  * Slim App Bar
  */
 export default function AppBar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [savedProfiles, setSavedProfiles] = useState<
-    Array<{ email: string; name: string }>
-  >([]);
-  const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const clearCloseTimer = () => {
-    if (closeTimeout.current) {
-      clearTimeout(closeTimeout.current);
-      closeTimeout.current = null;
-    }
-  };
-  const handleToggle = (value: boolean) => {
-    if (value) {
-      clearCloseTimer();
-      setOpen(true);
-    } else {
-      clearCloseTimer();
-      closeTimeout.current = setTimeout(() => {
-        setOpen(false);
-        closeTimeout.current = null;
-      }, 250);
-    }
-  };
-
-  const { title, email, isLoggedIn } = useMemo(() => {
-    const emailRaw: string | null = null;
-    const prettyEmail: string | null = null;
-    const session = null;
-    const displayName = "User";
-
-    return {
-      title: displayName,
-      email: prettyEmail,
-      isLoggedIn: false,
-    };
-  }, []);
-
   const router = useRouter();
   const [query, setQuery] = useState("");
+
+  const title = "User";
+  const email: string | null = null;
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,34 +41,6 @@ export default function AppBar() {
       // ignore DOM access errors outside the browser
     }
   }, [pathname]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setMounted(true);
-
-    const loadProfiles = async () => {
-      try {
-        await waitForUserStorage();
-        if (cancelled) return;
-        const raw = getItem("gaia.saved-profiles");
-        if (!raw) return;
-        const profiles = JSON.parse(raw);
-        if (cancelled) return;
-        startTransition(() => {
-          if (!cancelled) setSavedProfiles(profiles);
-        });
-      } catch {
-        // Ignore errors loading profiles
-      }
-    };
-
-    loadProfiles();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (!mounted || pathname === "/" || pathname.startsWith("/auth")) return null;
 
   return (
     <header className="gaia-glass-strong gaia-border fixed inset-x-0 top-0 z-50 border-b border backdrop-blur">
@@ -168,69 +102,6 @@ export default function AppBar() {
           <div className="flex-shrink-0" />
         </div>
 
-        <div
-          className="relative"
-          onMouseEnter={() => isLoggedIn && handleToggle(true)}
-          onMouseLeave={() => isLoggedIn && handleToggle(false)}
-        >
-          {isLoggedIn ? (
-            <>
-              <button
-                type="button"
-                className="flex items-center gap-2 rounded-lg border gaia-border px-3 py-1.5 text-sm font-semibold gaia-hover-soft transition"
-                aria-haspopup="true"
-                aria-expanded={open}
-                onFocus={() => handleToggle(true)}
-                onBlur={() => handleToggle(false)}
-              >
-                {/* Avatar with initials */}
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xs font-bold text-white">
-                  {title
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2)}
-                </div>
-                <span>{title}</span>
-              </button>
-              {open && (
-                <div className="gaia-glass gaia-border absolute right-0 top-[calc(100%+0.5rem)] min-w-[240px] rounded-lg border p-3 shadow-lg z-50">
-                  <div className="mb-3 flex items-center gap-3 pb-3 border-b gaia-border">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-sm font-bold text-white">
-                      {title
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()
-                        .slice(0, 2)}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold truncate">
-                        {title}
-                      </div>
-                      {email && (
-                        <div className="break-all text-xs gaia-muted truncate">
-                          {email}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <LogoutButton className="w-full rounded-lg border gaia-border px-3 py-1.5 text-sm font-medium gaia-hover-soft" />
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <Link
-              href="/auth/login"
-              className="rounded-lg border gaia-border px-3 py-1.5 text-sm font-medium gaia-hover-soft"
-            >
-              Sign in
-            </Link>
-          )}
-        </div>
         {/* Mobile slide-down panel */}
         {mobileOpen && (
           <div className="md:hidden absolute inset-x-0 top-full z-40 gaia-glass gaia-border border-b p-3">
@@ -246,18 +117,6 @@ export default function AppBar() {
                 className="w-full rounded-lg border gaia-border px-3 py-2 text-sm bg-white/6 placeholder:gaia-muted"
               />
             </form>
-            <div>
-              {isLoggedIn ? (
-                <LogoutButton className="w-full rounded-lg border gaia-border px-3 py-2 text-sm font-medium gaia-hover-soft" />
-              ) : (
-                <Link
-                  href="/auth/login"
-                  className="block w-full rounded-lg border gaia-border px-3 py-2 text-sm font-medium gaia-hover-soft text-center"
-                >
-                  Sign in
-                </Link>
-              )}
-            </div>
           </div>
         )}
       </div>

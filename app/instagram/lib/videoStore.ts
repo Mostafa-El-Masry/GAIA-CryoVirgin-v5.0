@@ -56,5 +56,6 @@ export async function deleteMedia(mediaId: string) {
 }
 
 export async function getCurrentUser() {
-  return supabase.auth.getUser();
+  // Auth check removed
+  return { data: { user: null } };
 }

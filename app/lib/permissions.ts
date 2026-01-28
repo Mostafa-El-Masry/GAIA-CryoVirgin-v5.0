@@ -52,8 +52,9 @@ export function getAvailablePermissionKeys(): PermissionKey[] {
   ];
 }
 
-export async function saveUserPermissionSet(
-  payload: { userId: string; permissions: PermissionSet }
-): Promise<void> {
+export async function saveUserPermissionSet(payload: {
+  userId: string;
+  permissions: PermissionSet;
+}): Promise<void> {
   // TODO: Implement actual permission saving to database
 }

@@ -125,9 +125,10 @@ export function getAvailablePermissionKeys(): PermissionKey[] {
   ];
 }
 
-export function saveUserPermissionSet(
-  payload: { userId: string; permissions: PermissionSet }
-): Promise<void> {
+export function saveUserPermissionSet(payload: {
+  userId: string;
+  permissions: PermissionSet;
+}): Promise<void> {
   // TODO: Implement actual permission saving
   return Promise.resolve();
 }

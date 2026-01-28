@@ -6,7 +6,6 @@ import { addViewSeconds } from "../lib/socialStore";
 import { RelatedVideos } from "./RelatedVideos";
 import { EditableTitle } from "./EditableTitle";
 import { DeleteButton } from "./DeleteButton";
-import { getCurrentUser } from "../lib/videoStore";
 import { TagEditor } from "./TagEditor";
 import { RelatedMedia } from "./RelatedMedia";
 import { PeopleEditor } from "./PeopleEditor";
@@ -41,7 +40,8 @@ export function VideoModal({
   }, [video.id]);
 
   useEffect(() => {
-    getCurrentUser().then((u) => setUserId(u.data.user?.id || null));
+    // Auth removed - no current user available
+    setUserId(null);
   }, []);
 
   useEffect(() => {

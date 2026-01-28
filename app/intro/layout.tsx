@@ -1,14 +1,5 @@
+import { ReactNode } from "react";
 
-export default function IntroLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html suppressHydrationWarning>
-      <body className="bg-background text-foreground">
-        {children}
-      </body>
-    </html>
-  );
+export default function IntroLayout({ children }: { children: ReactNode }) {
+  return <>{children}</>;
 }
