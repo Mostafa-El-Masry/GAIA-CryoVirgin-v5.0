@@ -14,10 +14,15 @@ if (supabaseUrl) connectSrc.push(supabaseUrl);
 if (supabaseWsUrl) connectSrc.push(supabaseWsUrl);
 
 const galleryCdn =
+  process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL ||
   process.env.NEXT_PUBLIC_IMG_CDN_BASE ||
+  process.env.NEXT_PUBLIC_GAIA_GALLERY_URL ||
+  process.env.NEXT_PUBLIC_GAIA_GALLERY_FALLBACK ||
   "https://pub-3354a96a3d194a9c95c8e51e1b20944e.r2.dev";
 const previewCdn =
+  process.env.NEXT_PUBLIC_R2_PREVIEWS_BASE_URL ||
   process.env.NEXT_PUBLIC_GAIA_PREVIEWS_URL ||
+  galleryCdn ||
   "https://pub-f962df99714e4baaac2e2c4a54a7b861.r2.dev";
 
 function hostFrom(url) {
