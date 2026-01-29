@@ -8,21 +8,18 @@ import HealthNudgeClient from "@/app/components/dashboard/HealthNudgeClient";
 
 type DashboardClientProps = {
   completedToday: boolean;
-  ready: boolean;
 };
 
-export default function DashboardClient({ completedToday, ready }: DashboardClientProps) {
+export default function DashboardClient({ completedToday }: DashboardClientProps) {
+  if (!completedToday) return null;
+
   return (
     <div className="space-y-8">
-      {ready && completedToday && (
-        <>
-          <DashboardCorePanel />
-          <HealthNudgeClient />
-          <GuardianTodayCard />
-          <GuardianNudgeClient />
-          <Active />
-        </>
-      )}
+      <DashboardCorePanel />
+      <HealthNudgeClient />
+      <GuardianTodayCard />
+      <GuardianNudgeClient />
+      <Active />
     </div>
   );
 }
