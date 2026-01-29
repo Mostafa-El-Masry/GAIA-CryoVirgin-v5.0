@@ -22,7 +22,7 @@ type LoadState =
   | { status: "error"; message: string }
   | { status: "ready" };
 
-const FRIENDLY_LABELS: Partial<Record<PermissionKey, string>> = {
+const FRIENDLY_LABELS: Record<string, string> = {
   apollo: "Apollo",
   archives: "Archives",
   classic: "Classic GAIA",

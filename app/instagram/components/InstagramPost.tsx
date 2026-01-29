@@ -5,6 +5,7 @@ import type { MediaItem } from "../mediaTypes";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { FavouriteIcon, Share01Icon } from "@hugeicons/core-free-icons";
 import { toggleLike, getLikeCount } from "../lib/socialStore";
+import { getR2Url } from "../r2";
 
 interface InstagramPostProps {
   item: MediaItem;
@@ -51,23 +52,73 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ item }) => {
       </div>
 
       <div className="post-media">
-        {item.type === "image" && item.src && (
-          <Image
-            src={item.src}
-            alt={item.title || "Instagram post image"}
-            width={940}
-            height={1200}
-            className="post-media"
-          />
+        {item.type === "image" && (
+          <>
+            {item.r2Path ? (
+              <Image
+                src={getR2Url(item.r2Path)}
+                alt={item.title || "Instagram post image"}
+                width={940}
+                height={1200}
+                className="post-media"
+                unoptimized
+              />
+            ) : item.localPath ? (
+              <Image
+                src={item.localPath}
+                alt={item.title || "Instagram post image"}
+                width={940}
+                height={1200}
+                className="post-media"
+                unoptimized
+              />
+            ) : item.src ? (
+              <Image
+                src={item.src}
+                alt={item.title || "Instagram post image"}
+                width={940}
+                height={1200}
+                className="post-media"
+                unoptimized
+              />
+            ) : null}
+          </>
         )}
-        {item.type === "video" && item.src && (
-          <video
-            src={item.src}
-            controls
-            className="post-media"
-            width={940}
-            height={1200}
-          />
+        {item.type === "video" && (
+          <>
+            {item.embedUrl || item.embedHtml ? (
+              <div
+                className="post-media"
+                dangerouslySetInnerHTML={{
+                  __html: item.embedHtml || `<iframe src="${item.embedUrl}" allowFullScreen />`,
+                }}
+              />
+            ) : item.localPath ? (
+              <video
+                src={item.localPath}
+                controls
+                className="post-media"
+                width={940}
+                height={1200}
+              />
+            ) : item.r2Path ? (
+              <video
+                src={getR2Url(item.r2Path)}
+                controls
+                className="post-media"
+                width={940}
+                height={1200}
+              />
+            ) : item.src ? (
+              <video
+                src={item.src}
+                controls
+                className="post-media"
+                width={940}
+                height={1200}
+              />
+            ) : null}
+          </>
         )}
       </div>
 

@@ -37,9 +37,9 @@ interface DashboardFeatureCardProps {
  *         and still shows a valid highlight.
  *
  *   - NEW (Week 4):
-   *       When it has to fall back to the live Instagram path AND finds
-   *       a valid item, it will best-effort POST that item to
-   *       /api/instagram/feature with source = 'auto', so the same
+ *       When it has to fall back to the live Instagram path AND finds
+ *       a valid item, it will best-effort POST that item to
+ *       /api/instagram/feature with source = 'auto', so the same
  *       feature is remembered for that date across devices.
  *
  *   - Any failures (missing table, API errors) are swallowed and
@@ -79,7 +79,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
                   description:
                     featureData.source === "manual"
                       ? "Manually pinned feature from your Gallery."
-                      ? "Automatically saved daily feature from your Instagram."
+                      : "Automatically saved daily feature from your Instagram.",
                 });
                 setLoading(false);
                 return;
@@ -107,7 +107,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
               reason: "fallback",
               label: "No media yet",
               description:
-                "Add some photos or videos to the Instagram to see a daily feature here.",,
+                "Add some photos or videos to the Instagram to see a daily feature here.",
             });
           }
           return;

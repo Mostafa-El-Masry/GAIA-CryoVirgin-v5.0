@@ -8,11 +8,14 @@ import { TagEditor } from "./TagEditor";
 import { RelatedMedia } from "./RelatedMedia";
 import { PeopleEditor } from "./PeopleEditor";
 import { MediaMeta } from "./MediaMeta";
+import type { MediaItem } from "../mediaTypes";
+import { getR2Url } from "../r2";
 
 export function ImagePreviewModal({
   src,
   title,
   mediaId,
+  item,
   onClose,
   onNext,
   onPrev,
@@ -20,10 +23,17 @@ export function ImagePreviewModal({
   src: string;
   title?: string;
   mediaId: string;
+  item?: MediaItem;
   onClose: () => void;
   onNext: () => void;
   onPrev: () => void;
 }) {
+  // Determine the actual image URL
+  const imageSrc = item
+    ? item.r2Path
+      ? getR2Url(item.r2Path)
+      : item.localPath || item.src || src
+    : src;
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   useEffect(() => {
@@ -71,11 +81,12 @@ export function ImagePreviewModal({
         </button>
 
         <Image
-          src={src}
+          src={imageSrc}
           alt={title || "Preview image"}
           width={800}
           height={600}
           className="max-h-full max-w-full object-contain"
+          unoptimized
         />
 
         <button

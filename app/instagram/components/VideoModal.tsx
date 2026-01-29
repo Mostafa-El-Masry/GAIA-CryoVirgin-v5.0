@@ -11,6 +11,7 @@ import { RelatedMedia } from "./RelatedMedia";
 import { PeopleEditor } from "./PeopleEditor";
 import { MediaMeta } from "./MediaMeta";
 import type { MediaItem } from "../mediaTypes";
+import { getR2Url } from "../r2";
 
 declare global {
   interface Window {
@@ -132,7 +133,11 @@ export function VideoModal({
         ) : (
           <video
             ref={videoRef}
-            src={video.src}
+            src={
+              video.localPath ||
+              (video.r2Path ? getR2Url(video.r2Path) : video.src) ||
+              ""
+            }
             controls
             autoPlay
             className="w-full max-w-5xl"

@@ -476,7 +476,7 @@ function SettingsContent() {
 
         {activeTab === "permissions" && <SettingsPermissionsTab />}
 
-        {activeTab === "gallery" && (
+        {activeTab === "instagram" && (
           <section className="space-y-3 rounded-lg border gaia-border p-4">
             <h2 className="font-medium">Gallery maintenance</h2>
             <p className="text-sm gaia-muted">

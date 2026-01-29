@@ -1,6 +1,7 @@
 "use client";
 
 import type { PermissionKey, PermissionSet } from "@/config/permissions";
+import { createAdminPermissionSet } from "@/config/permissions";
 
 export function isCreatorAdmin(email: string | null): boolean {
   // TODO: Implement actual admin check
@@ -11,24 +12,7 @@ export function isCreatorAdmin(email: string | null): boolean {
 export function useCurrentPermissions(): PermissionSet {
   // TODO: Implement actual permissions retrieval
   // This should fetch permissions for the current user from auth/database
-  return {
-    instagram: true,
-    apollo: true,
-    eleuthia: true,
-    timeline: true,
-    health: true,
-    wealth: true,
-    dashboard: true,
-    settings: true,
-    classic: true,
-    locked: true,
-    guardian: true,
-    archives: true,
-    core: true,
-    labs: true,
-    settingsAppearance: true,
-    settingsInstagram: true,
-  };
+  return createAdminPermissionSet();
 }
 
 export function getAvailablePermissionKeys(): PermissionKey[] {
