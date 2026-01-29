@@ -10,7 +10,7 @@
 export type GaiaUserRole = 'owner' | 'member' | 'guest';
 
 export interface GaiaUserPermissions {
-  canViewGalleryPrivate: boolean;
+  canViewInstagramPrivate: boolean;
   canViewWealth: boolean;
   canViewHealth: boolean;
   canViewGuardian: boolean;
