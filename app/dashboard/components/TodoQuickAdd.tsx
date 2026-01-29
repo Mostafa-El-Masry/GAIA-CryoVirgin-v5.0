@@ -48,10 +48,14 @@ export default function TodoQuickAdd({ category, onAdd, onClose }: Props) {
             Add
           </button>
           <button
-            className="rounded-lg border border-[var(--gaia-border)] px-4 py-2 font-semibold text-[var(--gaia-text-default)] transition-colors hover:bg-[var(--gaia-border)]"
+            className="group rounded-lg border border-[var(--gaia-border)] px-4 py-2 font-semibold text-[var(--gaia-text-default)] transition-all duration-300 hover:bg-[var(--gaia-border)] hover:scale-105 active:scale-95"
             onClick={onClose}
           >
-            <HugeiconsIcon icon={Cancel02Icon} size={18} />
+            <HugeiconsIcon 
+              icon={Cancel02Icon} 
+              size={18} 
+              className="transition-all duration-300 group-hover:rotate-90 group-hover:scale-110"
+            />
           </button>
         </div>
       </div>

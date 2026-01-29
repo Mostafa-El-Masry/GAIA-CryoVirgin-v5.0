@@ -69,67 +69,78 @@ export default function TodoSlot(props: Props) {
 
   return (
     <div
-      className={`rounded-xl border border-[var(--gaia-border)] bg-[var(--gaia-surface)] p-5 shadow-sm transition-all hover:shadow-md hover:border-[var(--gaia-border)] min-h-[18rem] overflow-hidden `}
+      className={`rounded-xl border border-[var(--gaia-border)] bg-[var(--gaia-surface)] p-5 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--gaia-border)]/60 min-h-[18rem] max-h-[18rem] flex flex-col overflow-hidden`}
     >
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {categoryIcon(category)}
+      <div className="mb-4 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="transition-transform duration-200 hover:scale-110">
+            {categoryIcon(category)}
+          </div>
           <span className={`font-bold text-lg text-[var(--gaia-text-strong)]`}>
             {labelOf(category)}
           </span>
           {dueLabel && (
             <span className="inline-flex items-center gap-1 rounded-md bg-[var(--gaia-border)] px-2 py-1 text-xs font-medium text-[var(--gaia-text-muted)]">
-              <HugeiconsIcon icon={Calendar02Icon} size={14} /> {dueLabel}
+              <HugeiconsIcon icon={Calendar02Icon} size={14} className="transition-transform hover:scale-110" /> {dueLabel}
             </span>
           )}
         </div>
       </div>
 
       {state === "pending" && task ? (
-        <div className="flex flex-col h-full">
-          <div className="mb-4 h-48">
-            <div className="mb-3 line-clamp-2 text-lg font-bold text-[var(--gaia-text-strong)]">
+        <div className="flex flex-col flex-1 min-h-0">
+          <div className="mb-4 flex-1 min-h-0 overflow-hidden">
+            <div className="mb-3 line-clamp-2 text-lg font-bold text-[var(--gaia-text-strong)] leading-relaxed">
               {task.title}
             </div>
+            {task.note && (
+              <p className="text-sm text-[var(--gaia-text-muted)] line-clamp-2 mt-2">
+                {task.note}
+              </p>
+            )}
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-around gap-4">
+          <div className="flex flex-col gap-2 flex-shrink-0 pt-2">
+            <div className="flex items-center justify-around gap-3">
               <button
-                className={`group ${actionBtn} border-error text-error hover:bg-error hover:text-white transition-all`}
+                className={`group relative flex items-center justify-center w-12 h-12 rounded-full border-2 border-red-500/60 bg-red-500/10 text-red-500 transition-all duration-300 hover:bg-red-500 hover:text-white hover:border-red-500 hover:scale-110 hover:shadow-lg active:scale-95`}
                 onClick={() => onDelete(task.id)}
                 title="Delete task"
               >
-                <HugeiconsIcon icon={Delete02Icon} size={18} />
+                <HugeiconsIcon 
+                  icon={Delete02Icon} 
+                  size={20} 
+                  className="transition-all duration-300 group-hover:rotate-12" 
+                />
               </button>
               <button
-                className={`group ${actionBtn} border-warning text-warning hover:bg-warning hover:text-black transition-all`}
+                className={`group relative flex items-center justify-center w-12 h-12 rounded-full border-2 border-amber-500/60 bg-amber-500/10 text-amber-500 transition-all duration-300 hover:bg-amber-500 hover:text-white hover:border-amber-500 hover:scale-110 hover:shadow-lg active:scale-95`}
                 onClick={() => onSkip(category)}
                 title="Skip this task"
               >
                 <HugeiconsIcon
                   icon={Forward02Icon}
-                  size={18}
-                  className="transition-transform group-hover:scale-110 group-hover:text-black"
+                  size={20}
+                  className="transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-110"
                 />
               </button>
               <button
-                className={`group ${actionBtn} border-success text-success hover:bg-success/20 hover:text-success transition-all`}
+                className={`group relative flex items-center justify-center w-12 h-12 rounded-full border-2 border-green-500/60 bg-green-500/10 text-green-500 transition-all duration-300 hover:bg-green-500 hover:text-white hover:border-green-500 hover:scale-110 hover:shadow-lg active:scale-95`}
                 onClick={() => onDone(category)}
                 title="Mark as done"
               >
                 <HugeiconsIcon
                   icon={CheckmarkCircle02Icon}
-                  size={18}
-                  className="transition-transform group-hover:scale-110 group-hover:text-success"
+                  size={20}
+                  className="transition-all duration-300 group-hover:scale-125 group-hover:rotate-12"
                 />
               </button>
             </div>
           </div>
         </div>
       ) : state === "done" ? (
-        <div className="flex min-h-12 mt-12 flex-col items-center justify-center rounded-xl border border-[var(--gaia-positive-border)] bg-[var(--gaia-positive-bg)]/40 px-4 py-6 text-center text-[var(--gaia-positive)]">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-[var(--gaia-positive-bg)] px-3 py-1 text-sm font-semibold">
-            <HugeiconsIcon icon={CheckmarkCircle02Icon} size={18} />
+        <div className="flex min-h-12 mt-12 flex-col items-center justify-center rounded-xl border-2 border-green-500/30 bg-green-500/10 px-4 py-6 text-center transition-all duration-300 hover:border-green-500/50 hover:bg-green-500/15">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-green-500/20 px-4 py-2 text-sm font-semibold text-green-600 dark:text-green-400">
+            <HugeiconsIcon icon={CheckmarkCircle02Icon} size={20} className="transition-transform hover:scale-110" />
             Done
           </div>
           <p className="text-lg font-semibold text-[var(--gaia-text-strong)]">
@@ -140,16 +151,19 @@ export default function TodoSlot(props: Props) {
           </p>
         </div>
       ) : (
-        <div>
-          <div className="mb-3 py-2 text-center text-sm text-[var(--gaia-text-muted)]">
+        <div className="flex flex-col items-center justify-center min-h-[12rem]">
+          <div className="mb-4 py-2 text-center text-sm text-[var(--gaia-text-muted)]">
             {labelOf(category)} — No task today
           </div>
           {!showAdd ? (
             <button
-              className="w-full rounded-lg bg-[var(--gaia-contrast-bg)] px-4 py-2 font-semibold text-[var(--gaia-contrast-text)] transition-opacity hover:opacity-90"
+              className="group w-full rounded-lg bg-[var(--gaia-contrast-bg)] px-4 py-3 font-semibold text-[var(--gaia-contrast-text)] transition-all duration-300 hover:opacity-90 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
               onClick={() => setShowAdd(true)}
             >
-              + Quick Add
+              <span className="inline-flex items-center gap-2">
+                <span className="text-lg transition-transform group-hover:scale-125">+</span>
+                Quick Add
+              </span>
             </button>
           ) : (
             <TodoQuickAdd
@@ -203,12 +217,29 @@ function formatDueBadge(dateStr?: string | null, todayStr?: string) {
 
 function categoryIcon(c: Category) {
   if (c === "life")
-    return <HugeiconsIcon icon={HeartAddIcon} size={20} color="#14b8a6" />;
+    return (
+      <HugeiconsIcon 
+        icon={HeartAddIcon} 
+        size={22} 
+        color="#14b8a6" 
+        className="transition-all duration-300 hover:scale-125 hover:drop-shadow-lg"
+      />
+    );
   if (c === "work")
     return (
-      <HugeiconsIcon icon={Briefcase02Icon} size={20} color="#6366f1" />
+      <HugeiconsIcon 
+        icon={Briefcase02Icon} 
+        size={22} 
+        color="#6366f1"
+        className="transition-all duration-300 hover:scale-125 hover:drop-shadow-lg"
+      />
     );
   return (
-    <HugeiconsIcon icon={GameController02Icon} size={20} color="#f59e0b" />
+    <HugeiconsIcon 
+      icon={GameController02Icon} 
+      size={22} 
+      color="#f59e0b"
+      className="transition-all duration-300 hover:scale-125 hover:drop-shadow-lg"
+    />
   );
 }
