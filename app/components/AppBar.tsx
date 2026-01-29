@@ -28,7 +28,7 @@ export default function AppBar() {
 
   useEffect(() => {
     try {
-      const hideNav = pathname === "/" || pathname.startsWith("/auth");
+      const hideNav = pathname === "/";
       if (hideNav) {
         document.body.classList.remove("has-navbar");
         return;

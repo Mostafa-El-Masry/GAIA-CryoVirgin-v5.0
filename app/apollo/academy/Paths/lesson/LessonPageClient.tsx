@@ -18,7 +18,6 @@ import {
   setItem,
 } from "@/lib/user-storage";
 import {
-  getSession as getSupabaseSession,
   isSupabaseClientConfigured,
 } from "@/lib/supabase-client";
 import { useAcademyProgress } from "../../useAcademyProgress";
@@ -275,15 +274,10 @@ export default function LessonPageClient({
       }>
     ) => {
       try {
-        if (!isSupabaseClientConfigured) return;
-        const session = await getSupabaseSession();
-        const token = session?.access_token ?? null;
-        if (!token) return;
         await fetch("/api/academy/lesson-run", {
           method: "POST",
           headers: {
             "content-type": "application/json",
-            authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             lessonId,
@@ -424,15 +418,8 @@ export default function LessonPageClient({
   useEffect(() => {
     const hydrateLatestRun = async () => {
       try {
-        if (!isSupabaseClientConfigured) return;
-        const session = await getSupabaseSession();
-        const token = session?.access_token ?? null;
-        if (!token) return;
         const res = await fetch(
-          `/api/academy/lesson-run?lessonId=${encodeURIComponent(lessonId)}`,
-          {
-            headers: { authorization: `Bearer ${token}` },
-          }
+          `/api/academy/lesson-run?lessonId=${encodeURIComponent(lessonId)}`
         );
         if (!res.ok) return;
         const json = (await res.json()) as {
