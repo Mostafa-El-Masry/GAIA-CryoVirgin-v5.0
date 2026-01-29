@@ -45,34 +45,6 @@ export { supabaseClient, getSupabaseBrowserClient };
 
 
 
-/**
- * Make authenticated API call with JWT token
- * @param url - API endpoint
- * @param options - Fetch options
- * @returns Response
- */
-export async function authenticatedFetch(
-  url: string,
-  options: RequestInit = {},
-) {
-  const client = getSupabaseBrowserClient();
-  const session = await getSession();
-
-  if (!session) {
-    throw new Error("No active session. Please sign in first.");
-  }
-
-  const headers = {
-    ...options.headers,
-    Authorization: `Bearer ${session.access_token}`,
-    "Content-Type": "application/json",
-  };
-
-  return fetch(url, {
-    ...options,
-    headers,
-  });
-}
 
 /**
  * Fetch inventory locations (example usage)
