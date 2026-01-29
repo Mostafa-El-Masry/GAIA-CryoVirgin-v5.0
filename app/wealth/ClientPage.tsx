@@ -7,10 +7,7 @@ import type {
   WealthLevelsSnapshot,
   WealthLevelDefinition,
 } from "./lib/types";
-import {
-  loadWealthState,
-  loadWealthStateWithRemote,
-} from "./lib/wealthStore";
+import { loadWealthState, loadWealthStateWithRemote } from "./lib/wealthStore";
 import { buildWealthOverview, getTodayInKuwait } from "./lib/summary";
 import { buildLevelsSnapshot } from "./lib/levels";
 import { hasSupabaseConfig } from "./lib/remoteWealth";
@@ -48,11 +45,11 @@ function getLevelDefinitions(snapshot: WealthLevelsSnapshot | null) {
   }
   const current =
     snapshot.currentLevelId != null
-      ? snapshot.levels.find((l) => l.id === snapshot.currentLevelId) ?? null
+      ? (snapshot.levels.find((l) => l.id === snapshot.currentLevelId) ?? null)
       : null;
   const next =
     snapshot.nextLevelId != null
-      ? snapshot.levels.find((l) => l.id === snapshot.nextLevelId) ?? null
+      ? (snapshot.levels.find((l) => l.id === snapshot.nextLevelId) ?? null)
       : null;
   return { current, next };
 }
@@ -90,7 +87,9 @@ function buildPlanHeadline(
     return "Keep logging balances and revenue. GAIA will refine your next step as the picture becomes clearer.";
   }
 
-  const totalSavings = Number.isFinite(snapshot.totalSavings) ? snapshot.totalSavings : 0;
+  const totalSavings = Number.isFinite(snapshot.totalSavings)
+    ? snapshot.totalSavings
+    : 0;
   const monthlyRevenue = snapshot.monthlyPassiveIncome ?? 0;
   const savingsGap =
     current.minSavings != null ? current.minSavings - totalSavings : null;
@@ -99,7 +98,10 @@ function buildPlanHeadline(
       ? current.minMonthlyRevenue - monthlyRevenue
       : null;
 
-  if ((savingsGap == null || savingsGap <= 0) && (revenueGap == null || revenueGap <= 0)) {
+  if (
+    (savingsGap == null || savingsGap <= 0) &&
+    (revenueGap == null || revenueGap <= 0)
+  ) {
     return "You are already at the next plan thresholds. Keep it steady.";
   }
 
@@ -147,7 +149,10 @@ export default function WealthAwakeningClientPage() {
           setSyncStatus("synced");
         }
       } catch (error) {
-        console.warn("Wealth Awakening: falling back to local state only:", error);
+        console.warn(
+          "Wealth Awakening: falling back to local state only:",
+          error,
+        );
         state = loadWealthState();
         setSyncStatus(supabaseEnabled ? "local-only" : "no-supabase");
       }
@@ -199,17 +204,17 @@ export default function WealthAwakeningClientPage() {
     syncStatus === "syncing"
       ? "Syncing with Supabase..."
       : syncStatus === "synced"
-      ? "Synced with Supabase"
-      : syncStatus === "local-only"
-      ? "Local mode (Supabase unreachable)"
-      : "Local cache only";
+        ? "Synced with Supabase"
+        : syncStatus === "local-only"
+          ? "Local mode (Supabase unreachable)"
+          : "Local cache only";
 
   const syncTone =
     syncStatus === "synced"
       ? "bg-emerald-500/10 text-emerald-200 border-emerald-500/40"
       : syncStatus === "syncing"
-      ? "bg-amber-400/10 text-amber-200 border-amber-400/50"
-      : "bg-slate-800/80 text-slate-200 border-slate-700";
+        ? "bg-amber-400/10 text-amber-200 border-amber-400/50"
+        : "bg-slate-800/80 text-slate-200 border-slate-700";
 
   const levelHeadline = buildLevelHeadline(levelsSnapshot);
   const planHeadline = buildPlanHeadline(levelsSnapshot, overview);
@@ -223,7 +228,8 @@ export default function WealthAwakeningClientPage() {
 
   const primaryCurrency = overview?.primaryCurrency ?? "KWD";
   const monthsSaved = levelsSnapshot?.monthsOfExpensesSaved ?? null;
-  const { current: currentPlan, next: nextPlan } = getLevelDefinitions(levelsSnapshot);
+  const { current: currentPlan, next: nextPlan } =
+    getLevelDefinitions(levelsSnapshot);
   const totalSavings = levelsSnapshot?.totalSavings ?? 0;
   const monthlyRevenue = levelsSnapshot?.monthlyPassiveIncome ?? 0;
   const planCurrency = "EGP";
@@ -239,8 +245,10 @@ export default function WealthAwakeningClientPage() {
 
   const targetSavings = currentPlan?.minSavings ?? null;
   const targetRevenue = currentPlan?.minMonthlyRevenue ?? null;
-  const savingsGap = targetSavings != null ? targetSavings - totalSavings : null;
-  const revenueGap = targetRevenue != null ? targetRevenue - monthlyRevenue : null;
+  const savingsGap =
+    targetSavings != null ? targetSavings - totalSavings : null;
+  const revenueGap =
+    targetRevenue != null ? targetRevenue - monthlyRevenue : null;
   const nextPlanReady =
     (savingsGap == null || savingsGap <= 0) &&
     (revenueGap == null || revenueGap <= 0);
@@ -271,8 +279,8 @@ export default function WealthAwakeningClientPage() {
                 Wall Street Drive
               </h1>
               <p className="mt-1 max-w-2xl text-sm gaia-muted">
-                You&apos;re almost ready to run with the market. Verify, sync, and
-                start compounding your buffers and certificates.
+                You&apos;re almost ready to run with the market. Verify, sync,
+                and start compounding your buffers and certificates.
               </p>
             </div>
             <span
@@ -294,8 +302,8 @@ export default function WealthAwakeningClientPage() {
                     done
                       ? "border-[var(--gaia-contrast-bg)]/50 bg-[var(--gaia-contrast-bg)]/10 text-[var(--gaia-text-strong)]"
                       : active
-                      ? "gaia-border bg-[var(--gaia-surface-soft)] text-[var(--gaia-text-strong)]"
-                      : "gaia-border bg-[var(--gaia-surface-soft)] text-[var(--gaia-text-muted)]"
+                        ? "gaia-border bg-[var(--gaia-surface-soft)] text-[var(--gaia-text-strong)]"
+                        : "gaia-border bg-[var(--gaia-surface-soft)] text-[var(--gaia-text-muted)]"
                   }`}
                 >
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--gaia-surface-soft)] text-[11px] font-bold text-[var(--gaia-text-default)]">
@@ -314,9 +322,7 @@ export default function WealthAwakeningClientPage() {
             <button className="px-4 py-2 text-sm font-semibold text-[var(--gaia-text-strong)]">
               Add deposit
             </button>
-            {fxText && (
-              <span className="text-xs gaia-muted">{fxText}</span>
-            )}
+            {fxText && <span className="text-xs gaia-muted">{fxText}</span>}
           </div>
         </div>
 
@@ -330,11 +336,11 @@ export default function WealthAwakeningClientPage() {
                 <h4 className="text-sm font-semibold text-[var(--gaia-text-strong)]">
                   {currentPlan?.shortLabel ?? "Need data to place you"}
                 </h4>
-                  <p className="mt-1 text-[11px] gaia-muted">
+                <p className="mt-1 text-[11px] gaia-muted">
                   {currentPlan?.description ??
                     "Log balances and investments so GAIA can place you on the ladder."}
-                  </p>
-                </div>
+                </p>
+              </div>
               <div className="text-right">
                 <p className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
                   Next
@@ -398,7 +404,8 @@ export default function WealthAwakeningClientPage() {
                 </p>
                 {savingsGap != null && savingsGap > 0 ? (
                   <p className="text-[10px] gaia-muted">
-                    ~{formatCurrency(savingsGap, planCurrency)} to hit the next plan.
+                    ~{formatCurrency(savingsGap, planCurrency)} to hit the next
+                    plan.
                   </p>
                 ) : null}
               </div>
@@ -411,7 +418,8 @@ export default function WealthAwakeningClientPage() {
                 </p>
                 {revenueGap != null && revenueGap > 0 ? (
                   <p className="text-[10px] gaia-muted">
-                    ~{formatCurrency(revenueGap, planCurrency)} to hit the next plan.
+                    ~{formatCurrency(revenueGap, planCurrency)} to hit the next
+                    plan.
                   </p>
                 ) : null}
               </div>
@@ -428,7 +436,9 @@ export default function WealthAwakeningClientPage() {
               </h3>
             </div>
             <span className="rounded-full bg-[var(--gaia-surface-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--gaia-text-default)]">
-              {monthsSaved != null ? `${monthsSaved.toFixed(1)} mo saved` : "Need data"}
+              {monthsSaved != null
+                ? `${monthsSaved.toFixed(1)} mo saved`
+                : "Need data"}
             </span>
           </div>
           <p className="mt-3 text-sm gaia-muted">{levelHeadline}</p>
@@ -443,7 +453,9 @@ export default function WealthAwakeningClientPage() {
               <p className="text-lg font-semibold text-[var(--gaia-text-strong)]">
                 {primaryCurrency}
               </p>
-              <p className="text-xs gaia-muted">All targets measured here first.</p>
+              <p className="text-xs gaia-muted">
+                All targets measured here first.
+              </p>
             </div>
             <div className="rounded-xl border gaia-border bg-[var(--gaia-surface-soft)] p-3">
               <p className="text-[11px] uppercase tracking-wide text-[var(--gaia-text-muted)]">
@@ -472,7 +484,7 @@ export default function WealthAwakeningClientPage() {
             </p>
           </div>
           <a
-            href="/wealth-awakening/levels"
+            href="/wealth/levels"
             className="wealth-button px-3 py-1 text-[11px] font-semibold text-[var(--gaia-text-strong)]"
           >
             Edit plans
@@ -485,7 +497,9 @@ export default function WealthAwakeningClientPage() {
                 <th className="px-4 py-2">Plan</th>
                 <th className="px-4 py-2">Target savings</th>
                 <th className="px-4 py-2">Target monthly revenue</th>
-                <th className="px-4 py-2">Status Trying To Achieve by this Plan</th>
+                <th className="px-4 py-2">
+                  Status Trying To Achieve by this Plan
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -525,7 +539,8 @@ export default function WealthAwakeningClientPage() {
                 {formatCurrency(overview.totalNetWorth, primaryCurrency)}
               </p>
               <p className="mt-2 text-xs text-[var(--gaia-contrast-bg)]">
-                {formatCurrency(overview.monthStory.netChange, primaryCurrency)} this month
+                {formatCurrency(overview.monthStory.netChange, primaryCurrency)}{" "}
+                this month
               </p>
             </div>
             <div className={`${surface} p-5`}>

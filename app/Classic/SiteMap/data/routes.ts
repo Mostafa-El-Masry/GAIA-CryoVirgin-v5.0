@@ -1,4 +1,9 @@
-export type SiteEntry = { path: string; title: string; group?: string; note?: string };
+export type SiteEntry = {
+  path: string;
+  title: string;
+  group?: string;
+  note?: string;
+};
 
 export const routes: SiteEntry[] = [
   { path: "/", title: "Home" },
@@ -7,7 +12,7 @@ export const routes: SiteEntry[] = [
   { path: "/apollo/labs", title: "Labs (builds)" },
   { path: "/ELEUTHIA", title: "ELEUTHIA (vault)" },
   { path: "/ELEUTHIA/Backups", title: "Backups" },
-  { path: "/Gallery", title: "Gallery" },
+  { path: "/Instagram", title: "Instagram" },
   { path: "/Timeline", title: "Timeline (vertical)" },
   { path: "/Health", title: "Health" },
   { path: "/Wealth", title: "Wealth" },
@@ -16,6 +21,10 @@ export const routes: SiteEntry[] = [
   { path: "/Classic/Directory", title: "Dev Directory", group: "Classic" },
   { path: "/Classic/WhatsNew", title: "What’s New", group: "Classic" },
   { path: "/Classic/Announcements", title: "Announcements", group: "Classic" },
-  { path: "/Classic/DownloadCenter", title: "Download Center", group: "Classic" },
+  {
+    path: "/Classic/DownloadCenter",
+    title: "Download Center",
+    group: "Classic",
+  },
   { path: "/Locked", title: "Locked (ELEUTHIA gate demo)" },
 ];

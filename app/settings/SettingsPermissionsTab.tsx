@@ -29,7 +29,7 @@ const FRIENDLY_LABELS: Partial<Record<PermissionKey, string>> = {
   core: "Core brain",
   dashboard: "Dashboard",
   eleuthia: "ELEUTHIA",
-  gallery: "Gallery",
+  instagram: "Instagram",
   health: "Health",
   labs: "Labs",
   locked: "Locked sections",
@@ -37,7 +37,7 @@ const FRIENDLY_LABELS: Partial<Record<PermissionKey, string>> = {
   wealth: "Wealth",
   settings: "Settings (all)",
   settingsAppearance: "Settings · Appearance",
-  settingsGallery: "Settings · Gallery",
+  settingsInstagram: "Settings · Instagram",
 };
 
 function labelForPermission(key: PermissionKey): string {
@@ -57,14 +57,12 @@ const SettingsPermissionsTab: React.FC = () => {
   const [users, setUsers] = useState<UserSummary[]>([]);
   const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [draftPermissions, setDraftPermissions] = useState<PermissionSet | null>(null);
+  const [draftPermissions, setDraftPermissions] =
+    useState<PermissionSet | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-  const permissionKeys = useMemo(
-    () => getAvailablePermissionKeys(),
-    []
-  );
+  const permissionKeys = useMemo(() => getAvailablePermissionKeys(), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -123,7 +121,7 @@ const SettingsPermissionsTab: React.FC = () => {
 
   const selectedUser = useMemo(
     () => users.find((u) => u.id === selectedUserId) ?? null,
-    [users, selectedUserId]
+    [users, selectedUserId],
   );
 
   function handleSelectUser(user: UserSummary) {
@@ -164,8 +162,10 @@ const SettingsPermissionsTab: React.FC = () => {
 
       setUsers((prev) =>
         prev.map((u) =>
-          u.id === selectedUser.id ? { ...u, permissions: { ...draftPermissions } } : u
-        )
+          u.id === selectedUser.id
+            ? { ...u, permissions: { ...draftPermissions } }
+            : u,
+        ),
       );
 
       setSaveMessage("Permissions updated.");
@@ -173,7 +173,7 @@ const SettingsPermissionsTab: React.FC = () => {
       setSaveMessage(
         error instanceof Error
           ? error.message
-          : "Failed to save permissions. Check admin configuration."
+          : "Failed to save permissions. Check admin configuration.",
       );
     } finally {
       setSaving(false);
@@ -185,8 +185,9 @@ const SettingsPermissionsTab: React.FC = () => {
       <header className="space-y-1">
         <h2 className="font-medium">Permissions</h2>
         <p className="text-sm gaia-muted">
-          Control which GAIA sections each Supabase user can see. This uses Supabase
-          admin access and the internal <code>user_storage</code> table.
+          Control which GAIA sections each Supabase user can see. This uses
+          Supabase admin access and the internal <code>user_storage</code>{" "}
+          table.
         </p>
       </header>
 
@@ -203,7 +204,8 @@ const SettingsPermissionsTab: React.FC = () => {
 
       {loadState.status === "ready" && users.length === 0 && (
         <p className="text-sm gaia-muted">
-          No users found yet. Create a user by signing up or using the admin tools.
+          No users found yet. Create a user by signing up or using the admin
+          tools.
         </p>
       )}
 

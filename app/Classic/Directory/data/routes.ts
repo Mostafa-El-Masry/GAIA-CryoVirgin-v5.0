@@ -4,7 +4,7 @@ export const devRoutes: RouteInfo[] = [
   { path: "/dashboard" },
   { path: "/apollo", note: "Apollo" },
   { path: "/apollo/labs" },
-  { path: "/Gallery" },
+  { path: "/Instagram" },
   { path: "/Timeline" },
   { path: "/Health" },
   { path: "/Wealth" },

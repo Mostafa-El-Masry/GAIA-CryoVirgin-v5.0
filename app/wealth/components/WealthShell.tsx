@@ -18,15 +18,15 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { href: "/wealth-awakening", label: "Overview" },
-  { href: "/wealth-awakening/accounts", label: "Accounts" },
-  { href: "/wealth-awakening/flows", label: "Flows" },
-  { href: "/wealth-awakening/purchases", label: "Purchases" },
-  { href: "/wealth-awakening/instruments", label: "Investments" },
-  { href: "/wealth-awakening/levels", label: "Plans" },
-  { href: "/wealth-awakening/phases", label: "Phases" },
-  { href: "/wealth-awakening/projections", label: "Projections" },
-  { href: "/wealth-awakening/status", label: "Status" },
+  { href: "/wealth", label: "Overview" },
+  { href: "/wealth/accounts", label: "Accounts" },
+  { href: "/wealth/flows", label: "Flows" },
+  { href: "/wealth/purchases", label: "Purchases" },
+  { href: "/wealth/instruments", label: "Investments" },
+  { href: "/wealth/levels", label: "Plans" },
+  { href: "/wealth/phases", label: "Phases" },
+  { href: "/wealth/projections", label: "Projections" },
+  { href: "/wealth/status", label: "Status" },
 ];
 
 const chipClass =

@@ -28,6 +28,7 @@ export function useCurrentPermissions(): PermissionSet {
     labs: true,
     settingsAppearance: true,
     settingsGallery: true,
+    instagram: true,
   };
 }
 
@@ -49,6 +50,7 @@ export function getAvailablePermissionKeys(): PermissionKey[] {
     "labs",
     "settingsAppearance",
     "settingsGallery",
+    "instagram",
   ];
 }
 

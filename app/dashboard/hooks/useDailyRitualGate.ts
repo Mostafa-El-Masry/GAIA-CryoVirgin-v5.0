@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { gaiaBrain } from "@/gaia-brain";
-import { useHealthStore } from "@/app/health-awakening/lib/healthStore";
+import { useHealthStore } from "@/app/health/lib/healthStore";
 import { useTimelineStore } from "@/app/timeline/lib/store";
 
 export function useDailyRitualGate() {

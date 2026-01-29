@@ -29,17 +29,17 @@ interface DashboardFeatureCardProps {
  * the Gallery (image or video), with Supabase-backed feature history.
  *
  * Behaviour:
- *   - On mount, it first calls GET /api/gallery/feature.
+ *   - On mount, it first calls GET /api/instagram/feature.
  *       - If a feature is stored for today, it uses that.
  *       - If none exists yet, it falls back to:
- *           - GET /api/gallery
+ *           - GET /api/instagram
  *           - getAutoBoxResult(items)
  *         and still shows a valid highlight.
  *
  *   - NEW (Week 4):
- *       When it has to fall back to the live Gallery path AND finds
- *       a valid item, it will best-effort POST that item to
- *       /api/gallery/feature with source = 'auto', so the same
+   *       When it has to fall back to the live Instagram path AND finds
+   *       a valid item, it will best-effort POST that item to
+   *       /api/instagram/feature with source = 'auto', so the same
  *       feature is remembered for that date across devices.
  *
  *   - Any failures (missing table, API errors) are swallowed and
@@ -61,7 +61,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
       try {
         let usedStoredFeature = false;
         try {
-          const featureRes = await fetch("/api/gallery/feature");
+          const featureRes = await fetch("/api/instagram/feature");
           if (featureRes.ok) {
             const featureData =
               (await featureRes.json()) as GalleryFeatureGetResponse;
@@ -79,7 +79,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
                   description:
                     featureData.source === "manual"
                       ? "Manually pinned feature from your Gallery."
-                      : "Automatically saved daily feature from your Gallery.",
+                      ? "Automatically saved daily feature from your Instagram."
                 });
                 setLoading(false);
                 return;
@@ -88,12 +88,12 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
           }
         } catch (err) {
           console.warn(
-            "[Gallery] /api/gallery/feature not available, falling back.",
+            "[Instagram] /api/instagram/feature not available, falling back.",
             err,
           );
         }
 
-        const res = await fetch("/api/gallery");
+        const res = await fetch("/api/instagram");
         if (!res.ok) {
           throw new Error(`Gallery API error: ${res.status}`);
         }
@@ -107,7 +107,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
               reason: "fallback",
               label: "No media yet",
               description:
-                "Add some photos or videos to the Gallery to see a daily feature here.",
+                "Add some photos or videos to the Instagram to see a daily feature here.",,
             });
           }
           return;
@@ -120,7 +120,7 @@ const DashboardFeatureCard: React.FC<DashboardFeatureCardProps> = ({
 
         if (!usedStoredFeature && result.item) {
           try {
-            await fetch("/api/gallery/feature", {
+            await fetch("/api/instagram/feature", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

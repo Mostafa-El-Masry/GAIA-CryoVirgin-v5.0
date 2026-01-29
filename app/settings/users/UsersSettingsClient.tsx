@@ -1,7 +1,11 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
-import type { GaiaUser, GaiaUserPermissions, GaiaUserRole } from '@/lib/users/types';
+import React, { useEffect, useMemo, useState } from "react";
+import type {
+  GaiaUser,
+  GaiaUserPermissions,
+  GaiaUserRole,
+} from "@/lib/users/types";
 
 interface UsersApiListResponse {
   ok: boolean;
@@ -15,11 +19,11 @@ interface UsersApiWriteResponse {
   error?: string;
 }
 
-const LOCAL_USERS_KEY = 'gaia_users_cache_v1';
-const LOCAL_CURRENT_USER_ID_KEY = 'gaia_current_user_id_v1';
+const LOCAL_USERS_KEY = "gaia_users_cache_v1";
+const LOCAL_CURRENT_USER_ID_KEY = "gaia_current_user_id_v1";
 
 function loadUsersFromLocal(): GaiaUser[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(LOCAL_USERS_KEY);
     if (!raw) return [];
@@ -32,7 +36,7 @@ function loadUsersFromLocal(): GaiaUser[] {
 }
 
 function saveUsersToLocal(users: GaiaUser[]) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
   } catch {
@@ -41,7 +45,7 @@ function saveUsersToLocal(users: GaiaUser[]) {
 }
 
 function getCurrentUserIdLocal(): string | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   try {
     return window.localStorage.getItem(LOCAL_CURRENT_USER_ID_KEY);
   } catch {
@@ -50,7 +54,7 @@ function getCurrentUserIdLocal(): string | null {
 }
 
 function setCurrentUserIdLocal(id: string | null) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     if (!id) {
       window.localStorage.removeItem(LOCAL_CURRENT_USER_ID_KEY);
@@ -63,19 +67,19 @@ function setCurrentUserIdLocal(id: string | null) {
 }
 
 const defaultPermissions: GaiaUserPermissions = {
-  canViewGalleryPrivate: true,
+  canViewInstagramPrivate: true,
   canViewWealth: true,
   canViewHealth: true,
   canViewGuardian: true,
 };
 
 const emptyUser: GaiaUser = {
-  id: '',
-  displayName: '',
+  id: "",
+  displayName: "",
   email: null,
-  role: 'member',
+  role: "member",
   permissions: { ...defaultPermissions },
-  createdAt: '',
+  createdAt: "",
 };
 
 const UsersSettingsClient: React.FC = () => {
@@ -100,24 +104,24 @@ const UsersSettingsClient: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/users');
+        const res = await fetch("/api/users");
         const data = (await res.json()) as UsersApiListResponse;
         if (!data.ok) {
-          throw new Error(data.error || 'Failed to load users.');
+          throw new Error(data.error || "Failed to load users.");
         }
         const fetchedUsers = data.users ?? [];
         setUsers(fetchedUsers);
         saveUsersToLocal(fetchedUsers);
         setCurrentUserId((prev) => {
           if (prev) return prev;
-          const owner = fetchedUsers.find((u) => u.role === 'owner');
+          const owner = fetchedUsers.find((u) => u.role === "owner");
           const first = owner ?? fetchedUsers[0];
           const id = first ? first.id : null;
           if (id) setCurrentUserIdLocal(id);
           return id;
         });
       } catch (err: any) {
-        setError(err?.message ?? 'Failed to load users.');
+        setError(err?.message ?? "Failed to load users.");
       } finally {
         setLoading(false);
       }
@@ -128,13 +132,13 @@ const UsersSettingsClient: React.FC = () => {
 
   const activeUser = useMemo(
     () => users.find((u) => u.id === currentUserId) || null,
-    [users, currentUserId]
+    [users, currentUserId],
   );
 
   const startCreate = () => {
     setEditing({
       ...emptyUser,
-      id: '',
+      id: "",
       permissions: { ...defaultPermissions },
     });
   };
@@ -161,14 +165,14 @@ const UsersSettingsClient: React.FC = () => {
             ...prev,
             permissions: { ...prev.permissions, ...patch },
           }
-        : prev
+        : prev,
     );
   };
 
   const handleSave = async () => {
     if (!editing) return;
     if (!editing.displayName.trim()) {
-      setError('Name is required.');
+      setError("Name is required.");
       return;
     }
 
@@ -176,9 +180,9 @@ const UsersSettingsClient: React.FC = () => {
     setError(null);
     try {
       if (!editing.id) {
-        const res = await fetch('/api/users', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             displayName: editing.displayName.trim(),
             email: editing.email,
@@ -188,16 +192,16 @@ const UsersSettingsClient: React.FC = () => {
         });
         const data = (await res.json()) as UsersApiWriteResponse;
         if (!data.ok || !data.user) {
-          throw new Error(data.error || 'Failed to create user.');
+          throw new Error(data.error || "Failed to create user.");
         }
         const next = [...users, data.user];
         setUsers(next);
         saveUsersToLocal(next);
         setEditing(null);
       } else {
-        const res = await fetch('/api/users', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/users", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: editing.id,
             displayName: editing.displayName.trim(),
@@ -208,15 +212,17 @@ const UsersSettingsClient: React.FC = () => {
         });
         const data = (await res.json()) as UsersApiWriteResponse;
         if (!data.ok || !data.user) {
-          throw new Error(data.error || 'Failed to update user.');
+          throw new Error(data.error || "Failed to update user.");
         }
-        const next = users.map((u) => (u.id === data.user!.id ? data.user! : u));
+        const next = users.map((u) =>
+          u.id === data.user!.id ? data.user! : u,
+        );
         setUsers(next);
         saveUsersToLocal(next);
         setEditing(null);
       }
     } catch (err: any) {
-      setError(err?.message ?? 'Failed to save user.');
+      setError(err?.message ?? "Failed to save user.");
     } finally {
       setSaving(false);
     }
@@ -227,14 +233,17 @@ const UsersSettingsClient: React.FC = () => {
     setDeletingId(id);
     setError(null);
     try {
-      const res = await fetch('/api/users', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+      };
       if (!data.ok) {
-        throw new Error(data.error || 'Failed to delete user.');
+        throw new Error(data.error || "Failed to delete user.");
       }
       const next = users.filter((u) => u.id !== id);
       setUsers(next);
@@ -245,7 +254,7 @@ const UsersSettingsClient: React.FC = () => {
         setCurrentUserIdLocal(fallback);
       }
     } catch (err: any) {
-      setError(err?.message ?? 'Failed to delete user.');
+      setError(err?.message ?? "Failed to delete user.");
     } finally {
       setDeletingId(null);
     }
@@ -265,16 +274,18 @@ const UsersSettingsClient: React.FC = () => {
               Users &amp; Permissions
             </h1>
             <p className="text-[12px] text-zinc-400">
-              Create multiple GAIA users, assign roles, and control who can see private
-              parts of your world. Data is stored in Supabase and mirrored in your
-              browser for quick access.
+              Create multiple GAIA users, assign roles, and control who can see
+              private parts of your world. Data is stored in Supabase and
+              mirrored in your browser for quick access.
             </p>
             {activeUser && (
               <p className="mt-1 text-[11px] text-emerald-300">
                 Active user:&nbsp;
                 <span className="font-medium">{activeUser.displayName}</span>
-                {activeUser.role === 'owner' && (
-                  <span className="ml-1 text-[10px] text-emerald-400">(Owner)</span>
+                {activeUser.role === "owner" && (
+                  <span className="ml-1 text-[10px] text-emerald-400">
+                    (Owner)
+                  </span>
                 )}
               </p>
             )}
@@ -290,11 +301,7 @@ const UsersSettingsClient: React.FC = () => {
           </div>
         </header>
 
-        {error && (
-          <p className="text-[11px] text-red-400">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-[11px] text-red-400">{error}</p>}
 
         <section className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)]">
           <div className="rounded-xl border border-zinc-800/70 bg-black/40 p-3 text-[11px]">
@@ -308,7 +315,8 @@ const UsersSettingsClient: React.FC = () => {
             </div>
             {users.length === 0 && !loading && (
               <p className="text-[11px] text-zinc-400">
-                No users yet. Click &quot;Add user&quot; to create the first profile.
+                No users yet. Click &quot;Add user&quot; to create the first
+                profile.
               </p>
             )}
             {users.length > 0 && (
@@ -316,14 +324,26 @@ const UsersSettingsClient: React.FC = () => {
                 <table className="min-w-full border-collapse text-[11px]">
                   <thead>
                     <tr className="border-b border-zinc-800 text-[10px] text-zinc-400">
-                      <th className="px-2 py-1 text-left font-normal">Active</th>
+                      <th className="px-2 py-1 text-left font-normal">
+                        Active
+                      </th>
                       <th className="px-2 py-1 text-left font-normal">Name</th>
                       <th className="px-2 py-1 text-left font-normal">Role</th>
-                      <th className="px-2 py-1 text-left font-normal">Private gallery</th>
-                      <th className="px-2 py-1 text-left font-normal">Wealth</th>
-                      <th className="px-2 py-1 text-left font-normal">Health</th>
-                      <th className="px-2 py-1 text-left font-normal">Guardian</th>
-                      <th className="px-2 py-1 text-right font-normal">Actions</th>
+                      <th className="px-2 py-1 text-left font-normal">
+                        Private instagram
+                      </th>
+                      <th className="px-2 py-1 text-left font-normal">
+                        Wealth
+                      </th>
+                      <th className="px-2 py-1 text-left font-normal">
+                        Health
+                      </th>
+                      <th className="px-2 py-1 text-left font-normal">
+                        Guardian
+                      </th>
+                      <th className="px-2 py-1 text-right font-normal">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -354,23 +374,23 @@ const UsersSettingsClient: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-2 py-1 text-zinc-300">
-                          {user.role === 'owner'
-                            ? 'Owner'
-                            : user.role === 'guest'
-                            ? 'Guest'
-                            : 'Member'}
+                          {user.role === "owner"
+                            ? "Owner"
+                            : user.role === "guest"
+                              ? "Guest"
+                              : "Member"}
                         </td>
                         <td className="px-2 py-1 text-center">
-                          {user.permissions.canViewGalleryPrivate ? '✓' : '–'}
+                          {user.permissions.canViewInstagramPrivate ? "✓" : "–"}
                         </td>
                         <td className="px-2 py-1 text-center">
-                          {user.permissions.canViewWealth ? '✓' : '–'}
+                          {user.permissions.canViewWealth ? "✓" : "–"}
                         </td>
                         <td className="px-2 py-1 text-center">
-                          {user.permissions.canViewHealth ? '✓' : '–'}
+                          {user.permissions.canViewHealth ? "✓" : "–"}
                         </td>
                         <td className="px-2 py-1 text-center">
-                          {user.permissions.canViewGuardian ? '✓' : '–'}
+                          {user.permissions.canViewGuardian ? "✓" : "–"}
                         </td>
                         <td className="px-2 py-1 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -387,7 +407,7 @@ const UsersSettingsClient: React.FC = () => {
                               disabled={deletingId === user.id}
                               className="text-[10px] text-red-400 hover:text-red-300 disabled:opacity-60"
                             >
-                              {deletingId === user.id ? 'Deleting…' : 'Delete'}
+                              {deletingId === user.id ? "Deleting…" : "Delete"}
                             </button>
                           </div>
                         </td>
@@ -409,7 +429,7 @@ const UsersSettingsClient: React.FC = () => {
                 className="space-y-3"
               >
                 <h2 className="text-[11px] font-medium text-zinc-200">
-                  {editing.id ? 'Edit user' : 'Create user'}
+                  {editing.id ? "Edit user" : "Create user"}
                 </h2>
 
                 <div className="space-y-1">
@@ -419,7 +439,9 @@ const UsersSettingsClient: React.FC = () => {
                   <input
                     type="text"
                     value={editing.displayName}
-                    onChange={(e) => handleChangeField('displayName', e.target.value)}
+                    onChange={(e) =>
+                      handleChangeField("displayName", e.target.value)
+                    }
                     className="w-full rounded-md border border-zinc-700 bg-black/60 px-2 py-1 text-[11px] text-zinc-100 outline-none focus:border-emerald-500"
                     placeholder="User name"
                   />
@@ -431,9 +453,9 @@ const UsersSettingsClient: React.FC = () => {
                   </label>
                   <input
                     type="email"
-                    value={editing.email ?? ''}
+                    value={editing.email ?? ""}
                     onChange={(e) =>
-                      handleChangeField('email', e.target.value || null)
+                      handleChangeField("email", e.target.value || null)
                     }
                     className="w-full rounded-md border border-zinc-700 bg-black/60 px-2 py-1 text-[11px] text-zinc-100 outline-none focus:border-emerald-500"
                     placeholder="user@example.com"
@@ -447,7 +469,7 @@ const UsersSettingsClient: React.FC = () => {
                   <select
                     value={editing.role}
                     onChange={(e) =>
-                      handleChangeField('role', e.target.value as GaiaUserRole)
+                      handleChangeField("role", e.target.value as GaiaUserRole)
                     }
                     className="w-full rounded-md border border-zinc-700 bg-black/60 px-2 py-1 text-[11px] text-zinc-100 outline-none focus:border-emerald-500"
                   >
@@ -468,15 +490,15 @@ const UsersSettingsClient: React.FC = () => {
                     <label className="flex items-center gap-2 text-[11px] text-zinc-200">
                       <input
                         type="checkbox"
-                        checked={editing.permissions.canViewGalleryPrivate}
+                        checked={editing.permissions.canViewInstagramPrivate}
                         onChange={(e) =>
                           handleChangePermissions({
-                            canViewGalleryPrivate: e.target.checked,
+                            canViewInstagramPrivate: e.target.checked,
                           })
                         }
                         className="h-3 w-3"
                       />
-                      <span>Can see private gallery items</span>
+                      <span>Can see private instagram items</span>
                     </label>
 
                     <label className="flex items-center gap-2 text-[11px] text-zinc-200">
@@ -536,13 +558,16 @@ const UsersSettingsClient: React.FC = () => {
                     disabled={saving}
                     className="rounded-md border border-emerald-600 bg-emerald-600 px-3 py-1 text-[11px] font-medium text-emerald-50 hover:bg-emerald-500 disabled:opacity-60"
                   >
-                    {saving ? 'Saving…' : 'Save user'}
+                    {saving ? "Saving…" : "Save user"}
                   </button>
                 </div>
               </form>
             ) : (
               <div className="flex h-full flex-col items-start justify-center text-[11px] text-zinc-400">
-                <p>Select a user from the list to edit, or click &quot;Add user&quot; to create a new one.</p>
+                <p>
+                  Select a user from the list to edit, or click &quot;Add
+                  user&quot; to create a new one.
+                </p>
               </div>
             )}
           </div>

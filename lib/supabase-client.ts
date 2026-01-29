@@ -43,59 +43,7 @@ if (isSupabaseClientConfigured) {
 
 export { supabaseClient, getSupabaseBrowserClient };
 
-/**
- * Get current authenticated user from session
- * @returns User object or null if not authenticated
- */
-export async function getAuthenticatedUser() {
-  const client = getSupabaseBrowserClient();
-  const {
-    data: { user },
-  } = await client.auth.getUser();
-  return user;
-}
 
-/**
- * Get current session
- * @returns Session object or null if not authenticated
- */
-export async function getSession() {
-  const client = getSupabaseBrowserClient();
-  const {
-    data: { session },
-  } = await client.auth.getSession();
-  return session;
-}
-
-/**
- * Sign in with email and password
- */
-export async function signInWithPassword(email: string, password: string) {
-  const client = getSupabaseBrowserClient();
-  return await client.auth.signInWithPassword({
-    email,
-    password,
-  });
-}
-
-/**
- * Sign up new user with email and password
- */
-export async function signUpWithPassword(email: string, password: string) {
-  const client = getSupabaseBrowserClient();
-  return await client.auth.signUp({
-    email,
-    password,
-  });
-}
-
-/**
- * Sign out current user
- */
-export async function signOut() {
-  const client = getSupabaseBrowserClient();
-  return await client.auth.signOut();
-}
 
 /**
  * Make authenticated API call with JWT token

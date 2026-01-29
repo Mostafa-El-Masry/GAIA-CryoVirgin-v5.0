@@ -36,10 +36,10 @@ const entries = [
     accent: "from-info/20 via-transparent to-transparent",
   },
   {
-    title: "Gallery",
+    title: "Instagram",
     desc: "Online carousel with swipe-ready, curated drops.",
-    href: "/Gallery",
-    action: "Open Gallery",
+    href: "/instagram",
+    action: "Open Instagram",
     tag: "Showcase",
     accent: "from-error/20 via-transparent to-transparent",
   },

@@ -12,7 +12,7 @@ export function useCurrentPermissions(): PermissionSet {
   // TODO: Implement actual permissions retrieval
   // This should fetch permissions for the current user from auth/database
   return {
-    gallery: true,
+    instagram: true,
     apollo: true,
     eleuthia: true,
     timeline: true,
@@ -27,13 +27,13 @@ export function useCurrentPermissions(): PermissionSet {
     core: true,
     labs: true,
     settingsAppearance: true,
-    settingsGallery: true,
+    settingsInstagram: true,
   };
 }
 
 export function getAvailablePermissionKeys(): PermissionKey[] {
   return [
-    "gallery",
+    "instagram",
     "apollo",
     "eleuthia",
     "timeline",

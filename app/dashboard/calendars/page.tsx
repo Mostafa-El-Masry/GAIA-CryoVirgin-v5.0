@@ -24,11 +24,11 @@ function CalendarLoading() {
 }
 
 const HealthCalendar = dynamic(
-  () => import("@/app/health-awakening/food-calendar/page"),
+  () => import("@/app/health/food-calendar/page"),
   {
     ssr: false,
     loading: CalendarLoading,
-  }
+  },
 );
 
 const LearningCalendar = dynamic(
@@ -36,15 +36,15 @@ const LearningCalendar = dynamic(
   {
     ssr: false,
     loading: CalendarLoading,
-  }
+  },
 );
 
 const TrainingCalendar = dynamic(
-  () => import("@/app/health-awakening/training-calendar/page"),
+  () => import("@/app/health/training-calendar/page"),
   {
     ssr: false,
     loading: CalendarLoading,
-  }
+  },
 );
 
 export default function DashboardCalendarsPage() {
@@ -56,14 +56,14 @@ export default function DashboardCalendarsPage() {
         id: "health",
         label: "Health calendar",
         subtitle: "Food rotation, hydration, and training slots",
-        href: "/health-awakening/food-calendar",
+        href: "/health/food-calendar",
         Component: HealthCalendar,
       },
       {
         id: "training",
         label: "Training calendar",
         subtitle: "Planned vs actual training volume by day",
-        href: "/health-awakening/training-calendar",
+        href: "/health/training-calendar",
         Component: TrainingCalendar,
       },
       {
@@ -74,7 +74,7 @@ export default function DashboardCalendarsPage() {
         Component: LearningCalendar,
       },
     ],
-    []
+    [],
   );
 
   const current = views.find((v) => v.id === active) ?? views[0];

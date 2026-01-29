@@ -75,20 +75,7 @@ function generateId(prefix: string): string {
 export default function WealthFlowsPage() {
   const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
   if (!canAccess("flows")) {
-    return (
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-[var(--gaia-text-default)]">
-        <section className={`${surface} p-8`}>
-          <h1 className="text-xl font-semibold text-white">Monthly flows locked</h1>
-          <p className="mt-2 text-sm text-slate-300">
-            Complete more Academy lessons in Apollo to unlock this part of Wealth.
-          </p>
-          <p className="mt-2 text-xs text-slate-400">
-            Lessons completed: <span className="font-semibold text-white">{totalLessonsCompleted}</span>{" "}
-            - Wealth stage <span className="font-semibold text-white">{stage}</span>/5
-          </p>
-        </section>
-      </main>
-    );
+    return null;
   }
 
   const [state, setState] = useState<WealthState | null>(null);
@@ -163,7 +150,8 @@ export default function WealthFlowsPage() {
     return Array.from(set).sort().reverse();
   }, [state, selectedMonth]);
 
-  const currentMonthKey = selectedMonth || (months.length > 0 ? months[0] : null);
+  const currentMonthKey =
+    selectedMonth || (months.length > 0 ? months[0] : null);
 
   const overviewForMonth = useMemo(() => {
     if (!state || !currentMonthKey) return null;
@@ -176,13 +164,17 @@ export default function WealthFlowsPage() {
     return state.flows.filter((f) => toMonthKey(f.date) === currentMonthKey);
   }, [state, currentMonthKey]);
 
-  const primaryCurrency = overviewForMonth?.primaryCurrency || state?.accounts[0]?.currency || "KWD";
+  const primaryCurrency =
+    overviewForMonth?.primaryCurrency || state?.accounts[0]?.currency || "KWD";
   const fxText =
     fxInfo && fxInfo.rate > 0
       ? `1 KWD ~ ${fxInfo.rate.toFixed(2)} EGP | ${fxInfo.isCached ? "cached last 24h" : "fresh"}`
       : "FX unavailable";
 
-  function handleFormChange<K extends keyof FormState>(key: K, value: FormState[K]) {
+  function handleFormChange<K extends keyof FormState>(
+    key: K,
+    value: FormState[K],
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -334,8 +326,12 @@ export default function WealthFlowsPage() {
       const monthly = estimateMonthlyInterest(inst);
       const prev = instrumentInterestByCurrency.get(inst.currency) ?? 0;
       instrumentInterestByCurrency.set(inst.currency, prev + monthly);
-      const prevPrincipal = instrumentPrincipalByCurrency.get(inst.currency) ?? 0;
-      instrumentPrincipalByCurrency.set(inst.currency, prevPrincipal + inst.principal);
+      const prevPrincipal =
+        instrumentPrincipalByCurrency.get(inst.currency) ?? 0;
+      instrumentPrincipalByCurrency.set(
+        inst.currency,
+        prevPrincipal + inst.principal,
+      );
     }
   }
   const investmentByCurrency = new Map<string, number>();
@@ -384,7 +380,10 @@ export default function WealthFlowsPage() {
   let displayDeposits = story.totalDeposits;
   let displayDepositsCurrency = primaryCurrency;
   if (!(displayDeposits > 0)) {
-    if (investmentByCurrency.size === 0 && instrumentPrincipalByCurrency.has(primaryCurrency)) {
+    if (
+      investmentByCurrency.size === 0 &&
+      instrumentPrincipalByCurrency.has(primaryCurrency)
+    ) {
       displayDeposits = instrumentPrincipalByCurrency.get(primaryCurrency) ?? 0;
       displayDepositsCurrency = primaryCurrency;
     } else {
@@ -414,8 +413,8 @@ export default function WealthFlowsPage() {
             Monthly story & flows
           </h1>
           <p className="mt-2 max-w-3xl text-sm gaia-muted">
-            For any month, see how your stash moved: deposits, income, interest, expenses, and
-            withdrawals - with a calm story on top.
+            For any month, see how your stash moved: deposits, income, interest,
+            expenses, and withdrawals - with a calm story on top.
           </p>
         </div>
         <div className="mt-3 flex items-center gap-2 md:mt-0">
@@ -476,10 +475,11 @@ export default function WealthFlowsPage() {
             </div>
           </dl>
           <p className="mt-3 text-[11px] text-slate-400">
-            Income falls back to salary accounts when no income flow is logged. Interest includes
-            estimated certificate yield when no interest flow is logged; shown in its currency.
-            Deposits fall back to certificate principal when no deposit flow is logged and no
-            certificate investment was created.
+            Income falls back to salary accounts when no income flow is logged.
+            Interest includes estimated certificate yield when no interest flow
+            is logged; shown in its currency. Deposits fall back to certificate
+            principal when no deposit flow is logged and no certificate
+            investment was created.
           </p>
         </article>
 
@@ -510,8 +510,9 @@ export default function WealthFlowsPage() {
             )}
           </dl>
           <p className="mt-3 text-[11px] text-slate-400">
-            Later, this view will also drive a daily <span className="font-semibold">Money Pulse</span>{" "}
-            line in the Daily Thread (deposit day, interest day, or quiet day).
+            Later, this view will also drive a daily{" "}
+            <span className="font-semibold">Money Pulse</span> line in the Daily
+            Thread (deposit day, interest day, or quiet day).
           </p>
         </article>
       </section>
@@ -520,7 +521,9 @@ export default function WealthFlowsPage() {
         <article className={`${surface} p-4`}>
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-white">Flows this month</h2>
+              <h2 className="text-sm font-semibold text-white">
+                Flows this month
+              </h2>
               <p className="mt-1 text-xs text-slate-400">
                 A simple journal of what actually happened to your money.
               </p>
@@ -553,7 +556,9 @@ export default function WealthFlowsPage() {
                       <input
                         type="date"
                         value={form.date}
-                        onChange={(e) => handleFormChange("date", e.target.value)}
+                        onChange={(e) =>
+                          handleFormChange("date", e.target.value)
+                        }
                         className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] text-white"
                       />
                     </td>
@@ -561,7 +566,10 @@ export default function WealthFlowsPage() {
                       <select
                         value={form.kind}
                         onChange={(e) =>
-                          handleFormChange("kind", e.target.value as WealthFlow["kind"])
+                          handleFormChange(
+                            "kind",
+                            e.target.value as WealthFlow["kind"],
+                          )
                         }
                         className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] text-white"
                       >
@@ -577,7 +585,9 @@ export default function WealthFlowsPage() {
                         type="number"
                         step="0.01"
                         value={form.amount}
-                        onChange={(e) => handleFormChange("amount", e.target.value)}
+                        onChange={(e) =>
+                          handleFormChange("amount", e.target.value)
+                        }
                         className="w-28 rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-right text-[11px] text-white"
                         placeholder="0.00"
                       />
@@ -587,7 +597,10 @@ export default function WealthFlowsPage() {
                         type="text"
                         value={form.currency}
                         onChange={(e) =>
-                          handleFormChange("currency", e.target.value.toUpperCase())
+                          handleFormChange(
+                            "currency",
+                            e.target.value.toUpperCase(),
+                          )
                         }
                         className="w-16 rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] text-white"
                         placeholder={primaryCurrency}
@@ -597,7 +610,9 @@ export default function WealthFlowsPage() {
                       <input
                         type="text"
                         value={form.description}
-                        onChange={(e) => handleFormChange("description", e.target.value)}
+                        onChange={(e) =>
+                          handleFormChange("description", e.target.value)
+                        }
                         className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] text-white"
                         placeholder="Short note"
                       />
@@ -605,7 +620,9 @@ export default function WealthFlowsPage() {
                         <input
                           type="checkbox"
                           checked={form.repeatMonthly}
-                          onChange={(e) => handleFormChange("repeatMonthly", e.target.checked)}
+                          onChange={(e) =>
+                            handleFormChange("repeatMonthly", e.target.checked)
+                          }
                           className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-emerald-400 focus:ring-emerald-500"
                         />
                         Repeat expense monthly (next 6 months)
@@ -635,13 +652,18 @@ export default function WealthFlowsPage() {
                 {flowsThisMonth.map((flow) => {
                   const isEditing = editingId === flow.id;
                   return (
-                    <tr key={flow.id} className="border-b border-slate-800 last:border-b-0">
+                    <tr
+                      key={flow.id}
+                      className="border-b border-slate-800 last:border-b-0"
+                    >
                       <td className="py-2 pr-3 align-top text-[11px] text-slate-400">
                         {isEditing ? (
                           <input
                             type="date"
                             value={form.date}
-                            onChange={(e) => handleFormChange("date", e.target.value)}
+                            onChange={(e) =>
+                              handleFormChange("date", e.target.value)
+                            }
                             className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] text-white"
                           />
                         ) : (
@@ -653,7 +675,10 @@ export default function WealthFlowsPage() {
                           <select
                             value={form.kind}
                             onChange={(e) =>
-                              handleFormChange("kind", e.target.value as WealthFlow["kind"])
+                              handleFormChange(
+                                "kind",
+                                e.target.value as WealthFlow["kind"],
+                              )
                             }
                             className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] text-white"
                           >
@@ -673,7 +698,9 @@ export default function WealthFlowsPage() {
                             type="number"
                             step="0.01"
                             value={form.amount}
-                            onChange={(e) => handleFormChange("amount", e.target.value)}
+                            onChange={(e) =>
+                              handleFormChange("amount", e.target.value)
+                            }
                             className="w-28 rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-right text-[11px] text-white"
                           />
                         ) : (
@@ -686,7 +713,10 @@ export default function WealthFlowsPage() {
                             type="text"
                             value={form.currency}
                             onChange={(e) =>
-                              handleFormChange("currency", e.target.value.toUpperCase())
+                              handleFormChange(
+                                "currency",
+                                e.target.value.toUpperCase(),
+                              )
                             }
                             className="w-16 rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] text-white"
                           />
@@ -699,11 +729,15 @@ export default function WealthFlowsPage() {
                           <input
                             type="text"
                             value={form.description}
-                            onChange={(e) => handleFormChange("description", e.target.value)}
+                            onChange={(e) =>
+                              handleFormChange("description", e.target.value)
+                            }
                             className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] text-white"
                           />
                         ) : (
-                          flow.description || <span className="opacity-60">-</span>
+                          flow.description || (
+                            <span className="opacity-60">-</span>
+                          )
                         )}
                       </td>
                       <td className="px-3 py-2 align-top text-right">
@@ -749,7 +783,10 @@ export default function WealthFlowsPage() {
                 })}
                 {flowsThisMonth.length === 0 && !isAdding && (
                   <tr>
-                    <td colSpan={6} className="py-4 text-center text-xs text-slate-400">
+                    <td
+                      colSpan={6}
+                      className="py-4 text-center text-xs text-slate-400"
+                    >
                       No flows recorded for this month yet.
                     </td>
                   </tr>
@@ -758,7 +795,8 @@ export default function WealthFlowsPage() {
             </table>
           </div>
           <p className="mt-3 text-[11px] text-slate-500">
-            Data is stored in Supabase when configured, with local cache disabled for flows.
+            Data is stored in Supabase when configured, with local cache
+            disabled for flows.
           </p>
         </article>
       </section>

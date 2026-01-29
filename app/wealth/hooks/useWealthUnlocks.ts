@@ -1,4 +1,4 @@
-// app/wealth-awakening/hooks/useWealthUnlocks.ts
+// app/wealth/hooks/useWealthUnlocks.ts
 "use client";
 
 import { useMemo } from "react";

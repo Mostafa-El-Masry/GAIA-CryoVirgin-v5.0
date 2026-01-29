@@ -112,7 +112,9 @@ function CallCenterPythonPanel({
         return;
       }
       if (!companyId) {
-        setError("No company selected. Please create or select a company first.");
+        setError(
+          "No company selected. Please create or select a company first.",
+        );
         return;
       }
 
@@ -252,20 +254,16 @@ function CallCenterPythonPanel({
         <button
           type="button"
           onClick={handleGeneratePython}
-          disabled={
-            isProcessing || !summaryFile || !detailsFile || !companyId
-          }
+          disabled={isProcessing || !summaryFile || !detailsFile || !companyId}
           className="inline-flex items-center justify-center rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-content shadow-md transition hover:bg-primary-focus disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/60"
         >
-          {isProcessing ? "Generating with Python…" : "Generate Reports (Python)"}
+          {isProcessing
+            ? "Generating with Python…"
+            : "Generate Reports (Python)"}
         </button>
       </div>
 
-      {error && (
-        <p className="mt-4 text-sm text-error">
-          {error}
-        </p>
-      )}
+      {error && <p className="mt-4 text-sm text-error">{error}</p>}
 
       <div className="mt-6 rounded-xl border border-base-300 bg-base-200/70 p-3">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
@@ -308,22 +306,7 @@ function AccountsLocked({
 }: {
   totalLessonsCompleted: number;
 }) {
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
-      <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">
-        <h1 className="text-2xl font-semibold text-[var(--gaia-text-strong)] mb-2">
-          Accounts module locked Aú keep learning
-        </h1>
-        <p className="text-sm text-[var(--gaia-text-muted)] mb-3">
-          Complete more Academy lessons in Apollo to unlock the Accounts control center.
-        </p>
-        <p className="text-xs text-[var(--gaia-text-muted)]">
-          Lessons completed:{" "}
-          <span className="font-semibold">{totalLessonsCompleted}</span>
-        </p>
-      </section>
-    </main>
-  );
+  return null;
 }
 
 export default function AccountsPage() {
@@ -331,9 +314,7 @@ export default function AccountsPage() {
   const unlocked = isFeatureUnlocked("accounts");
 
   if (!unlocked) {
-    return (
-      <AccountsLocked totalLessonsCompleted={totalLessonsCompleted} />
-    );
+    return <AccountsLocked totalLessonsCompleted={totalLessonsCompleted} />;
   }
 
   return <AccountsContent />;
@@ -413,22 +394,65 @@ const IMPORT_TEMPLATES: Partial<Record<ImportTargetKey, ImportTemplate>> = {
   products: {
     filename: "products-template.csv",
     rows: [
-      ["Product Id", "Product Code", "Product Name", "Group", "Sales Rate", "Purchase Rate", "Cost", "Min. Stock", "Image Available"],
-      ["108881", "CP-0001", "FIBRE CLINIX TAME SHAMPOO 300ML", "SHAMPOOS", "0", "4.83", "4.83", "1", "No"],
+      [
+        "Product Id",
+        "Product Code",
+        "Product Name",
+        "Group",
+        "Sales Rate",
+        "Purchase Rate",
+        "Cost",
+        "Min. Stock",
+        "Image Available",
+      ],
+      [
+        "108881",
+        "CP-0001",
+        "FIBRE CLINIX TAME SHAMPOO 300ML",
+        "SHAMPOOS",
+        "0",
+        "4.83",
+        "4.83",
+        "1",
+        "No",
+      ],
     ],
   },
   staff: {
     filename: "staff-template.csv",
     rows: [
-      ["Staff Id", "Staff Name", "Department", "Designation", "Active Status", "Appointment Status", "Sequence"],
-      ["200", "MABEL AUSTRIA IGLESIAS", "Reception", "Reception", "True", "False", "2"],
+      [
+        "Staff Id",
+        "Staff Name",
+        "Department",
+        "Designation",
+        "Active Status",
+        "Appointment Status",
+        "Sequence",
+      ],
+      [
+        "200",
+        "MABEL AUSTRIA IGLESIAS",
+        "Reception",
+        "Reception",
+        "True",
+        "False",
+        "2",
+      ],
     ],
   },
   customers: {
     filename: "customers-template.csv",
     rows: [
       ["Customer Id", "Customer Name", "Phone", "Email", "Branch", "Active"],
-      ["CUST-001", "Jane Doe", "+96550000000", "jane@example.com", "Main Branch", "True"],
+      [
+        "CUST-001",
+        "Jane Doe",
+        "+96550000000",
+        "jane@example.com",
+        "Main Branch",
+        "True",
+      ],
     ],
   },
   branches: {
@@ -441,14 +465,27 @@ const IMPORT_TEMPLATES: Partial<Record<ImportTargetKey, ImportTemplate>> = {
   services: {
     filename: "services-template.csv",
     rows: [
-      ["Service Code", "Service Name", "Category", "Default Price", "Is Active"],
+      [
+        "Service Code",
+        "Service Name",
+        "Category",
+        "Default Price",
+        "Is Active",
+      ],
       ["SV-001", "Haircut", "Hair", "10.00", "True"],
     ],
   },
   sales: {
     filename: "sales-template.csv",
     rows: [
-      ["Invoice Id", "Invoice Date", "Customer Name", "Branch", "Net Amount", "Payment Method"],
+      [
+        "Invoice Id",
+        "Invoice Date",
+        "Customer Name",
+        "Branch",
+        "Net Amount",
+        "Payment Method",
+      ],
       ["INV-1001", "2025-01-10", "Jane Doe", "Main Branch", "120.50", "VISA"],
     ],
   },
@@ -536,7 +573,7 @@ function ImportCard({
       console.error(err);
       setError(
         err?.message ??
-          "Something went wrong while creating the import job. Please try again."
+          "Something went wrong while creating the import job. Please try again.",
       );
     } finally {
       setIsUploading(false);
@@ -599,9 +636,7 @@ function ImportCard({
         {isUploading ? "Creating import job…" : "Upload & create import job"}
       </button>
 
-      {error && (
-        <p className="mt-2 text-[11px] text-error">{error}</p>
-      )}
+      {error && <p className="mt-2 text-[11px] text-error">{error}</p>}
 
       {result && (
         <p className="mt-2 text-[11px] text-success">
@@ -626,7 +661,7 @@ function AccountsContent() {
     process.env.NEXT_PUBLIC_ACCOUNTS_INTRO_VIDEO_ID ?? "ziNwB3u1q1k";
   const [companies, setCompanies] = useState<Company[] | null>(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(
-    null
+    null,
   );
   const [isAdding, setIsAdding] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState("");
@@ -681,7 +716,7 @@ function AccountsContent() {
         console.error(err);
         setLoadError(
           err?.message ??
-            "Unable to load companies. Check database connection and try again."
+            "Unable to load companies. Check database connection and try again.",
         );
         setCompanies([]);
         setSelectedCompanyId(null);
@@ -695,7 +730,7 @@ function AccountsContent() {
 
   const selectedCompany = useMemo(
     () => companies?.find((c) => c.id === selectedCompanyId) ?? null,
-    [companies, selectedCompanyId]
+    [companies, selectedCompanyId],
   );
   const wiringCheckPassed = wiringReport?.ok === true;
 
@@ -770,7 +805,7 @@ function AccountsContent() {
       console.error(err);
       setNewCompanyError(
         err?.message ??
-          "Something went wrong while creating the company. Please try again."
+          "Something went wrong while creating the company. Please try again.",
       );
     } finally {
       setSavingNewCompany(false);
@@ -793,7 +828,7 @@ function AccountsContent() {
       setWiringReport(data);
     } catch (err: any) {
       setWiringError(
-        err?.message ?? "Wiring check failed. Please try again later."
+        err?.message ?? "Wiring check failed. Please try again later.",
       );
     } finally {
       setWiringCheckRunning(false);
@@ -829,7 +864,9 @@ function AccountsContent() {
 
             {loading ? (
               <div className="space-y-2">
-                <p className="text-xs text-base-content/70">Loading companies…</p>
+                <p className="text-xs text-base-content/70">
+                  Loading companies…
+                </p>
                 <div className="h-8 w-full animate-pulse rounded-xl bg-base-200" />
                 <div className="h-8 w-full animate-pulse rounded-xl bg-base-200" />
               </div>
@@ -938,8 +975,8 @@ function AccountsContent() {
                   with company + target.
                 </li>
                 <li>
-                  In future weeks, each import job will be processed into the real
-                  Accounts tables.
+                  In future weeks, each import job will be processed into the
+                  real Accounts tables.
                 </li>
               </ul>
               <button
@@ -955,36 +992,48 @@ function AccountsContent() {
               )}
               {wiringReport && (
                 <div className="mt-2 space-y-1 rounded-lg border border-base-200 bg-base-100 p-2 text-[11px] text-base-content/80">
-                  <p className={`font-semibold ${wiringReport.ok ? "text-success" : "text-warning"}`}>
-                    {wiringReport.message || (wiringReport.ok ? "Accounts wiring looks good." : "Check required.")}
+                  <p
+                    className={`font-semibold ${wiringReport.ok ? "text-success" : "text-warning"}`}
+                  >
+                    {wiringReport.message ||
+                      (wiringReport.ok
+                        ? "Accounts wiring looks good."
+                        : "Check required.")}
                   </p>
                   {wiringReport.tables && (
                     <ul className="space-y-1">
-                      {Object.entries(wiringReport.tables).map(([table, status]) => (
-                        <li key={table} className="flex items-start gap-2">
-                          <span
-                            className={`mt-0.5 inline-block h-2 w-2 rounded-full ${
-                              status.exists && status.missingColumns.length === 0
-                                ? "bg-success"
-                                : status.exists
-                                  ? "bg-warning"
-                                  : "bg-error"
-                            }`}
-                          />
-                          <span>
-                            <span className="font-semibold">{table}</span>
-                            {status.exists ? (
-                              status.missingColumns.length === 0 ? (
-                                " is present."
+                      {Object.entries(wiringReport.tables).map(
+                        ([table, status]) => (
+                          <li key={table} className="flex items-start gap-2">
+                            <span
+                              className={`mt-0.5 inline-block h-2 w-2 rounded-full ${
+                                status.exists &&
+                                status.missingColumns.length === 0
+                                  ? "bg-success"
+                                  : status.exists
+                                    ? "bg-warning"
+                                    : "bg-error"
+                              }`}
+                            />
+                            <span>
+                              <span className="font-semibold">{table}</span>
+                              {status.exists ? (
+                                status.missingColumns.length === 0 ? (
+                                  " is present."
+                                ) : (
+                                  <>
+                                    {" "}
+                                    missing columns:{" "}
+                                    {status.missingColumns.join(", ")}{" "}
+                                  </>
+                                )
                               ) : (
-                                <> missing columns: {status.missingColumns.join(", ")} </>
-                              )
-                            ) : (
-                              " table is missing."
-                            )}
-                          </span>
-                        </li>
-                      ))}
+                                " table is missing."
+                              )}
+                            </span>
+                          </li>
+                        ),
+                      )}
                     </ul>
                   )}
                 </div>
@@ -1058,7 +1107,7 @@ function AccountsContent() {
                     <p className="text-xs text-base-content/70">
                       Load your existing Excel / CSV reports once, and GAIA will
                       remember them for this company in the online database.
-                      Each tile below creates an {" "}
+                      Each tile below creates an{" "}
                       <code className="rounded bg-base-200 px-1 py-0.5 text-[10px]">
                         import_jobs
                       </code>{" "}
@@ -1121,8 +1170,9 @@ function AccountsFirstLesson({ videoId }: { videoId: string }) {
           Wire your first company into Accounts
         </h2>
         <p className="text-sm text-base-content/70">
-          Start with one clean company, run the wiring check, then push a tiny sample of data
-          through Call Center and the Data Loaders so the rest of the suite can read it.
+          Start with one clean company, run the wiring check, then push a tiny
+          sample of data through Call Center and the Data Loaders so the rest of
+          the suite can read it.
         </p>
       </header>
 
@@ -1132,27 +1182,36 @@ function AccountsFirstLesson({ videoId }: { videoId: string }) {
             The quick path (30-45 minutes)
           </h3>
           <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/80">
-            <li>Create your first company in the left rail and keep it selected.</li>
+            <li>
+              Create your first company in the left rail and keep it selected.
+            </li>
             <li>
               Run the wiring check once to ensure{" "}
-              <code className="rounded bg-base-200 px-1 py-0.5 text-[11px]">companies</code> and{" "}
-              <code className="rounded bg-base-200 px-1 py-0.5 text-[11px]">import_jobs</code> are reachable.
+              <code className="rounded bg-base-200 px-1 py-0.5 text-[11px]">
+                companies
+              </code>{" "}
+              and{" "}
+              <code className="rounded bg-base-200 px-1 py-0.5 text-[11px]">
+                import_jobs
+              </code>{" "}
+              are reachable.
             </li>
             <li>
-              Use the Data Loaders to upload one tiny CSV for branches, staff, customers, and services
-              (templates are provided per tile).
+              Use the Data Loaders to upload one tiny CSV for branches, staff,
+              customers, and services (templates are provided per tile).
             </li>
             <li>
-              In Call Center, generate the Python reports with a small pair of CSVs to prove the round-trip
-              works end-to-end.
+              In Call Center, generate the Python reports with a small pair of
+              CSVs to prove the round-trip works end-to-end.
             </li>
             <li>
-              Note anything that breaks in naming, columns, or formats and feed that back into your templates
-              so week two imports are smooth.
+              Note anything that breaks in naming, columns, or formats and feed
+              that back into your templates so week two imports are smooth.
             </li>
           </ol>
           <p className="text-xs text-base-content/60">
-            This first lesson is about wiring, not volume. Keep samples tiny so you can iterate fast.
+            This first lesson is about wiring, not volume. Keep samples tiny so
+            you can iterate fast.
           </p>
         </div>
 
@@ -1173,7 +1232,9 @@ function AccountsFirstLesson({ videoId }: { videoId: string }) {
           </div>
           <p className="text-xs text-base-content/60">
             Replace the video via{" "}
-            <code className="rounded bg-base-200 px-1 py-0.5 text-[11px]">NEXT_PUBLIC_ACCOUNTS_INTRO_VIDEO_ID</code>{" "}
+            <code className="rounded bg-base-200 px-1 py-0.5 text-[11px]">
+              NEXT_PUBLIC_ACCOUNTS_INTRO_VIDEO_ID
+            </code>{" "}
             if you prefer your own recording.
           </p>
         </div>

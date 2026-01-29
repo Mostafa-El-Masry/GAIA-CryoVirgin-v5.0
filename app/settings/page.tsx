@@ -48,12 +48,12 @@ type ManifestResponse = {
   items?: GalleryItem[];
 };
 
-type TabId = "appearance" | "gallery" | "user" | "permissions" | "unlocks";
+type TabId = "appearance" | "instagram" | "user" | "permissions" | "unlocks";
 
 async function fetchGalleryManifest(): Promise<GalleryItem[]> {
   // Prefer the live API scan so freshly added media shows up immediately.
   try {
-    const live = await fetch(`/api/gallery/scan?ts=${Date.now()}`, {
+    const live = await fetch(`/api/instagram/scan?ts=${Date.now()}`, {
       cache: "no-store",
     });
     if (live.ok) {
@@ -65,7 +65,7 @@ async function fetchGalleryManifest(): Promise<GalleryItem[]> {
   }
 
   try {
-    const res = await fetch("/jsons/gallery-manifest.json", {
+    const res = await fetch("/jsons/instagram-manifest.json", {
       cache: "no-store",
     });
     if (res.ok) {
@@ -76,7 +76,7 @@ async function fetchGalleryManifest(): Promise<GalleryItem[]> {
     /* surface error below */
   }
 
-  throw new Error("Unable to load gallery manifest.");
+  throw new Error("Unable to load instagram manifest.");
 }
 
 function SettingsContent() {
@@ -84,17 +84,16 @@ function SettingsContent() {
   const authName = null;
   const authEmail = null;
 
-
   const [syncing, setSyncing] = useState(false);
   const [autoTagging, setAutoTagging] = useState(false);
   const [autoTagProgress, setAutoTagProgress] = useState(0);
-  const [galleryStatus, setGalleryStatus] = useState<GalleryStatus | null>(
-    null
+  const [instagramStatus, setInstagramStatus] = useState<GalleryStatus | null>(
+    null,
   );
   const [activeTab, setActiveTab] = useState<TabId>("appearance");
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>(
-    []
-  );
+  const [availableVoices, setAvailableVoices] = useState<
+    SpeechSynthesisVoice[]
+  >([]);
   const [voiceChoice, setVoiceChoice] = useState("__auto__");
 
   const availableTabs = useMemo(() => {
@@ -103,7 +102,7 @@ function SettingsContent() {
       { id: "user", label: "User" },
       { id: "unlocks", label: "GAIA unlocks" },
       { id: "permissions", label: "Permissions" },
-      { id: "gallery", label: "Gallery" },
+      { id: "instagram", label: "Instagram" },
       // Users tab removed to avoid server-side admin calls when proxy is not configured
     ];
     return tabs;
@@ -114,7 +113,10 @@ function SettingsContent() {
 
   useEffect(() => {
     const applyStoredVoice = () => {
-      const stored = readJSON<string | null>("gaia.academy.voicePreference", null);
+      const stored = readJSON<string | null>(
+        "gaia.academy.voicePreference",
+        null,
+      );
       if (stored) setVoiceChoice(stored);
     };
     applyStoredVoice();
@@ -146,27 +148,27 @@ function SettingsContent() {
   // Users/admin UI removed to avoid server-side admin calls when the project
   // is running without Supabase service-role credentials (local/dev).
 
-  const handleSyncGallery = useCallback(async () => {
+  const handleSyncInstagram = useCallback(async () => {
     setSyncing(true);
-    setGalleryStatus({
+    setInstagramStatus({
       type: "loading",
-      message: "Syncing gallery... please wait.",
+      message: "Syncing instagram... please wait.",
     });
     try {
-      const res = await fetch("/api/gallery/scan", { cache: "no-store" });
+      const res = await fetch("/api/instagram/scan", { cache: "no-store" });
       if (!res.ok) {
         throw new Error(`Sync failed with status ${res.status}`);
       }
-      window.dispatchEvent(new Event("gallery:refresh"));
-      setGalleryStatus({
+      window.dispatchEvent(new Event("instagram:refresh"));
+      setInstagramStatus({
         type: "success",
-        message: "Gallery sync requested. The gallery will reload shortly.",
+        message: "Instagram sync requested. The instagram will reload shortly.",
       });
     } catch (error) {
       console.error(error);
-      setGalleryStatus({
+      setInstagramStatus({
         type: "error",
-        message: "Could not sync gallery. Please try again.",
+        message: "Could not sync instagram. Please try again.",
       });
     } finally {
       setSyncing(false);
@@ -175,9 +177,9 @@ function SettingsContent() {
 
   const handleResetViews = useCallback(() => {
     resetViews();
-    setGalleryStatus({
+    setInstagramStatus({
       type: "success",
-      message: "Gallery watch stats reset.",
+      message: "Instagram watch stats reset.",
     });
   }, []);
 
@@ -185,7 +187,7 @@ function SettingsContent() {
     if (autoTagging) return;
     setAutoTagging(true);
     setAutoTagProgress(0);
-    setGalleryStatus({
+    setInstagramStatus({
       type: "progress",
       message: "Auto-tagging media... 0%",
       progress: 0,
@@ -193,9 +195,9 @@ function SettingsContent() {
     try {
       const items = await fetchGalleryManifest();
       if (!items.length) {
-        setGalleryStatus({
+        setInstagramStatus({
           type: "success",
-          message: "No gallery items available to tag.",
+          message: "No instagram items available to tag.",
         });
         return;
       }
@@ -245,7 +247,7 @@ function SettingsContent() {
 
         const progress = (i + 1) / items.length;
         setAutoTagProgress(progress);
-        setGalleryStatus({
+        setInstagramStatus({
           type: "progress",
           progress,
           message: `Auto-tagging media... ${Math.round(progress * 100)}%`,
@@ -259,18 +261,18 @@ function SettingsContent() {
         setAutoTagMeta(id, meta as any);
       }
       window.dispatchEvent(
-        new CustomEvent("gallery:tags-updated", { detail: { tagMap } })
+        new CustomEvent("instagram:tags-updated", { detail: { tagMap } }),
       );
       window.dispatchEvent(new Event("storage"));
 
-      setGalleryStatus({
+      setInstagramStatus({
         type: "success",
         message: "Auto-tagging complete.",
         detail: `Updated ${updatedItems} items (${totalNewTags} new tags). ${previouslyTagged} items were already up to date.`,
       });
     } catch (error) {
       console.error(error);
-      setGalleryStatus({
+      setInstagramStatus({
         type: "error",
         message: "Auto-tagging failed. Please try again later.",
       });
@@ -289,7 +291,7 @@ function SettingsContent() {
     importJSON((data) => {
       try {
         window.dispatchEvent(
-          new CustomEvent("gaia:apollo:data", { detail: { data } })
+          new CustomEvent("gaia:apollo:data", { detail: { data } }),
         );
       } catch {
         // no-op if window not available
@@ -415,9 +417,7 @@ function SettingsContent() {
               <div className="space-y-1">
                 <p className="text-sm">
                   Signed in as{" "}
-                  <span className="font-semibold">
-                    {authName ?? authEmail}
-                  </span>
+                  <span className="font-semibold">{authName ?? authEmail}</span>
                 </p>
                 <p className="text-xs gaia-muted">{authEmail}</p>
               </div>
@@ -459,8 +459,8 @@ function SettingsContent() {
                     Currently:{" "}
                     {voiceChoice === "__auto__"
                       ? "Auto"
-                      : availableVoices.find((v) => v.voiceURI === voiceChoice)
-                          ?.name ?? "Unknown"}
+                      : (availableVoices.find((v) => v.voiceURI === voiceChoice)
+                          ?.name ?? "Unknown")}
                   </span>
                 </div>
               ) : (
@@ -474,9 +474,7 @@ function SettingsContent() {
 
         {activeTab === "unlocks" && <FeatureUnlocksTab />}
 
-        {activeTab === "permissions" && (
-          <SettingsPermissionsTab />
-        )}
+        {activeTab === "permissions" && <SettingsPermissionsTab />}
 
         {activeTab === "gallery" && (
           <section className="space-y-3 rounded-lg border gaia-border p-4">
@@ -488,7 +486,7 @@ function SettingsContent() {
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={handleSyncGallery}
+                onClick={handleSyncInstagram}
                 className={`rounded border px-3 py-1 text-sm ${
                   syncing
                     ? "cursor-not-allowed opacity-70 gaia-contrast"
@@ -520,38 +518,39 @@ function SettingsContent() {
                   : "Auto-tag media"}
               </button>
             </div>
-            {galleryStatus && (
+            {instagramStatus && (
               <div
                 className={`mt-2 space-y-2 rounded border px-3 py-2 text-xs ${
-                  galleryStatus.type === "error"
+                  instagramStatus.type === "error"
                     ? "border-red-500 text-red-400"
-                    : galleryStatus.type === "success"
-                    ? "border-green-500 text-green-400"
-                    : "border-blue-500 text-blue-300"
+                    : instagramStatus.type === "success"
+                      ? "border-green-500 text-green-400"
+                      : "border-blue-500 text-blue-300"
                 }`}
                 role="status"
                 aria-live="polite"
               >
-                {(galleryStatus.type === "loading" ||
-                  galleryStatus.type === "progress") && (
+                {(instagramStatus.type === "loading" ||
+                  instagramStatus.type === "progress") && (
                   <progress
                     className="h-2 w-full overflow-hidden rounded bg-transparent"
                     max={1}
-                    value={galleryStatus.progress ?? undefined}
+                    value={instagramStatus.progress ?? undefined}
                   />
                 )}
-                <p className="font-medium">{galleryStatus.message}</p>
-                {galleryStatus.detail && (
+                <p className="font-medium">{instagramStatus.message}</p>
+                {instagramStatus.detail && (
                   <p className="text-[11px] opacity-75">
-                    {galleryStatus.detail}
+                    {instagramStatus.detail}
                   </p>
                 )}
-                {galleryStatus.type === "success" && !galleryStatus.detail && (
-                  <p className="text-[11px] opacity-75">
-                    You can return to the gallery to view the latest items.
-                  </p>
-                )}
-                {galleryStatus.type === "error" && (
+                {instagramStatus.type === "success" &&
+                  !instagramStatus.detail && (
+                    <p className="text-[11px] opacity-75">
+                      You can return to the instagram to view the latest items.
+                    </p>
+                  )}
+                {instagramStatus.type === "error" && (
                   <p className="text-[11px] opacity-75">
                     Check your connection or try again later.
                   </p>
@@ -572,22 +571,7 @@ function SettingsLocked({
 }: {
   totalLessonsCompleted: number;
 }) {
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
-      <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">
-        <h1 className="text-2xl font-semibold text-[var(--gaia-text-strong)] mb-2">
-          Settings locked Aú keep learning
-        </h1>
-        <p className="text-sm text-[var(--gaia-text-muted)] mb-3">
-          Complete more Academy lessons in Apollo to unlock GAIA settings.
-        </p>
-        <p className="text-xs text-[var(--gaia-text-muted)]">
-          Lessons completed:{" "}
-          <span className="font-semibold">{totalLessonsCompleted}</span>
-        </p>
-      </section>
-    </main>
-  );
+  return null;
 }
 
 export default function SettingsPage() {

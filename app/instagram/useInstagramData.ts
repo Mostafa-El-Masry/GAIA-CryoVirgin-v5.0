@@ -157,7 +157,7 @@ export function useGalleryData(fallbackItems: MediaItem[]): GalleryDataState {
     // 2) Pull from API (merges R2 + local).
     async function fetchFromApi() {
       try {
-        const res = await fetch("/api/gallery", { cache: "no-store" });
+        const res = await fetch("/api/instagram", { cache: "no-store" });
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
         }
@@ -189,7 +189,7 @@ export function useGalleryData(fallbackItems: MediaItem[]): GalleryDataState {
           }
         }
       } catch (err: unknown) {
-        console.warn("[GAIA Gallery] Failed to load /api/gallery", err);
+        console.warn("[GAIA Instagram] Failed to load /api/instagram", err);
         if (!cancelled) {
           setItems(fallbackItems);
           setSource((prevSource) =>

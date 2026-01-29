@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWealthUnlocks } from "../hooks/useWealthUnlocks";
 import type { WealthFlow, WealthState } from "../lib/types";
-import { loadWealthStateWithRemote, saveWealthStateWithRemote } from "../lib/wealthStore";
+import {
+  loadWealthStateWithRemote,
+  saveWealthStateWithRemote,
+} from "../lib/wealthStore";
 import { getTodayInKuwait } from "../lib/summary";
 
 type PurchaseForm = {
@@ -30,14 +33,21 @@ function toMonthIndex(date: string): number | null {
   const [yearRaw, monthRaw] = date.split("-");
   const year = Number(yearRaw);
   const month = Number(monthRaw);
-  if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) {
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    month < 1 ||
+    month > 12
+  ) {
     return null;
   }
   return year * 12 + (month - 1);
 }
 
 function buildRecurringKey(flow: WealthFlow): string {
-  const amountKey = Number.isFinite(flow.amount) ? flow.amount.toFixed(2) : "0.00";
+  const amountKey = Number.isFinite(flow.amount)
+    ? flow.amount.toFixed(2)
+    : "0.00";
   const currencyKey = flow.currency.trim().toUpperCase() || "KWD";
   const descriptionKey = normalizeDescription(flow.description) || "(no-desc)";
   return `${descriptionKey}__${amountKey}__${currencyKey}`;
@@ -62,20 +72,7 @@ function generateId(prefix: string): string {
 export default function WealthPurchasesPage() {
   const { canAccess, stage, totalLessonsCompleted } = useWealthUnlocks();
   if (!canAccess("flows")) {
-    return (
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-[var(--gaia-text-default)]">
-        <section className={`${surface} p-8`}>
-          <h1 className="mb-2 text-xl font-semibold text-white">Purchases locked</h1>
-          <p className="mb-3 text-sm text-slate-300">
-            Complete more Academy lessons in Apollo to unlock this part of Wealth.
-          </p>
-          <p className="text-xs text-slate-400">
-            Lessons completed: <span className="font-semibold text-white">{totalLessonsCompleted}</span>{" "}
-            - Wealth stage <span className="font-semibold text-white">{stage}</span>/5
-          </p>
-        </section>
-      </main>
-    );
+    return null;
   }
 
   const [state, setState] = useState<WealthState | null>(null);
@@ -133,7 +130,10 @@ export default function WealthPurchasesPage() {
     return purchases.reduce((sum, flow) => sum + flow.amount, 0);
   }, [purchases]);
 
-  function handleFormChange<K extends keyof PurchaseForm>(key: K, value: PurchaseForm[K]) {
+  function handleFormChange<K extends keyof PurchaseForm>(
+    key: K,
+    value: PurchaseForm[K],
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -201,7 +201,9 @@ export default function WealthPurchasesPage() {
         kind: "expense",
         description: description || undefined,
       };
-      nextFlows = nextFlows.map((flow) => (flow.id === editingId ? payload : flow));
+      nextFlows = nextFlows.map((flow) =>
+        flow.id === editingId ? payload : flow,
+      );
     } else {
       const payload: WealthFlow = {
         id: generateId("purchase"),
@@ -251,12 +253,17 @@ export default function WealthPurchasesPage() {
             Purchases
           </h1>
           <p className="mt-2 max-w-3xl text-sm gaia-muted">
-            Track day-to-day spending. Every purchase is stored as an expense flow so your wealth
-            story stays accurate.
+            Track day-to-day spending. Every purchase is stored as an expense
+            flow so your wealth story stays accurate.
           </p>
         </div>
         <div className="text-right text-xs gaia-muted">
-          <p>Total purchases: <span className="font-semibold text-[var(--gaia-text-strong)]">{purchases.length}</span></p>
+          <p>
+            Total purchases:{" "}
+            <span className="font-semibold text-[var(--gaia-text-strong)]">
+              {purchases.length}
+            </span>
+          </p>
           <p className="mt-1">
             Total spent:{" "}
             <span className="font-semibold text-[var(--gaia-text-strong)]">
@@ -288,12 +295,17 @@ export default function WealthPurchasesPage() {
               </thead>
               <tbody>
                 {purchases.map((flow) => (
-                  <tr key={flow.id} className="border-b gaia-border last:border-b-0">
+                  <tr
+                    key={flow.id}
+                    className="border-b gaia-border last:border-b-0"
+                  >
                     <td className="py-2 pr-3 align-top text-[11px] gaia-muted">
                       {flow.date}
                     </td>
                     <td className="px-3 py-2 align-top text-[11px] text-[var(--gaia-text-default)]">
-                      {flow.description || <span className="opacity-60">-</span>}
+                      {flow.description || (
+                        <span className="opacity-60">-</span>
+                      )}
                     </td>
                     <td className="px-3 py-2 align-top text-right text-[11px] font-semibold text-[var(--gaia-text-strong)]">
                       {formatCurrency(flow.amount, flow.currency)}
@@ -323,7 +335,10 @@ export default function WealthPurchasesPage() {
                 ))}
                 {purchases.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-4 text-center text-xs gaia-muted">
+                    <td
+                      colSpan={5}
+                      className="py-4 text-center text-xs gaia-muted"
+                    >
                       No purchases logged yet.
                     </td>
                   </tr>
@@ -338,7 +353,8 @@ export default function WealthPurchasesPage() {
             {editingId ? "Edit purchase" : "Add purchase"}
           </h2>
           <p className="mt-1 text-xs gaia-muted">
-            Log a single purchase. This will show up in your monthly flows as an expense.
+            Log a single purchase. This will show up in your monthly flows as an
+            expense.
           </p>
           <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
             <label className="block text-xs gaia-muted">
@@ -355,7 +371,9 @@ export default function WealthPurchasesPage() {
               <input
                 type="text"
                 value={form.description}
-                onChange={(e) => handleFormChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleFormChange("description", e.target.value)
+                }
                 className="mt-1 w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-xs text-[var(--gaia-text-default)]"
                 placeholder="Example: Groceries, Amazon, New monitor"
               />
@@ -377,7 +395,9 @@ export default function WealthPurchasesPage() {
                 <input
                   type="text"
                   value={form.currency}
-                  onChange={(e) => handleFormChange("currency", e.target.value.toUpperCase())}
+                  onChange={(e) =>
+                    handleFormChange("currency", e.target.value.toUpperCase())
+                  }
                   className="mt-1 w-full rounded-xl border gaia-border bg-[var(--gaia-surface)] px-3 py-2 text-xs text-[var(--gaia-text-default)]"
                   placeholder={primaryCurrency}
                 />
@@ -389,7 +409,13 @@ export default function WealthPurchasesPage() {
                 className="inline-flex items-center justify-center rounded-full border border-[var(--gaia-contrast-bg)]/60 bg-[var(--gaia-contrast-bg)]/12 px-4 py-2 text-xs font-semibold text-[var(--gaia-text-default)] transition hover:border-[var(--gaia-contrast-bg)] disabled:opacity-60"
                 disabled={!form.amount || saving}
               >
-                {saving ? (editingId ? "Saving..." : "Adding...") : editingId ? "Save changes" : "Add purchase"}
+                {saving
+                  ? editingId
+                    ? "Saving..."
+                    : "Adding..."
+                  : editingId
+                    ? "Save changes"
+                    : "Add purchase"}
               </button>
               {editingId && (
                 <button

@@ -1,4 +1,4 @@
-// app/health-awakening/HealthGateWrapper.tsx
+// app/health/HealthGateWrapper.tsx
 "use client";
 
 import { useGaiaFeatureUnlocks } from "@/app/hooks/useGaiaFeatureUnlocks";
@@ -18,7 +18,8 @@ export default function HealthGateWrapper() {
             Health locked · keep learning
           </h1>
           <p className="mb-3 text-sm gaia-muted">
-            Finish more Academy lessons in Apollo to unlock GAIA&apos;s Health Core.
+            Finish more Academy lessons in Apollo to unlock GAIA&apos;s Health
+            Core.
           </p>
           <p className="text-xs gaia-muted">
             Lessons completed so far:{" "}

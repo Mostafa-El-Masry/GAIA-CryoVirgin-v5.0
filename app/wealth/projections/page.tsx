@@ -515,27 +515,7 @@ export default function WealthProjectionsPage() {
   };
 
   if (!canAccess("projections")) {
-    return (
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-slate-100">
-        <section className={`${surface} p-8`}>
-          <h1 className="text-xl font-semibold text-white">
-            Future projections locked
-          </h1>
-          <p className="mt-2 text-sm text-slate-300">
-            Complete more Academy lessons in Apollo to unlock this part of
-            Wealth.
-          </p>
-          <p className="mt-2 text-xs text-slate-400">
-            Lessons completed:{" "}
-            <span className="font-semibold text-white">
-              {totalLessonsCompleted}
-            </span>{" "}
-            - Wealth stage{" "}
-            <span className="font-semibold text-white">{stage}</span>/5
-          </p>
-        </section>
-      </main>
-    );
+    return null;
   }
 
   return (

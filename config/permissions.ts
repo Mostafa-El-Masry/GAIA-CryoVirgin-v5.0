@@ -14,7 +14,8 @@ export type PermissionKey =
   | "core"
   | "labs"
   | "settingsAppearance"
-  | "settingsGallery";
+  | "settingsGallery"
+  | "instagram";
 
 export type PermissionSet = Record<PermissionKey, boolean>;
 
@@ -43,6 +44,7 @@ export function createEmptyPermissionSet(): PermissionSet {
     labs: false,
     settingsAppearance: false,
     settingsGallery: false,
+    instagram: false,
   };
 }
 
@@ -64,6 +66,7 @@ export function createAdminPermissionSet(): PermissionSet {
     labs: true,
     settingsAppearance: true,
     settingsGallery: true,
+    instagram: true,
   };
 }
 
@@ -87,6 +90,7 @@ export function ensurePermissionShape(
     labs: false,
     settingsAppearance: false,
     settingsGallery: false,
+    instagram: false,
   };
 
   if (!permissions || typeof permissions !== "object") {
@@ -122,6 +126,7 @@ export function getAvailablePermissionKeys(): PermissionKey[] {
     "labs",
     "settingsAppearance",
     "settingsGallery",
+    "instagram",
   ];
 }
 

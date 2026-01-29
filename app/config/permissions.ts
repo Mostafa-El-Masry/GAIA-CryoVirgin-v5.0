@@ -1,5 +1,5 @@
 export type PermissionKey =
-  | "gallery"
+  | "instagram"
   | "apollo"
   | "eleuthia"
   | "timeline"
@@ -14,7 +14,7 @@ export type PermissionKey =
   | "core"
   | "labs"
   | "settingsAppearance"
-  | "settingsGallery";
+  | "settingsInstagram";
 
 export type PermissionSet = Record<PermissionKey, boolean>;
 
@@ -27,7 +27,7 @@ export function getCreatorAdminEmail(): string | null {
 
 export function createEmptyPermissionSet(): PermissionSet {
   return {
-    gallery: false,
+    instagram: false,
     apollo: false,
     eleuthia: false,
     timeline: false,
@@ -42,13 +42,13 @@ export function createEmptyPermissionSet(): PermissionSet {
     core: false,
     labs: false,
     settingsAppearance: false,
-    settingsGallery: false,
+    settingsInstagram: false,
   };
 }
 
 export function createAdminPermissionSet(): PermissionSet {
   return {
-    gallery: true,
+    instagram: true,
     apollo: true,
     eleuthia: true,
     timeline: true,
@@ -63,7 +63,7 @@ export function createAdminPermissionSet(): PermissionSet {
     core: true,
     labs: true,
     settingsAppearance: true,
-    settingsGallery: true,
+    settingsInstagram: true,
   };
 }
 
@@ -71,7 +71,7 @@ export function ensurePermissionShape(
   permissions: Partial<PermissionSet> | null,
 ): PermissionSet {
   const defaults: PermissionSet = {
-    gallery: false,
+    instagram: false,
     apollo: false,
     eleuthia: false,
     timeline: false,
@@ -86,7 +86,7 @@ export function ensurePermissionShape(
     core: false,
     labs: false,
     settingsAppearance: false,
-    settingsGallery: false,
+    settingsInstagram: false,
   };
 
   if (!permissions || typeof permissions !== "object") {
@@ -106,7 +106,7 @@ export function ensurePermissionShape(
 
 export function getAvailablePermissionKeys(): PermissionKey[] {
   return [
-    "gallery",
+    "instagram",
     "apollo",
     "eleuthia",
     "timeline",
@@ -121,7 +121,7 @@ export function getAvailablePermissionKeys(): PermissionKey[] {
     "core",
     "labs",
     "settingsAppearance",
-    "settingsGallery",
+    "settingsInstagram",
   ];
 }
 

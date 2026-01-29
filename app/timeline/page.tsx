@@ -8,22 +8,7 @@ export default function TimelinePage() {
   const unlocked = isFeatureUnlocked("timeline");
 
   if (!unlocked) {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <section className="rounded-3xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-8 shadow-lg">
-          <h1 className="text-2xl font-semibold text-[var(--gaia-text-strong)] mb-2">
-            Timeline locked · keep learning
-          </h1>
-          <p className="text-sm text-[var(--gaia-text-muted)] mb-3">
-            Complete more Academy lessons in Apollo to unlock your full Timeline view.
-          </p>
-          <p className="text-xs text-[var(--gaia-text-muted)]">
-            Lessons completed:{" "}
-            <span className="font-semibold">{totalLessonsCompleted}</span>
-          </p>
-        </section>
-      </main>
-    );
+    return null;
   }
 
   return (

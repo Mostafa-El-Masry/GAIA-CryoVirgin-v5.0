@@ -45,52 +45,53 @@ const GAIA_FEATURES: FeatureRow[] = [
   { id: "guardian", label: "Guardian", requiredLessons: 5 },
   { id: "eleuthia", label: "ELEUTHIA", requiredLessons: 6 },
   { id: "settings", label: "Settings", requiredLessons: 7 },
-  { id: "gallery", label: "Gallery", requiredLessons: 11 },
+  { id: "instagram", label: "Instagram", requiredLessons: 11 },
 ];
 
-const FEATURE_COMPONENTS: Partial<Record<FeatureRow["id"], FeatureComponent[]>> =
-  {
-    wealth: [
-      { id: "wealth-cashflow", label: "Cashflow snapshot" },
-      { id: "wealth-accounts", label: "Accounts & balances" },
-      { id: "wealth-progress", label: "Wealth progress graphs" },
-    ],
-    health: [
-      { id: "health-water", label: "Hydration quick actions" },
-      { id: "health-move", label: "Walking / movement tracker" },
-      { id: "health-sleep", label: "Sleep state" },
-    ],
-    timeline: [
-      { id: "timeline-feed", label: "Timeline feed" },
-      { id: "timeline-milestones", label: "Milestone cards" },
-      { id: "timeline-export", label: "Exports & print" },
-    ],
-    accounts: [
-      { id: "accounts-sync", label: "Account sync" },
-      { id: "accounts-statements", label: "Statements view" },
-      { id: "accounts-alerts", label: "Alerts & notifications" },
-    ],
-    guardian: [
-      { id: "guardian-checkins", label: "Daily check-ins" },
-      { id: "guardian-rules", label: "Safety rules" },
-      { id: "guardian-incidents", label: "Incident log" },
-    ],
-    eleuthia: [
-      { id: "eleuthia-sandbox", label: "Sandbox commands" },
-      { id: "eleuthia-automations", label: "Automations" },
-      { id: "eleuthia-labs", label: "Labs & experiments" },
-    ],
-    settings: [
-      { id: "settings-profile", label: "Profile & identity" },
-      { id: "settings-notifications", label: "Notifications" },
-      { id: "settings-integrations", label: "Integrations" },
-    ],
-    gallery: [
-      { id: "gallery-feed", label: "Memory feed" },
-      { id: "gallery-upload", label: "Uploads" },
-      { id: "gallery-collections", label: "Collections" },
-    ],
-  };
+const FEATURE_COMPONENTS: Partial<
+  Record<FeatureRow["id"], FeatureComponent[]>
+> = {
+  wealth: [
+    { id: "wealth-cashflow", label: "Cashflow snapshot" },
+    { id: "wealth-accounts", label: "Accounts & balances" },
+    { id: "wealth-progress", label: "Wealth progress graphs" },
+  ],
+  health: [
+    { id: "health-water", label: "Hydration quick actions" },
+    { id: "health-move", label: "Walking / movement tracker" },
+    { id: "health-sleep", label: "Sleep state" },
+  ],
+  timeline: [
+    { id: "timeline-feed", label: "Timeline feed" },
+    { id: "timeline-milestones", label: "Milestone cards" },
+    { id: "timeline-export", label: "Exports & print" },
+  ],
+  accounts: [
+    { id: "accounts-sync", label: "Account sync" },
+    { id: "accounts-statements", label: "Statements view" },
+    { id: "accounts-alerts", label: "Alerts & notifications" },
+  ],
+  guardian: [
+    { id: "guardian-checkins", label: "Daily check-ins" },
+    { id: "guardian-rules", label: "Safety rules" },
+    { id: "guardian-incidents", label: "Incident log" },
+  ],
+  eleuthia: [
+    { id: "eleuthia-sandbox", label: "Sandbox commands" },
+    { id: "eleuthia-automations", label: "Automations" },
+    { id: "eleuthia-labs", label: "Labs & experiments" },
+  ],
+  settings: [
+    { id: "settings-profile", label: "Profile & identity" },
+    { id: "settings-notifications", label: "Notifications" },
+    { id: "settings-integrations", label: "Integrations" },
+  ],
+  instagram: [
+    { id: "instagram-feed", label: "Memory feed" },
+    { id: "instagram-upload", label: "Uploads" },
+    { id: "instagram-collections", label: "Collections" },
+  ],
+};
 
 const TRACK_ORDER: TrackId[] = ["programming", "accounting", "self-repair"];
 
@@ -122,7 +123,7 @@ export default function FeatureUnlocksTab() {
     // Round-robin the paths so milestones mirror the calendar cadence,
     // falling back to the next lesson in each path if not completed yet.
     const maxMilestones = Math.max(
-      ...GAIA_FEATURES.map((feature) => feature.requiredLessons)
+      ...GAIA_FEATURES.map((feature) => feature.requiredLessons),
     );
     const pointer: Record<TrackId, number> = {
       programming: 0,
@@ -158,7 +159,8 @@ export default function FeatureUnlocksTab() {
 
         if (components && components.length > 0) {
           const mapped = components.map((component, idx) => {
-            const componentMilestone = completedLessons[baseIndex + idx] ?? null;
+            const componentMilestone =
+              completedLessons[baseIndex + idx] ?? null;
             return {
               ...component,
               lesson: componentMilestone?.lesson ?? null,
@@ -181,7 +183,7 @@ export default function FeatureUnlocksTab() {
           trackId: milestone?.trackId ?? null,
         };
       }),
-    [completedLessons]
+    [completedLessons],
   );
 
   return (
@@ -209,8 +211,8 @@ export default function FeatureUnlocksTab() {
         <div className="divide-y gaia-border">
           {rows.map((row) => {
             const lesson = row.lesson;
-            const pathKey = (row.trackId ?? lesson?.trackId) ?? null;
-            const path = pathKey ? TRACK_LABELS[pathKey] ?? null : null;
+            const pathKey = row.trackId ?? lesson?.trackId ?? null;
+            const path = pathKey ? (TRACK_LABELS[pathKey] ?? null) : null;
             const isComponentized =
               Array.isArray(row.components) && row.components.length > 0;
 
@@ -257,7 +259,8 @@ export default function FeatureUnlocksTab() {
                                   </>
                                 ) : (
                                   <>
-                                    Pending milestone #{component.milestoneNumber}
+                                    Pending milestone #
+                                    {component.milestoneNumber}
                                   </>
                                 )}
                               </p>
@@ -282,7 +285,9 @@ export default function FeatureUnlocksTab() {
                     </div>
                   ) : lesson ? (
                     <>
-                      <p className="font-medium leading-tight">{lesson.title}</p>
+                      <p className="font-medium leading-tight">
+                        {lesson.title}
+                      </p>
                       <p className="text-xs gaia-muted">
                         Lesson ID {lesson.code} - counts as milestone #
                         {row.requiredLessons}

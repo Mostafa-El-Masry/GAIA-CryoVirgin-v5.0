@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getTodayInKuwait } from "../lib/summary";
-import { SEED_FOOD_ITEMS } from "../../health-awakening/lib/foodLibrary";
+import { SEED_FOOD_ITEMS } from "../../health/lib/foodLibrary";
 
 const surface = "wealth-surface text-[var(--gaia-text-default)]";
 
@@ -110,7 +110,8 @@ const FoodSpendingCard = () => {
             Health-linked food spending
           </h2>
           <p className="mt-1 text-xs gaia-muted">
-            This card reads your <span className="font-semibold">Food Calendar</span> lunches and
+            This card reads your{" "}
+            <span className="font-semibold">Food Calendar</span> lunches and
             estimates how much you spent on those meals this month, based on the
             seed prices in the Health Food Library.
           </p>

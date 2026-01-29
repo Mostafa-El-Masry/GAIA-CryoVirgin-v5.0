@@ -45,7 +45,7 @@ import {
 
 function applySleepToHistory(
   base: HealthDaySnapshot[],
-  sessions: SleepSession[]
+  sessions: SleepSession[],
 ): HealthDaySnapshot[] {
   const byDay = new Map<string, number>();
 
@@ -66,7 +66,7 @@ function applySleepToHistory(
 
 function applyWaterToHistory(
   base: HealthDaySnapshot[],
-  entries: WaterEntry[]
+  entries: WaterEntry[],
 ): HealthDaySnapshot[] {
   const byDay = new Map<string, number>();
 
@@ -87,7 +87,7 @@ function applyWaterToHistory(
 
 function applyWalkToHistory(
   base: HealthDaySnapshot[],
-  sessions: WalkSession[]
+  sessions: WalkSession[],
 ): HealthDaySnapshot[] {
   const byDay = new Map<string, number>();
 
@@ -108,7 +108,7 @@ function applyWalkToHistory(
 
 function applyTrainingToHistory(
   base: HealthDaySnapshot[],
-  entries: TrainingEntry[]
+  entries: TrainingEntry[],
 ): HealthDaySnapshot[] {
   const byDay = new Map<string, { planned: number; actual: number }>();
 
@@ -129,7 +129,7 @@ function applyTrainingToHistory(
     }
     const pct = Math.max(
       0,
-      Math.min(200, (bucket.actual / bucket.planned) * 100)
+      Math.min(200, (bucket.actual / bucket.planned) * 100),
     );
     return {
       ...day,
@@ -140,7 +140,7 @@ function applyTrainingToHistory(
 
 function applyMoodToHistory(
   base: HealthDaySnapshot[],
-  moods: DailyMood[]
+  moods: DailyMood[],
 ): HealthDaySnapshot[] {
   const byDay = new Map<string, DailyMood>();
   for (const mood of moods) {
@@ -160,7 +160,7 @@ function applyMoodToHistory(
 
 function mergeById<T extends { id: string }>(
   localArr: T[],
-  remoteArr: T[]
+  remoteArr: T[],
 ): T[] {
   const byId = new Map<string, T>();
   for (const item of localArr) {
@@ -174,7 +174,7 @@ function mergeById<T extends { id: string }>(
 
 function mergeMoodByDay(
   localArr: DailyMood[],
-  remoteArr: DailyMood[]
+  remoteArr: DailyMood[],
 ): DailyMood[] {
   const byDay = new Map<string, DailyMood>();
   for (const m of localArr) {
@@ -258,7 +258,7 @@ export default function HealthAwakeningClientPage() {
             const mergedWalk = mergeById(storedWalk, remote.walkSessions);
             const mergedTraining = mergeById(
               storedTraining,
-              remote.trainingEntries
+              remote.trainingEntries,
             );
             const mergedMoods = mergeMoodByDay(storedMoods, remote.moods);
 
@@ -365,7 +365,7 @@ export default function HealthAwakeningClientPage() {
     nextWater: WaterEntry[],
     nextWalk: WalkSession[],
     nextTraining: TrainingEntry[],
-    nextMoods: DailyMood[]
+    nextMoods: DailyMood[],
   ) => {
     if (!hasSupabaseConfig()) return;
     setStorageStatus("Syncing with Supabase...");
@@ -408,7 +408,7 @@ export default function HealthAwakeningClientPage() {
     const end = new Date(now.iso);
     const diffMinutes = Math.max(
       0,
-      Math.round((end.getTime() - start.getTime()) / 60000)
+      Math.round((end.getTime() - start.getTime()) / 60000),
     );
 
     const dayKey = chooseSleepDayKey(active.startTimestamp, now.iso);
@@ -434,7 +434,7 @@ export default function HealthAwakeningClientPage() {
       waterEntries,
       walkSessions,
       trainingEntries,
-      dailyMoods
+      dailyMoods,
     );
   };
 
@@ -466,7 +466,7 @@ export default function HealthAwakeningClientPage() {
       nextEntries,
       walkSessions,
       trainingEntries,
-      dailyMoods
+      dailyMoods,
     );
   };
 
@@ -493,7 +493,7 @@ export default function HealthAwakeningClientPage() {
       nextEntries,
       walkSessions,
       trainingEntries,
-      dailyMoods
+      dailyMoods,
     );
   };
 
@@ -535,7 +535,7 @@ export default function HealthAwakeningClientPage() {
     const end = new Date(now.iso);
     const diffMinutes = Math.max(
       0,
-      Math.round((end.getTime() - start.getTime()) / 60000)
+      Math.round((end.getTime() - start.getTime()) / 60000),
     );
 
     const newSession: WalkSession = {
@@ -559,7 +559,7 @@ export default function HealthAwakeningClientPage() {
       waterEntries,
       nextSessions,
       trainingEntries,
-      dailyMoods
+      dailyMoods,
     );
   };
 
@@ -585,7 +585,7 @@ export default function HealthAwakeningClientPage() {
       waterEntries,
       walkSessions,
       nextEntries,
-      dailyMoods
+      dailyMoods,
     );
   };
 
@@ -608,7 +608,7 @@ export default function HealthAwakeningClientPage() {
       waterEntries,
       walkSessions,
       trainingEntries,
-      nextMoods
+      nextMoods,
     );
   };
 
@@ -642,13 +642,13 @@ export default function HealthAwakeningClientPage() {
                 Check today view
               </Link>
               <Link
-                href="/health-awakening/food-calendar"
+                href="/health/food-calendar"
                 className="inline-flex items-center gap-2 rounded-full border gaia-border bg-[var(--gaia-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--gaia-text-strong)] transition hover:bg-[var(--gaia-surface-soft)]"
               >
                 Food calendar
               </Link>
               <Link
-                href="/health-awakening/training-calendar"
+                href="/health/training-calendar"
                 className="inline-flex items-center gap-2 rounded-full border gaia-border bg-[var(--gaia-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--gaia-text-strong)] transition hover:bg-[var(--gaia-surface-soft)]"
               >
                 Training calendar

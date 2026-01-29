@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
  */
 export default function Intro() {
   const left = [
-    { href: "/gallery", label: "Gallery" },
+    { href: "/instagram", label: "Instagram" },
     { href: "/apollo", label: "Apollo" },
     { href: "/timeline", label: "Timeline" },
     { href: "/health", label: "Health" },
@@ -115,4 +115,3 @@ export default function Intro() {
     </main>
   );
 }
-

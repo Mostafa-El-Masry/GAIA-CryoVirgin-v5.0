@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useActiveUser } from '@/lib/users/client';
+import React from "react";
+import { useActiveUser } from "@/lib/users/client";
 
-type PermissionKey = 'galleryPrivate' | 'wealth' | 'health' | 'guardian';
+type PermissionKey = "instagramPrivate" | "wealth" | "health" | "guardian";
 
 interface PermissionGateProps {
   require?: PermissionKey[];
@@ -31,21 +31,27 @@ interface PermissionGateProps {
 
 const DefaultLockedFallback = () => (
   <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-zinc-800 bg-black/60 px-4 py-6 text-center text-[11px] text-zinc-400">
-    <p className="font-medium text-zinc-200">This area is locked for this GAIA user.</p>
+    <p className="font-medium text-zinc-200">
+      This area is locked for this GAIA user.
+    </p>
     <p className="mt-1 text-[10px] text-zinc-500">
-      Switch to another user or update permissions in Settings → Users &amp; Permissions.
+      Switch to another user or update permissions in Settings → Users &amp;
+      Permissions.
     </p>
   </div>
 );
 
-function hasPermission(key: PermissionKey, user: ReturnType<typeof useActiveUser>['user']): boolean {
+function hasPermission(
+  key: PermissionKey,
+  user: ReturnType<typeof useActiveUser>["user"],
+): boolean {
   if (!user) return false;
   const p = user.permissions;
   if (!p) return false;
-  if (key === 'galleryPrivate') return !!p.canViewGalleryPrivate;
-  if (key === 'wealth') return !!p.canViewWealth;
-  if (key === 'health') return !!p.canViewHealth;
-  if (key === 'guardian') return !!p.canViewGuardian;
+  if (key === "instagramPrivate") return !!p.canViewInstagramPrivate;
+  if (key === "wealth") return !!p.canViewWealth;
+  if (key === "health") return !!p.canViewHealth;
+  if (key === "guardian") return !!p.canViewGuardian;
   return false;
 }
 
@@ -72,7 +78,7 @@ const PermissionGate: React.FC<PermissionGateProps> = ({
     return <>{fallback ?? <DefaultLockedFallback />}</>;
   }
 
-  if (allowOwnerOverride && user.role === 'owner') {
+  if (allowOwnerOverride && user.role === "owner") {
     return <>{children}</>;
   }
 

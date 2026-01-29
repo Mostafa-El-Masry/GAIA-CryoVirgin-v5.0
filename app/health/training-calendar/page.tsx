@@ -70,7 +70,7 @@ export default function TrainingCalendarPage() {
   const todayKey = useMemo(() => getHealthNow().dayKey, []);
   const weekStartKey = useMemo(
     () => shiftDayKey(todayKey, weekOffset * 7),
-    [todayKey, weekOffset]
+    [todayKey, weekOffset],
   );
   const weekDays = useMemo(() => buildWeekDays(weekStartKey), [weekStartKey]);
 
@@ -138,7 +138,7 @@ export default function TrainingCalendarPage() {
           entry.day === dayKey &&
           entry.routineId === AGGREGATE_ROUTINE &&
           entry.exerciseId === AGGREGATE_EXERCISE
-        )
+        ),
     );
 
     nextEntries.push({
@@ -183,13 +183,13 @@ export default function TrainingCalendarPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2 text-[11px]">
             <Link
-              href="/health-awakening"
+              href="/health"
               className="inline-flex items-center gap-2 rounded-full border gaia-border bg-[var(--gaia-surface)] px-4 py-2 font-semibold text-[var(--gaia-text-strong)] transition hover:bg-[var(--gaia-surface-soft)]"
             >
               Back to Health
             </Link>
             <Link
-              href="/health-awakening/food-calendar"
+              href="/health/food-calendar"
               className="inline-flex items-center gap-2 rounded-full border gaia-border bg-[var(--gaia-surface)] px-4 py-2 font-semibold text-[var(--gaia-text-strong)] transition hover:bg-[var(--gaia-surface-soft)]"
             >
               Food calendar
@@ -247,7 +247,8 @@ export default function TrainingCalendarPage() {
                 Weekly summary
               </p>
               <p className="text-sm gaia-muted">
-                Planned {weekSummary.planned} units, actual {weekSummary.actual} units
+                Planned {weekSummary.planned} units, actual {weekSummary.actual}{" "}
+                units
               </p>
             </div>
             <div className="rounded-full border gaia-border bg-[var(--gaia-surface)] px-4 py-2 text-xs font-semibold text-[var(--gaia-text-strong)]">
@@ -271,9 +272,7 @@ export default function TrainingCalendarPage() {
               <div
                 key={day.key}
                 className={`health-surface-soft space-y-3 p-4 ${
-                  isToday
-                    ? "ring-1 ring-[var(--gaia-contrast-bg)]/60"
-                    : ""
+                  isToday ? "ring-1 ring-[var(--gaia-contrast-bg)]/60" : ""
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">

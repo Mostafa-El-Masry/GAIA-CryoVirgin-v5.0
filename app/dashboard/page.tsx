@@ -1,5 +1,5 @@
-import DashboardContent from "./DashboardContent";
+import ClientPage from "./ClientPage";
 
-export default async function DashboardPage() {
-  return <DashboardContent userId={"user"} />;
+export default function DashboardPage() {
+  return <ClientPage />;
 }

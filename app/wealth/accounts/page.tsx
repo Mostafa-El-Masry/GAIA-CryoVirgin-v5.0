@@ -84,27 +84,7 @@ export default function WealthAccountsPage() {
       : 0;
 
   if (!canAccess("accounts")) {
-    return (
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8 text-[var(--gaia-text-default)]">
-        <section className={`${surface} p-8`}>
-          <h1 className="mb-2 text-xl font-semibold text-[var(--gaia-text-strong)]">
-            Accounts & balances locked
-          </h1>
-          <p className="mb-3 text-sm gaia-muted">
-            Complete more Academy lessons in Apollo to unlock this part of
-            Wealth.
-          </p>
-          <p className="text-xs gaia-muted">
-            Lessons completed:{" "}
-            <span className="font-semibold text-white">
-              {totalLessonsCompleted}
-            </span>{" "}
-            - Wealth stage{" "}
-            <span className="font-semibold text-white">{stage}</span>/5
-          </p>
-        </section>
-      </main>
-    );
+    return null;
   }
 
   function startCreate() {

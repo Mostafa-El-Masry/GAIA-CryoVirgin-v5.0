@@ -17,11 +17,10 @@ export default function FoodCalendarPage() {
   const minWeekOffset = 0; // Do not show weeks before Jan 1, 2026 anchor window
   const [pepsiCounts, setPepsiCounts] = useState<Record<string, number>>({});
   const [selectedMeals, setSelectedMeals] = useState<Record<string, string>>();
-  const [selectedExercises, setSelectedExercises] = useState<
-    Record<string, string>
-  >();
+  const [selectedExercises, setSelectedExercises] =
+    useState<Record<string, string>>();
   const [trainingCounts, setTrainingCounts] = useState<Record<string, number>>(
-    {}
+    {},
   );
   const [storedSelections, setStoredSelections] = useState<
     Record<
@@ -94,25 +93,25 @@ export default function FoodCalendarPage() {
         Object.fromEntries(
           Object.entries(parsed)
             .filter(([, v]) => v.mealId)
-            .map(([k, v]) => [k, v.mealId as string])
-        )
+            .map(([k, v]) => [k, v.mealId as string]),
+        ),
       );
       setSelectedExercises(
         Object.fromEntries(
           Object.entries(parsed)
             .filter(([, v]) => v.exerciseId)
-            .map(([k, v]) => [k, v.exerciseId as string])
-        )
+            .map(([k, v]) => [k, v.exerciseId as string]),
+        ),
       );
       setPepsiCounts(
         Object.fromEntries(
-          Object.entries(parsed).map(([k, v]) => [k, v.pepsi ?? 0])
-        )
+          Object.entries(parsed).map(([k, v]) => [k, v.pepsi ?? 0]),
+        ),
       );
       setTrainingCounts(
         Object.fromEntries(
-          Object.entries(parsed).map(([k, v]) => [k, v.trainingCount ?? 0])
-        )
+          Object.entries(parsed).map(([k, v]) => [k, v.trainingCount ?? 0]),
+        ),
       );
     } catch (err) {
       console.warn("Failed to load stored selections", err);
@@ -126,7 +125,7 @@ export default function FoodCalendarPage() {
       exerciseId?: string;
       pepsi?: number;
       trainingCount?: number;
-    }>
+    }>,
   ) => {
     setStoredSelections((prev) => {
       const current = prev[iso] ?? {};
@@ -184,9 +183,9 @@ export default function FoodCalendarPage() {
   const exerciseOptions: WorkoutExercise[] = useMemo(
     () =>
       WORKOUT_LIBRARY.flatMap((w) => w.exercises).filter(
-        (ex, idx, arr) => arr.findIndex((e) => e.id === ex.id) === idx
+        (ex, idx, arr) => arr.findIndex((e) => e.id === ex.id) === idx,
       ),
-    []
+    [],
   );
 
   return (
@@ -219,7 +218,7 @@ export default function FoodCalendarPage() {
               </div>
             </div>
             <SidebarPanel
-              backHref="/health-awakening"
+              backHref="/health"
               focusTitle="Hydration + stable calories"
               focusSubtitle="Use this as a starter; swap meals as you log real intake."
             />
@@ -247,7 +246,8 @@ export default function FoodCalendarPage() {
                   disabled={weekOffset <= minWeekOffset}
                   style={{
                     opacity: weekOffset <= minWeekOffset ? 0.5 : 1,
-                    cursor: weekOffset <= minWeekOffset ? "not-allowed" : "pointer",
+                    cursor:
+                      weekOffset <= minWeekOffset ? "not-allowed" : "pointer",
                   }}
                 >
                   Previous
@@ -313,10 +313,7 @@ export default function FoodCalendarPage() {
 
               <div className="grid gap-3 md:grid-cols-2">
                 {SEED_FOOD_ITEMS.map((item) => (
-                  <div
-                    key={item.id}
-                    className="health-surface-soft p-4"
-                  >
+                  <div key={item.id} className="health-surface-soft p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-[var(--gaia-text-strong)]">
@@ -332,8 +329,8 @@ export default function FoodCalendarPage() {
                         {item.sourceType === "outside"
                           ? "Outside"
                           : item.sourceType === "home"
-                          ? "Home"
-                          : "Flexible"}
+                            ? "Home"
+                            : "Flexible"}
                       </span>
                     </div>
                     <p className="mt-2 text-[12px] gaia-muted">
@@ -363,8 +360,9 @@ export default function FoodCalendarPage() {
                 {workoutsByTag.map(([tag, w]) => {
                   const sampleMoves = (w.exercises ?? []).slice(0, 2);
                   const tagLabel =
-                    WORKOUT_TAG_LABELS[tag as keyof typeof WORKOUT_TAG_LABELS] ??
-                    tag;
+                    WORKOUT_TAG_LABELS[
+                      tag as keyof typeof WORKOUT_TAG_LABELS
+                    ] ?? tag;
                   return (
                     <div
                       key={tag}
@@ -391,7 +389,8 @@ export default function FoodCalendarPage() {
                 })}
               </div>
               <p className="text-[11px] gaia-muted">
-                Full details live in the Health core. Pair one workout with any meal day to balance energy and recovery.
+                Full details live in the Health core. Pair one workout with any
+                meal day to balance energy and recovery.
               </p>
             </div>
           </div>
