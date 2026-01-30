@@ -5,14 +5,18 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useTodoDaily } from "../hooks/useTodoDaily";
 import type { Category } from "../hooks/useTodoDaily";
+import { shiftDate } from "@/utils/dates";
 import TodoSlot from "./TodoSlot";
 
 export default function TodoDaily() {
-  const [storageStatus, setStorageStatus] = useState({ synced: true, hasTasks: false });
+  const [storageStatus, setStorageStatus] = useState({
+    synced: true,
+    hasTasks: false,
+  });
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayDate, setDisplayDate] = useState<string>("");
   const prevTodayRef = useRef<string>("");
-  
+
   const {
     today,
     slotInfo,
@@ -29,9 +33,38 @@ export default function TodoDaily() {
     setStorageStatus({ synced: true, hasTasks: tasks.length > 0 });
   }, [tasks]);
 
+  const [quickCategory, setQuickCategory] = useState<Category>("life");
+  const [quickTitle, setQuickTitle] = useState("");
+  const [quickDueDate, setQuickDueDate] = useState<string>(today);
+
+  // Calculate default due dates for each category (next day after latest task in category)
+  const defaultDueDates = useMemo(() => {
+    const CATEGORY_ORDER: Category[] = ["life", "work", "distraction"];
+    const result: Record<Category, string> = {
+      life: today,
+      work: today,
+      distraction: today,
+    };
+    CATEGORY_ORDER.forEach((category) => {
+      const categoryTasks = tasks.filter(
+        (t) => t.category === category && t.due_date,
+      );
+      if (categoryTasks.length > 0) {
+        const sortedDues = categoryTasks
+          .map((t) => t.due_date!)
+          .sort((a, b) => a.localeCompare(b));
+        const latestDue = sortedDues[sortedDues.length - 1];
+        const nextDay = shiftDate(latestDue, 1);
+        result[category] = nextDay;
+      }
+    });
+    return result;
+  }, [tasks, today]);
+
+  // Update quickDueDate when category changes or default dates change
   useEffect(() => {
-    setQuickDueDate(today);
-  }, [today]);
+    setQuickDueDate(defaultDueDates[quickCategory]);
+  }, [quickCategory, defaultDueDates]);
 
   // Handle day transition animation
   useEffect(() => {
@@ -51,15 +84,12 @@ export default function TodoDaily() {
     }
   }, [today]);
 
-  const [quickCategory, setQuickCategory] = useState<Category>("life");
-  const [quickTitle, setQuickTitle] = useState("");
-  const [quickDueDate, setQuickDueDate] = useState<string>(today);
   const allDone = useMemo(
     () =>
       (["life", "work", "distraction"] as Category[]).every(
-        (cat) => slotInfo[cat]?.state === "done"
+        (cat) => slotInfo[cat]?.state === "done",
       ),
-    [slotInfo]
+    [slotInfo],
   );
 
   const handleAdvanceDay = () => {
@@ -76,9 +106,11 @@ export default function TodoDaily() {
           <h2 className="text-xl font-bold text-[var(--gaia-text-strong)]">
             Daily Focus
           </h2>
-          <p 
+          <p
             className={`text-sm text-[var(--gaia-text-muted)] transition-all duration-1000 ease-in-out ${
-              isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+              isTransitioning
+                ? "opacity-0 translate-y-2"
+                : "opacity-100 translate-y-0"
             }`}
           >
             {formatShortDate(displayDate || today)} · Asia/Kuwait
@@ -93,7 +125,9 @@ export default function TodoDaily() {
             >
               <span className="inline-flex items-center gap-2">
                 Next day
-                <span className="transition-transform group-hover:translate-x-1">→</span>
+                <span className="transition-transform group-hover:translate-x-1">
+                  →
+                </span>
               </span>
             </button>
           )}
@@ -108,15 +142,24 @@ export default function TodoDaily() {
 
       <form
         className={`mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--gaia-border)] bg-[var(--gaia-surface)] px-4 py-3 shadow-sm transition-all duration-1000 ease-in-out ${
-          isTransitioning ? "opacity-30 pointer-events-none" : "opacity-100 pointer-events-auto"
+          isTransitioning
+            ? "opacity-30 pointer-events-none"
+            : "opacity-100 pointer-events-auto"
         }`}
         onSubmit={(e) => {
           e.preventDefault();
           const title = quickTitle.trim();
           if (!title) return;
-          addQuickTask(quickCategory, title, undefined, 2, false, quickDueDate || undefined);
+          addQuickTask(
+            quickCategory,
+            title,
+            undefined,
+            2,
+            false,
+            quickDueDate || undefined,
+          );
           setQuickTitle("");
-          setQuickDueDate(today);
+          setQuickDueDate(defaultDueDates[quickCategory]);
         }}
       >
         <select
@@ -150,9 +193,11 @@ export default function TodoDaily() {
         </button>
       </form>
 
-      <div 
+      <div
         className={`grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 transition-all duration-1000 ease-in-out ${
-          isTransitioning ? "opacity-0 translate-y-4 scale-95" : "opacity-100 translate-y-0 scale-100"
+          isTransitioning
+            ? "opacity-0 translate-y-4 scale-95"
+            : "opacity-100 translate-y-0 scale-100"
         }`}
       >
         <TodoSlot
