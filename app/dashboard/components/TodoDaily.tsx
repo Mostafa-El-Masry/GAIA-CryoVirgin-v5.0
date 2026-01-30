@@ -2,13 +2,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useTodoDaily } from "../hooks/useTodoDaily";
 import type { Category } from "../hooks/useTodoDaily";
 import TodoSlot from "./TodoSlot";
 
 export default function TodoDaily() {
   const [storageStatus, setStorageStatus] = useState({ synced: true, hasTasks: false });
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayDate, setDisplayDate] = useState<string>("");
+  const prevTodayRef = useRef<string>("");
+  
   const {
     today,
     slotInfo,
@@ -29,6 +33,24 @@ export default function TodoDaily() {
     setQuickDueDate(today);
   }, [today]);
 
+  // Handle day transition animation
+  useEffect(() => {
+    if (prevTodayRef.current && prevTodayRef.current !== today) {
+      setIsTransitioning(true);
+      // Fade out phase
+      setTimeout(() => {
+        setDisplayDate(today);
+        // Fade in phase
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 800);
+      }, 800);
+    } else {
+      setDisplayDate(today);
+      prevTodayRef.current = today;
+    }
+  }, [today]);
+
   const [quickCategory, setQuickCategory] = useState<Category>("life");
   const [quickTitle, setQuickTitle] = useState("");
   const [quickDueDate, setQuickDueDate] = useState<string>(today);
@@ -40,6 +62,13 @@ export default function TodoDaily() {
     [slotInfo]
   );
 
+  const handleAdvanceDay = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      advanceToNextDay();
+    }, 400);
+  };
+
   return (
     <section className="rounded-2xl border border-[var(--gaia-border)] bg-[var(--gaia-surface-soft)] p-6 shadow-lg">
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--gaia-border)] pb-4">
@@ -47,15 +76,20 @@ export default function TodoDaily() {
           <h2 className="text-xl font-bold text-[var(--gaia-text-strong)]">
             Daily Focus
           </h2>
-          <p className="text-sm text-[var(--gaia-text-muted)]">
-            {formatShortDate(today)} · Asia/Kuwait
+          <p 
+            className={`text-sm text-[var(--gaia-text-muted)] transition-all duration-1000 ease-in-out ${
+              isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+            }`}
+          >
+            {formatShortDate(displayDate || today)} · Asia/Kuwait
           </p>
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end sm:text-right">
           {allDone && (
             <button
               className="group rounded-lg border border-[var(--gaia-border)] bg-[var(--gaia-surface)] px-4 py-2 text-sm font-semibold text-[var(--gaia-text-default)] transition-all hover:bg-[var(--gaia-border)]/40 hover:shadow-sm"
-              onClick={advanceToNextDay}
+              onClick={handleAdvanceDay}
+              disabled={isTransitioning}
             >
               <span className="inline-flex items-center gap-2">
                 Next day
@@ -73,7 +107,9 @@ export default function TodoDaily() {
       </header>
 
       <form
-        className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--gaia-border)] bg-[var(--gaia-surface)] px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
+        className={`mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--gaia-border)] bg-[var(--gaia-surface)] px-4 py-3 shadow-sm transition-all duration-1000 ease-in-out ${
+          isTransitioning ? "opacity-30 pointer-events-none" : "opacity-100 pointer-events-auto"
+        }`}
         onSubmit={(e) => {
           e.preventDefault();
           const title = quickTitle.trim();
@@ -114,7 +150,11 @@ export default function TodoDaily() {
         </button>
       </form>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div 
+        className={`grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 transition-all duration-1000 ease-in-out ${
+          isTransitioning ? "opacity-0 translate-y-4 scale-95" : "opacity-100 translate-y-0 scale-100"
+        }`}
+      >
         <TodoSlot
           category="life"
           task={slotInfo.life.task}

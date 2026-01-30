@@ -421,13 +421,14 @@ export function useTodoDaily() {
     if (!hasCompleted) return;
     if (autoAdvanceRef.current === today) return;
     autoAdvanceRef.current = today;
+    // Increased delay for smoother animation (2 seconds total transition)
     const timer = setTimeout(() => {
       setToday((prev) => {
         const nextDay = shiftDate(prev, 1);
         setSelection({ date: nextDay, selected: {} });
         return nextDay;
       });
-    }, 600);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [slotInfo, today]);
 
