@@ -65,7 +65,6 @@ export default function TodoSlot(props: Props) {
   const state: SlotState = hasDate ? rawState : "idle";
   const calendarToday = useMemo(() => todayKey(), []);
   const dueLabel = dueDate ? formatDueBadge(dueDate, calendarToday) : null;
-  const actionBtn = "btn btn-circle btn-sm sm:btn-md";
 
   return (
     <div

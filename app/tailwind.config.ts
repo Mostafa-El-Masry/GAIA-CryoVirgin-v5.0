@@ -1,6 +1,5 @@
 import type { Config } from "tailwindcss";
 import typography from "@tailwindcss/typography";
-import { THEMES } from "./DesignSystem/theme";
 
 const config: Config = {
   darkMode: "class",
