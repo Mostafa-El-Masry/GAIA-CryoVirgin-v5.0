@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 
 import { getItem, readJSON, waitForUserStorage } from "@/lib/user-storage";
 
-/**
- * Lightweight SVG sparkline (no libs).
- * Looks for arrays like health_weight_history = [{date,kg}, …] or health_weights.
- */
+import Sparkline from "./Sparkline";
 
+/**
+ * Weight sparkline. Looks for health_weight_history = [{date,kg}, …] or health_weights.
+ */
 export default function WeightSpark() {
   const [points, setPoints] = useState<number[]>([]);
 
@@ -38,21 +38,5 @@ export default function WeightSpark() {
     };
   }, []);
 
-  if (!points.length) return <div className="text-sm gaia-muted">No data</div>;
-
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const norm = (v: number) => (max === min ? 0.5 : (v - min) / (max - min));
-  const w = 320,
-    h = 64;
-  const step = points.length > 1 ? w / (points.length - 1) : w;
-  const d = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${i * step},${(1 - norm(p)) * h}`)
-    .join(" ");
-
-  return (
-    <svg width={w} height={h} className="block">
-      <path d={d} fill="none" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
+  return <Sparkline points={points} />;
 }

@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 
 import { readJSON, waitForUserStorage } from "@/lib/user-storage";
 
+import Sparkline from "./Sparkline";
+
 /**
  * Wealth sparkline: looks for wealth_history = [number,…] or similar.
  */
-
 export default function WealthSpark() {
   const [points, setPoints] = useState<number[]>([]);
 
@@ -35,21 +36,5 @@ export default function WealthSpark() {
     };
   }, []);
 
-  if (!points.length) return <div className="text-sm gaia-muted">No data</div>;
-
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const norm = (v: number) => (max === min ? 0.5 : (v - min) / (max - min));
-  const w = 320,
-    h = 64;
-  const step = points.length > 1 ? w / (points.length - 1) : w;
-  const d = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${i * step},${(1 - norm(p)) * h}`)
-    .join(" ");
-
-  return (
-    <svg width={w} height={h} className="block">
-      <path d={d} fill="none" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
+  return <Sparkline points={points} />;
 }

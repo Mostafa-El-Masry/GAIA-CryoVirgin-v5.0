@@ -1,6 +1,14 @@
-﻿import type { Config } from "tailwindcss";
+import type { Config } from "tailwindcss";
 import typography from "@tailwindcss/typography";
-import { THEMES } from "./app/DesignSystem/theme";
+
+// Keep in sync with app/DesignSystem/theme.ts THEMES
+const THEMES = [
+  "modern", "light", "dark", "night", "cyberpunk", "synthwave", "retro", "fantasy",
+  "aqua", "lofi", "bumblebee", "garden", "halloween", "coffee", "emerald", "cupcake",
+  "daisysoft", "pastel", "nord", "silk", "business", "acid", "dim", "caramellatte",
+  "forest", "sunset", "dracula", "luxury", "corporate", "autumn", "wireframe", "cmyk",
+  "valentine", "abyss", "winter", "lemonade", "black", "daisybolt",
+];
 
 export default {
   darkMode: "class", // IMPORTANT: enables Tailwind's dark: variants via .dark on <html>
