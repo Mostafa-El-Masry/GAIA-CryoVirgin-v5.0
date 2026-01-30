@@ -123,6 +123,9 @@ export default function TODOPage() {
   const [hydrated, setHydrated] = useState(false);
   const [dragging, setDragging] = useState<DragState>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget>(null);
+  const [transitioningTaskIds, setTransitioningTaskIds] = useState<Set<string>>(
+    new Set(),
+  );
   const todayMeta = useMemo(() => {
     try {
       const date = new Date(`${today}T00:00:00`);
@@ -445,7 +448,22 @@ export default function TODOPage() {
         task.due_date && task.due_date !== "Unscheduled"
           ? task.due_date
           : today;
-      setTaskStatus(task.id, targetDate, next);
+
+      // Add task to transitioning set for animation
+      setTransitioningTaskIds((prev) => new Set([...prev, task.id]));
+
+      // Fade out phase
+      setTimeout(() => {
+        setTaskStatus(task.id, targetDate, next);
+        // Fade in phase
+        setTimeout(() => {
+          setTransitioningTaskIds((prev) => {
+            const next = new Set(prev);
+            next.delete(task.id);
+            return next;
+          });
+        }, 800);
+      }, 800);
     },
     [setTaskStatus, today],
   );
@@ -806,10 +824,11 @@ export default function TODOPage() {
                                 key={t.id}
                                 task={t}
                                 category={cat}
-                                className={`relative flex min-h-[170px] flex-col gap-3 overflow-hidden p-4 transition duration-150 ${dragIndicator(
-                                  t.id,
-                                  cat,
-                                )}`}
+                                className={`relative flex min-h-[170px] flex-col gap-3 overflow-hidden p-4 transition-all duration-1000 ease-in-out ${
+                                  transitioningTaskIds.has(t.id)
+                                    ? "opacity-0 translate-y-4 scale-95"
+                                    : "opacity-100 translate-y-0 scale-100"
+                                } ${dragIndicator(t.id, cat)}`}
                                 onReorder={handleReorder}
                                 setDragging={setDragging}
                                 setDropTarget={setDropTarget}
