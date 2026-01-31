@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { useInstagramData as useGalleryData } from "../useInstagramData";
+import {
+  useInstagramData as useGalleryData,
+  hashString,
+} from "../useInstagramData";
 import { useLocalStorage } from "./useLocalStorage";
 import type { MediaItem } from "../mediaTypes";
 import { mockMediaItems } from "../mockMedia";
@@ -65,17 +68,9 @@ export function useInstagramData() {
   }, [mergedItems, hiddenIds]);
 
   const shuffledItems = useMemo(() => {
-    const hash = (value: string) => {
-      let h = 0;
-      for (let i = 0; i < value.length; i += 1) {
-        h = (h << 5) - h + value.charCodeAt(i);
-        h |= 0;
-      }
-      return Math.abs(h);
-    };
     return [...allItems].sort((a, b) => {
-      const aKey = hash(`${a.id}-${shuffleSeed}`);
-      const bKey = hash(`${b.id}-${shuffleSeed}`);
+      const aKey = hashString(`${a.id}-${shuffleSeed}`);
+      const bKey = hashString(`${b.id}-${shuffleSeed}`);
       return aKey - bKey;
     });
   }, [allItems, shuffleSeed]);

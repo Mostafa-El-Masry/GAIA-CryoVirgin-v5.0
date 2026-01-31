@@ -36,6 +36,32 @@ type ManifestItem = {
 const normalizeKey = (key: string) => key.replace(/^\/+/, "");
 const isLocalKey = (key: string) => normalizeKey(key).startsWith("media/");
 
+/**
+ * Convert preview paths to thumbnail objects
+ */
+const mapPreviewsToThumbnails = (previews: string[] = []) =>
+  previews.map((p, idx) => {
+    const key = normalizeKey(p);
+    const localThumb = isLocalKey(key);
+    return {
+      index: idx + 1,
+      r2Key: localThumb ? undefined : key,
+      localPath: localThumb ? `/${key}` : undefined,
+    };
+  });
+
+/**
+ * Simple hash function for deterministic shuffling
+ */
+const hashString = (value: string): number => {
+  let h = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    h = (h << 5) - h + value.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h);
+};
+
 const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
   const normalized = item.embedUrl ? item.embedUrl : normalizeKey(item.src);
   const createdAt = item.addedAt || new Date().toISOString();
@@ -81,30 +107,13 @@ const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
       source: "embed",
       src,
       embedUrl: item.embedUrl,
-      thumbnails: (item.preview ?? []).map((p, idx) => {
-        const key = normalizeKey(p);
-        const localThumb = isLocalKey(key);
-        return {
-          index: idx + 1,
-          r2Key: localThumb ? undefined : key,
-          localPath: localThumb ? `/${key}` : undefined,
-        };
-      }),
+      thumbnails: mapPreviewsToThumbnails(item.preview),
       createdAt,
       updatedAt: createdAt,
     };
   }
 
-  const thumbs: VideoThumbnail[] =
-    item.preview?.map((p, idx) => {
-      const key = normalizeKey(p);
-      const localThumb = isLocalKey(key);
-      return {
-        index: idx + 1,
-        r2Key: localThumb ? undefined : key,
-        localPath: localThumb ? `/${key}` : undefined,
-      };
-    }) ?? [];
+  const thumbs = mapPreviewsToThumbnails(item.preview);
 
   return {
     id: item.id,
@@ -221,3 +230,5 @@ export function useInstagramData(fallbackItems: MediaItem[]): GalleryDataState {
     error,
   };
 }
+
+export { hashString };

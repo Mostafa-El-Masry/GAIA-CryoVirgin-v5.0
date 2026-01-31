@@ -81,8 +81,6 @@ async function fetchGalleryManifest(): Promise<GalleryItem[]> {
 
 function SettingsContent() {
   const { theme, setTheme, button, setButton, search, setSearch } = useDesign();
-  const authName = null;
-  const authEmail = null;
 
   const [syncing, setSyncing] = useState(false);
   const [autoTagging, setAutoTagging] = useState(false);
@@ -299,6 +297,18 @@ function SettingsContent() {
     });
   }, []);
 
+  const voiceDisplayName = useMemo(() => {
+    if (voiceChoice === "__auto__") return "Auto";
+    return (
+      availableVoices.find((v) => v.voiceURI === voiceChoice)?.name ?? "Unknown"
+    );
+  }, [voiceChoice, availableVoices]);
+
+  const handleVoiceChange = useCallback((value: string) => {
+    setVoiceChoice(value);
+    setItem("gaia.academy.voicePreference", value);
+  }, []);
+
   return (
     <PermissionGate permission="settings">
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
@@ -413,22 +423,11 @@ function SettingsContent() {
         {activeTab === "user" && (
           <section className="space-y-3 rounded-lg border gaia-border p-4">
             <h2 className="font-medium">User</h2>
-            {authEmail ? (
-              <div className="space-y-1">
-                <p className="text-sm">
-                  Signed in as{" "}
-                  <span className="font-semibold">{authName ?? authEmail}</span>
-                </p>
-                <p className="text-xs gaia-muted">{authEmail}</p>
-              </div>
-            ) : (
-              <p className="text-sm gaia-muted">
-                No Supabase user is currently signed in.
-              </p>
-            )}
+            <p className="text-sm gaia-muted">
+              No Supabase user is currently signed in.
+            </p>
             <p className="text-xs gaia-muted">
-              This uses your Supabase auth profile. Change it by signing in or
-              out from GAIA.
+              Sign in via GAIA to manage your user profile.
             </p>
 
             <div className="rounded border gaia-border p-3">
@@ -441,11 +440,7 @@ function SettingsContent() {
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <select
                     value={voiceChoice}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setVoiceChoice(value);
-                      setItem("gaia.academy.voicePreference", value);
-                    }}
+                    onChange={(e) => handleVoiceChange(e.target.value)}
                     className="rounded border gaia-border bg-[var(--gaia-surface)] px-3 py-1.5 text-sm gaia-contrast focus:border-info focus:ring-2 focus:ring-info/20"
                   >
                     <option value="__auto__">Auto (female preferred)</option>
@@ -456,11 +451,7 @@ function SettingsContent() {
                     ))}
                   </select>
                   <span className="text-[12px] gaia-muted">
-                    Currently:{" "}
-                    {voiceChoice === "__auto__"
-                      ? "Auto"
-                      : (availableVoices.find((v) => v.voiceURI === voiceChoice)
-                          ?.name ?? "Unknown")}
+                    Currently: {voiceDisplayName}
                   </span>
                 </div>
               ) : (
@@ -566,20 +557,15 @@ function SettingsContent() {
   );
 }
 
-function SettingsLocked({
-  totalLessonsCompleted,
-}: {
-  totalLessonsCompleted: number;
-}) {
+function SettingsLocked() {
   return null;
 }
 
 export default function SettingsPage() {
   const { isFeatureUnlocked, totalLessonsCompleted } = useGaiaFeatureUnlocks();
-  const unlocked = isFeatureUnlocked("settings");
 
-  if (!unlocked) {
-    return <SettingsLocked totalLessonsCompleted={totalLessonsCompleted} />;
+  if (!isFeatureUnlocked("settings")) {
+    return <SettingsLocked />;
   }
 
   return <SettingsContent />;

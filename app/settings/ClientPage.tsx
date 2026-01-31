@@ -31,21 +31,16 @@ export default function SettingsPage() {
 
   // Deep-link support e.g. /settings#backup
   useEffect(() => {
-    const h = (
-      (typeof window !== "undefined" && window.location.hash) ||
-      ""
-    ).replace("#", "") as Tab;
-    if (TABS.find((t) => t.id === h)) {
-      setTab(h);
-    }
-    const onHash = () => {
-      const hh = (window.location.hash || "").replace("#", "") as Tab;
-      if (TABS.find((t) => t.id === hh)) {
-        setTab(hh);
+    const updateTabFromHash = () => {
+      const hash = (window.location.hash || "").replace("#", "") as Tab;
+      if (TABS.some((t) => t.id === hash)) {
+        setTab(hash);
       }
     };
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+
+    updateTabFromHash();
+    window.addEventListener("hashchange", updateTabFromHash);
+    return () => window.removeEventListener("hashchange", updateTabFromHash);
   }, []);
 
   return (
@@ -72,7 +67,7 @@ export default function SettingsPage() {
               onClick={(e) => {
                 e.preventDefault();
                 setTab(t.id);
-                history.replaceState(null, "", `#${t.id}`);
+                window.history.replaceState(null, "", `#${t.id}`);
               }}
               className={
                 "rounded-lg border px-3 py-1.5 text-sm " +
