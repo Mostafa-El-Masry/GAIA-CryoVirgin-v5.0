@@ -126,8 +126,9 @@ const mapManifestToMediaItem = (item: ManifestItem): MediaItem => {
 
 /**
  * Pull gallery items from the API (merging Cloudflare R2 + local videos) with a small cache.
+ * Caches locally to provide instant loading on repeated visits.
  */
-export function useGalleryData(fallbackItems: MediaItem[]): GalleryDataState {
+export function useInstagramData(fallbackItems: MediaItem[]): GalleryDataState {
   const [items, setItems] = useState<MediaItem[]>(fallbackItems);
   const [source, setSource] = useState<DataSource>("none");
   const [isLoading, setIsLoading] = useState<boolean>(true);

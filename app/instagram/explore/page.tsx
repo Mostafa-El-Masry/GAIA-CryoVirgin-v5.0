@@ -6,7 +6,7 @@ import InstagramHeader from "../components/InstagramHeader";
 import { MediaGrid } from "../components/MediaGrid";
 import { mockMediaItems } from "../mockMedia";
 import type { MediaItem } from "../mediaTypes";
-import { useGalleryData } from "../useInstagramData";
+import { useInstagramData as useGalleryData } from "../useInstagramData";
 import { hasR2PublicBase } from "../r2";
 
 const spaceGrotesk = Space_Grotesk({

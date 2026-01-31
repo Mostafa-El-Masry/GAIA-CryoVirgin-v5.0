@@ -10,51 +10,68 @@
  *
  * We keep this helper very small so the Gallery remains portable.
  */
-const base =
+const BASE_URL =
   process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL ||
   process.env.NEXT_PUBLIC_IMG_CDN_BASE ||
   process.env.NEXT_PUBLIC_GAIA_GALLERY_URL ||
   process.env.NEXT_PUBLIC_GAIA_GALLERY_FALLBACK;
 
-const previewBase =
+const PREVIEW_BASE_URL =
   process.env.NEXT_PUBLIC_GAIA_PREVIEWS_URL ||
   process.env.NEXT_PUBLIC_R2_PREVIEWS_BASE_URL ||
-  base;
+  BASE_URL;
 
+const PLACEHOLDER = "/placeholder-gallery-image.png";
+
+/**
+ * Check if R2 base URL is configured.
+ */
 export function hasR2PublicBase(): boolean {
-  return Boolean(base && typeof base === 'string');
+  return Boolean(BASE_URL && typeof BASE_URL === "string");
 }
 
+/**
+ * Check if R2 preview base URL is configured.
+ */
 export function hasR2PreviewBase(): boolean {
-  return Boolean(previewBase && typeof previewBase === 'string');
+  return Boolean(PREVIEW_BASE_URL && typeof PREVIEW_BASE_URL === "string");
 }
 
+/**
+ * Build a full R2 URL from an object key.
+ * @param key - R2 object key or full URL
+ * @param customBase - Optional custom base URL to override defaults
+ * @returns Full URL or placeholder if no base is configured
+ */
 function buildR2Url(key: string, customBase?: string): string {
-  if (!key) return '/placeholder-gallery-image.png';
-  if (key.startsWith('http://') || key.startsWith('https://')) return key;
+  if (!key) return PLACEHOLDER;
 
-  const effectiveBase = customBase || base;
-  if (effectiveBase && typeof effectiveBase === 'string') {
-    const trimmedBase = effectiveBase.replace(/\/$/, '');
-    const normalizedKey = key.replace(/^\/+/, '');
+  // Already a full URL
+  if (key.startsWith("http://") || key.startsWith("https://")) {
+    return key;
+  }
+
+  const effectiveBase = customBase || BASE_URL;
+  if (effectiveBase && typeof effectiveBase === "string") {
+    const trimmedBase = effectiveBase.replace(/\/$/, "");
+    const normalizedKey = key.replace(/^\/+/, "");
     return `${trimmedBase}/${normalizedKey}`;
   }
 
-  // Fallback: if no base is configured, return a placeholder.
-  return `/placeholder-gallery-image.png`;
+  return PLACEHOLDER;
 }
 
 /**
- * Turn an R2 object key into a URL, or fall back to an API proxy path.
+ * Turn an R2 object key into a public URL.
  */
 export function getR2Url(key: string): string {
-  return buildR2Url(key, base);
+  return buildR2Url(key, BASE_URL);
 }
 
 /**
- * Dedicated helper for preview frames (separate bucket/CDN).
- * Falls back to the main R2 base when a preview CDN isn't set.
+ * Build URL for preview/thumbnail images (may use separate CDN).
+ * Falls back to main R2 base when preview CDN isn't configured.
  */
 export function getR2PreviewUrl(key: string): string {
-  return buildR2Url(key, previewBase);
+  return buildR2Url(key, PREVIEW_BASE_URL);
 }

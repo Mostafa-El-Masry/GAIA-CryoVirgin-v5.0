@@ -1,12 +1,17 @@
 import type { MediaItem, VideoThumbnail } from "./mediaTypes";
 
-const hashId = (value: string) => {
-  let h = 0,
-    i = 0;
-  while (i < value.length) {
-    h = ((h << 5) - h + value.charCodeAt(i++)) | 0;
+/**
+ * Generate a simple hash ID from a string value.
+ * Used for creating unique IDs for embedded content.
+ */
+const hashId = (value: string): string => {
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) {
+    const char = value.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
   }
-  return Math.abs(h).toString(36);
+  return Math.abs(hash).toString(36);
 };
 
 /**
